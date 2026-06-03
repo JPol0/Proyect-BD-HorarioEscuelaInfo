@@ -1,3 +1,6 @@
+import '@gravity-ui/uikit/styles/fonts.css';
+import '@gravity-ui/uikit/styles/styles.css';
+import {ThemeProvider} from '@gravity-ui/uikit';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Button } from "@nextui-org/react";
 import MainLayout from './ui/layouts/MainLayout'
@@ -10,6 +13,10 @@ import './index.css'
  *   2. Importarlo aquí y agregar un <Route> dentro del MainLayout
  *   3. Agregar el item de navegación en ui/components/Sidebar.tsx
  */
+
+<ThemeProvider theme="light">
+  <App />
+</ThemeProvider>
 
 function PlaceholderPage ({ title }: { title: string }) {
   return (
