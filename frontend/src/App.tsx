@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Button } from "@nextui-org/react";
 import MainLayout from './ui/layouts/MainLayout'
 import TermsPage from './ui/pages/TermsPage'
 import './index.css'
@@ -17,6 +18,12 @@ function PlaceholderPage ({ title }: { title: string }) {
       <p className="text-text-secondary mt-2 text-sm">
         Esta sección estará disponible próximamente.
       </p>
+
+      <div className="mt-4">
+        <Button color="primary" variant="shadow">
+          ¡NextUI funcionando en {title}!
+        </Button>
+      </div>
     </div>
   )
 }
