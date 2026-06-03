@@ -1,3 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "@heroui/styles"; 
+
+@theme{
+    /* fuentes para la aplicación */
+
+    --font-hanken: 'Hanken Grotesk', sans-serif;
+
+    /* colores para la aplicación */
+
+    --color-bgmain: #F1F4F6;
+    --color-titlePage: #0B132B;
+    --color-subtitlePage: #64748b;
+}
