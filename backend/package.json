@@ -16,15 +16,11 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.0",
   "dependencies": {
-    "cors": "2.8.6",
-    "express": "5.2.1",
-    "uuid": "14.0.0"
+    "express": "5.2.1"
   },
   "devDependencies": {
-    "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
     "@types/node": "^24.12.4",
-    "@types/uuid": "11.0.0",
     "@typescript-eslint/eslint-plugin": "6.21.0",
     "@typescript-eslint/parser": "6.21.0",
     "eslint": "^8.57.1",
