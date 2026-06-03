@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
+@import "@gravity-ui/uikit/styles/fonts.css";
+@import "@gravity-ui/uikit/styles/styles.css";
 /* Intentamos que Tailwind v4 escanee la librería */
 @source "../node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}";
 
