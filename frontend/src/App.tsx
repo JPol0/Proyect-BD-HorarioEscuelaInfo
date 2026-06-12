@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import AlarmCenter from './ui/pages/AlarmCenter'
 import TermsPage from './ui/pages/TermsPage'
+import WeeklySchedulePage from './ui/pages/WeeklySchedulePage'
 import heroImg from './assets/hero.png'
 
-// Tipos de pantallas disponibles. Para agregar una nueva pantalla:
-// 1. Añadir su clave aquí (ej. 'materias')
-// 2. Añadir el item en NAV_ITEMS
-// 3. Agregar el case en renderPagina()
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios'
 
 interface NavItem {
@@ -20,17 +17,19 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'materias', label: 'Materias', icon: '📓', disponible: false },
   { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: false },
   { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: false },
-  { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: false },
+  { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: true },
   { id: 'peligros', label: 'Peligros', icon: '⚠️', disponible: true },
   { id: 'terms', label: 'Seleccionar Term', icon: '🗓️', disponible: true }
 ]
 
-function renderPagina(pantalla: Pantalla) {
+function renderPagina (pantalla: Pantalla) {
   switch (pantalla) {
     case 'peligros':
       return <AlarmCenter />
     case 'terms':
       return <TermsPage />
+    case 'horarios':
+      return <WeeklySchedulePage />
     default:
       return (
         <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -41,7 +40,7 @@ function renderPagina(pantalla: Pantalla) {
   }
 }
 
-function App() {
+function App () {
   const [pantallaActiva, setPantallaActiva] = useState<Pantalla>('terms')
 
   return (
