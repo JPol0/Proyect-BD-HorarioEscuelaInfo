@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AlarmCenter from './ui/pages/AlarmCenter'
 import TermsPage from './ui/pages/TermsPage'
 import WeeklySchedulePage from './ui/pages/WeeklySchedulePage'
+import { DisponibilidadProfesorPage } from './ui/pages/DisponibilidadProfesorPage'
 import heroImg from './assets/hero.png'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios'
@@ -14,8 +15,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'materias', label: 'Materias', icon: '📓', disponible: false },
-  { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: false },
+  { id: 'materias', label: 'Materias', icon: '📋', disponible: false },
+  { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: true },
   { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: false },
   { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: true },
   { id: 'peligros', label: 'Peligros', icon: '⚠️', disponible: true },
@@ -30,6 +31,8 @@ function renderPagina (pantalla: Pantalla) {
       return <TermsPage />
     case 'horarios':
       return <WeeklySchedulePage />
+    case 'profesores':
+      return <DisponibilidadProfesorPage />
     default:
       return (
         <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -45,7 +48,7 @@ function App () {
 
   return (
     <div className="flex min-h-screen bg-bgmain">
-      {/* ── SIDEBAR ──────────────────────────────────── */}
+      {/* ── SIDEBAR ──────────────────────────────────────────── */}
       <aside className="w-56 bg-[#0B132B] text-white flex flex-col shrink-0 select-none overflow-hidden" style={{ minHeight: '100vh' }}>
 
         {/* Encabezado del Sistema */}
@@ -93,7 +96,7 @@ function App () {
         </div>
       </aside>
 
-      {/* ── CONTENIDO PRINCIPAL ──────────────────────── */}
+      {/* ── CONTENIDO PRINCIPAL ──────────────────────────────── */}
       <main className="flex-1 p-10 overflow-y-auto bg-bgmain">
         {renderPagina(pantallaActiva)}
       </main>
