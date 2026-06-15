@@ -1,16 +1,8 @@
 import express from 'express'
-<<<<<<< HEAD
 import apiRouter from './infrastructure/http/apiRouter.js'
 
 const app = express()
 app.disable('x-powered-by') // Por seguridad, no revelamos que usamos Express
-=======
-import cors from 'cors'
-import { apiRouter } from './infrastructure/http/apiRouter'
-
-const app = express()
-app.use(cors())
->>>>>>> e4bb991 (Implement availability screen and API mock)
 app.use(express.json())
 
 // Middleware de CORS manual (cumpliendo la guía Standard de estilo)
@@ -25,10 +17,7 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true })
 })
 
-<<<<<<< HEAD
 // Conectamos todas nuestras rutas bajo la raíz /api
-=======
->>>>>>> e4bb991 (Implement availability screen and API mock)
 app.use('/api', apiRouter)
 
 const port = process.env.PORT ?? 3000
