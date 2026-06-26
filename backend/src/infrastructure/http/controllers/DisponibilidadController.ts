@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
-import type { ObtenerDisponibilidadHoraria } from '../../../application/use-cases/ObtenerDisponibilidadHoraria'
-import type { GuardarDisponibilidadHoraria } from '../../../application/use-cases/GuardarDisponibilidadHoraria'
-import type { ObtenerProfesorActivo } from '../../../application/use-cases/ObtenerProfesorActivo'
+import type { ObtenerDisponibilidadHoraria } from '../../../application/useCases/ObtenerDisponibilidadHoraria.js'
+import type { GuardarDisponibilidadHoraria } from '../../../application/useCases/GuardarDisponibilidadHoraria.js'
+import type { ObtenerProfesorActivo } from '../../../application/useCases/ObtenerProfesorActivo.js'
 
 export class DisponibilidadController {
   constructor (

@@ -1,10 +1,10 @@
 import { ApiClient } from '../http/ApiClient'
 import { HttpDisponibilidadRepository } from '../http/HttpDisponibilidadRepository'
 import { HttpProfesorRepository } from '../http/HttpProfesorRepository'
-import { ObtenerDisponibilidadHoraria } from '../../application/use-cases/ObtenerDisponibilidadHoraria'
-import { ActualizarCeldaDisponibilidad } from '../../application/use-cases/ActualizarCeldaDisponibilidad'
-import { GuardarDisponibilidadHoraria } from '../../application/use-cases/GuardarDisponibilidadHoraria'
-import { ObtenerProfesorActivo } from '../../application/use-cases/ObtenerProfesorActivo'
+import { ObtenerDisponibilidadHoraria } from '../../application/useCases/ObtenerDisponibilidadHoraria'
+import { ActualizarCeldaDisponibilidad } from '../../application/useCases/ActualizarCeldaDisponibilidad'
+import { GuardarDisponibilidadHoraria } from '../../application/useCases/GuardarDisponibilidadHoraria'
+import { ObtenerProfesorActivo } from '../../application/useCases/ObtenerProfesorActivo'
 
 export const TERM_ACTIVO = '202615'
 
