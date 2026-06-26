@@ -1,11 +1,7 @@
-import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria'
-import type { DisponibilidadRepository } from '../../application/ports/DisponibilidadRepository'
-import { disponibilidadMock } from './mockDisponibilidad'
+import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria.js'
+import type { DisponibilidadRepository } from '../../application/ports/DisponibilidadRepository.js'
+import { mockDisponibilidad } from './mockDisponibilidad.js'
 
-/**
- * Repositorio en memoria. Mantiene un mapa por clave `cedula|codTerm` que
- * permite almacenar y recuperar la disponibilidad por profesor y término.
- */
 export class MockDisponibilidadRepository implements DisponibilidadRepository {
   private readonly almacen = new Map<string, DisponibilidadHoraria[]>()
 
@@ -17,11 +13,9 @@ export class MockDisponibilidadRepository implements DisponibilidadRepository {
       return existente
     }
 
-    const registrosBase = disponibilidadMock.filter(
+    return mockDisponibilidad.filter(
       (registro) => registro.cedulaProfesor === cedulaProfesor && registro.codTerm === codTerm
     )
-
-    return registrosBase
   }
 
   async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
