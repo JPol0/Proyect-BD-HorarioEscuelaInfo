@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { type CreateTermInput } from '../../core/application/ports/TermRepository'
+import { type CreateTermInput } from '../../../core/application/ports/TermRepository'
 
 interface TermModalProps {
   onClose: () => void

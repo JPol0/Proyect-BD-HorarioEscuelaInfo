@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Card, Button, Select, TextArea, ListBox } from '@heroui/react'
 import { FloppyDisk } from '@gravity-ui/icons'
-import { type Alerta, type EstadoAlerta } from '../../core/domain/Alarm'
+import { type Alerta, type EstadoAlerta } from '../../../core/domain/Alarm'
 
 interface AlertCardProps {
   alerta: Alerta
