@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express'
-import { type GetAlertPending } from '../../../application/useCases/GetAlertPending.js'
-import { type SaveAlertState } from '../../../application/useCases/SaveAlertState.js'
+import { type GetAlertPending } from '../../../application/useCases/useCasesAlerts/GetAlertPending.js'
+import { type SaveAlertState } from '../../../application/useCases/useCasesAlerts/SaveAlertState.js'
 import { type AlertState } from '../../../domain/Alert.js'
 
 export class AlertController {

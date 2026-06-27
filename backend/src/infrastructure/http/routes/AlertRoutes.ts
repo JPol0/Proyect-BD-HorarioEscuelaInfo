@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { MockAlertRepository } from '../../database/MockAlertRepository.js'
-import { GetAlertPending } from '../../../application/useCases/GetAlertPending.js'
-import { SaveAlertState } from '../../../application/useCases/SaveAlertState.js'
+import { GetAlertPending } from '../../../application/useCases/useCasesAlerts/GetAlertPending.js'
+import { SaveAlertState } from '../../../application/useCases/useCasesAlerts/SaveAlertState.js'
 import { AlertController } from '../controllers/AlertController.js'
 
 const router = Router()
