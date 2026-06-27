@@ -13,18 +13,27 @@ const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
-function formatPeriodo(startDate: string, endDate: string): string {
+function formatPeriodo (startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
-    '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr',
-    '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago',
-    '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic'
+    '01': 'Ene',
+    '02': 'Feb',
+    '03': 'Mar',
+    '04': 'Abr',
+    '05': 'May',
+    '06': 'Jun',
+    '07': 'Jul',
+    '08': 'Ago',
+    '09': 'Sep',
+    10: 'Oct',
+    11: 'Nov',
+    12: 'Dic'
   }
   const [startYear, startMonth] = startDate.split('-')
   const [endYear, endMonth] = endDate.split('-')
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage() {
+export default function TermsPage () {
   const [terms, setTerms] = useState<Term[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -105,7 +114,7 @@ export default function TermsPage() {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-        )
+          )
         : (
           <>
             {/* Sección: Terms Activos (si existen) */}
@@ -126,13 +135,13 @@ export default function TermsPage() {
               {termsArchivados.length === 0
                 ? (
                   <p className="text-slate-400 text-sm italic font-hanken">No hay términos archivados que mostrar.</p>
-                )
+                  )
                 : (
                   <TermsTable terms={termsArchivados} />
-                )}
+                  )}
             </section>
           </>
-        )}
+          )}
 
       {/* Modal */}
       {showModal && (
@@ -150,7 +159,7 @@ interface TermsTableProps {
   terms: Term[]
 }
 
-function TermsTable({ terms }: TermsTableProps) {
+function TermsTable ({ terms }: TermsTableProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}

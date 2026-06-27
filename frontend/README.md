@@ -4,16 +4,16 @@ Aplicación web para la gestión de horarios académicos, términos y alertas de
 
 ## Stack Tecnológico
 
-| Herramienta | Versión |
-|-------------|---------|
-| React | 19 |
-| TypeScript | ~6.0 |
-| Vite | ^8.0 |
-| Tailwind CSS | 4.3 |
-| HeroUI | 3.1 |
-| Icons | @gravity-ui/icons |
-| Linter | ESLint + standard-with-typescript |
-| Gestor de paquetes | pnpm (monorepo) |
+| Herramienta        | Versión                           |
+| ------------------ | --------------------------------- |
+| React              | 19                                |
+| TypeScript         | ~6.0                              |
+| Vite               | ^8.0                              |
+| Tailwind CSS       | 4.3                               |
+| HeroUI             | 3.1                               |
+| Icons              | @gravity-ui/icons                 |
+| Linter             | ESLint + standard-with-typescript |
+| Gestor de paquetes | pnpm (monorepo)                   |
 
 ## Arquitectura
 
@@ -44,11 +44,11 @@ El frontend sigue una **arquitectura hexagonal (clean architecture)** con tres c
 
 Entidades y tipos puros de TypeScript, sin dependencias externas.
 
-| Archivo | Exporta |
-|---------|---------|
-| `Term.ts` | `Term` — `{ id, name, startDate, endDate, archived }` |
-| `Alarm.ts` | `Alerta`, `EstadoAlerta` — `{ id, titulo, estado, descripcion?, motivoCambio? }` |
-| `WeeklySchedule.ts` | `WeeklySchedule`, `DaysOfWeek`, `ScheduleRow` — estructura del horario semanal |
+| Archivo             | Exporta                                                                          |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `Term.ts`           | `Term` — `{ id, name, startDate, endDate, archived }`                            |
+| `Alarm.ts`          | `Alerta`, `EstadoAlerta` — `{ id, titulo, estado, descripcion?, motivoCambio? }` |
+| `WeeklySchedule.ts` | `WeeklySchedule`, `DaysOfWeek`, `ScheduleRow` — estructura del horario semanal   |
 
 #### 2. Aplicación (`core/application/`)
 
@@ -56,22 +56,22 @@ Contiene **puertos** (interfaces que definen el contrato con el mundo exterior) 
 
 **Puertos (`ports/`):**
 
-| Puerto | Métodos |
-|--------|---------|
-| `TermRepository` | `getTerms()`, `createTerm(input)`, `toggleArchive(id, archived)` |
-| `AlertRepository` | `getAlarmsPending()`, `saveEstate(id, estado, motivo?)` |
-| `WeeklyScheduleRepository` | `getScheduleByTerm(term)` |
+| Puerto                     | Métodos                                                          |
+| -------------------------- | ---------------------------------------------------------------- |
+| `TermRepository`           | `getTerms()`, `createTerm(input)`, `toggleArchive(id, archived)` |
+| `AlertRepository`          | `getAlarmsPending()`, `saveEstate(id, estado, motivo?)`          |
+| `WeeklyScheduleRepository` | `getScheduleByTerm(term)`                                        |
 
 **Casos de uso (`useCases/`):**
 
-| Clase | `execute()` |
-|-------|-------------|
-| `GetTerms` | `(): Promise<Term[]>` |
-| `CreateTerm` | `(input: CreateTermInput): Promise<Term>` |
-| `ToggleTermArchive` | `(id, archived): Promise<void>` |
-| `ObtenerAlertasPendientes` | `(): Promise<Alerta[]>` |
-| `GuardarEstadoAlerta` | `(id, estado, motivo?): Promise<void>` |
-| `GetWeeklySchedule` | `(term: string): Promise<WeeklySchedule>` |
+| Clase                      | `execute()`                               |
+| -------------------------- | ----------------------------------------- |
+| `GetTerms`                 | `(): Promise<Term[]>`                     |
+| `CreateTerm`               | `(input: CreateTermInput): Promise<Term>` |
+| `ToggleTermArchive`        | `(id, archived): Promise<void>`           |
+| `ObtenerAlertasPendientes` | `(): Promise<Alerta[]>`                   |
+| `GuardarEstadoAlerta`      | `(id, estado, motivo?): Promise<void>`    |
+| `GetWeeklySchedule`        | `(term: string): Promise<WeeklySchedule>` |
 
 Cada caso de uso recibe su repositorio por constructor (inyección de dependencias manual).
 
@@ -79,11 +79,11 @@ Cada caso de uso recibe su repositorio por constructor (inyección de dependenci
 
 Implementaciones concretas de los puertos usando `fetch()` contra la API REST del backend.
 
-| Adaptador | Implementa | Endpoint base |
-|-----------|------------|---------------|
-| `HttpTermRepository` | `TermRepository` | `http://localhost:3000/api/terms` |
-| `HttpAlertRepository` | `AlertRepository` | `http://localhost:3000/api/alerts` |
-| `ApiWeeklyScheduleRepository` | `WeeklyScheduleRepository` | `http://localhost:3000/api` |
+| Adaptador                     | Implementa                 | Endpoint base                      |
+| ----------------------------- | -------------------------- | ---------------------------------- |
+| `HttpTermRepository`          | `TermRepository`           | `http://localhost:3000/api/terms`  |
+| `HttpAlertRepository`         | `AlertRepository`          | `http://localhost:3000/api/alerts` |
+| `ApiWeeklyScheduleRepository` | `WeeklyScheduleRepository` | `http://localhost:3000/api`        |
 
 #### 4. UI (`ui/`)
 
@@ -132,13 +132,13 @@ TermsPage
 
 ## Scripts
 
-| Comando | Descripción |
-|---------|-------------|
-| `pnpm dev` | Inicia servidor de desarrollo (Vite) |
-| `pnpm build` | TypeScript check + build de producción |
-| `pnpm preview` | Sirve build de producción localmente |
-| `pnpm lint` | ESLint sobre archivos `.ts,.tsx` |
-| `pnpm lint:fix` | ESLint con auto-fix |
+| Comando         | Descripción                            |
+| --------------- | -------------------------------------- |
+| `pnpm dev`      | Inicia servidor de desarrollo (Vite)   |
+| `pnpm build`    | TypeScript check + build de producción |
+| `pnpm preview`  | Sirve build de producción localmente   |
+| `pnpm lint`     | ESLint sobre archivos `.ts,.tsx`       |
+| `pnpm lint:fix` | ESLint con auto-fix                    |
 
 ## Requisitos
 
@@ -153,5 +153,3 @@ TermsPage
 pnpm install
 pnpm --filter frontend dev
 ```
-
-El frontend asume que el backend está disponible en `http://localhost:3000/api`. Esta URL está hardcodeada en los adaptadores de infraestructura.

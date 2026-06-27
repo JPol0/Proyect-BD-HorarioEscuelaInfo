@@ -131,11 +131,13 @@ export default function WeeklySchedulePage () {
       )}
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        {loading ? (
+        {loading
+          ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-3 border-border border-t-primary rounded-full animate-spin" />
           </div>
-        ) : (
+            )
+          : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[760px]">
               <thead>
@@ -177,7 +179,7 @@ export default function WeeklySchedulePage () {
               </tbody>
             </table>
           </div>
-        )}
+            )}
       </div>
     </div>
   )
