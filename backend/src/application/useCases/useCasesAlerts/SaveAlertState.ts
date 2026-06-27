@@ -1,5 +1,5 @@
-import { type AlertState } from '../../domain/Alert.js'
-import { type AlertRepository } from '../ports/AlertRepository.js'
+import { type AlertState } from '../../../domain/Alert.js'
+import { type AlertRepository } from '../../ports/AlertRepository.js'
 
 export class SaveAlertState {
   private readonly repository: AlertRepository
