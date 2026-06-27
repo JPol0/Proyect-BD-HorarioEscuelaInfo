@@ -1,8 +1,9 @@
 import { type TermRepository, type CreateTermInput } from '../../application/ports/TermRepository'
 import { type Term } from '../../domain/Term'
+import { API_CONFIG } from '../config/api'
 
 export class HttpTermRepository implements TermRepository {
-  private readonly apiUrl = 'http://localhost:3000/api/terms'
+  private readonly apiUrl = `${API_CONFIG.BASE_URL}/terms`
 
   async getTerms (): Promise<Term[]> {
     const response = await fetch(this.apiUrl)

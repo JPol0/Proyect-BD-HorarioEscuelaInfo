@@ -1,8 +1,9 @@
 import { type AlertRepository } from '../../application/ports/AlertRepository'
 import { type Alerta, type EstadoAlerta } from '../../domain/Alarm'
+import { API_CONFIG } from '../config/api'
 
 export class HttpAlertRepository implements AlertRepository {
-  private readonly apiUrl = 'http://localhost:3000/api/alerts'
+  private readonly apiUrl = `${API_CONFIG.BASE_URL}/alerts`
 
   async getAlarmsPending (): Promise<Alerta[]> {
     const response = await fetch(`${this.apiUrl}/pendings`)

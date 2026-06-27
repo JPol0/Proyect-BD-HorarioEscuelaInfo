@@ -14,7 +14,8 @@
     "@heroui/react": "3.1.0",
     "@heroui/styles": "3.1.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "7.18.0"
   },
   "devDependencies": {
     "@gravity-ui/icons": "2.18.0",
