@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { HttpTermRepository } from '../../core/infrastructure/adapters/HttpTermRepository'
-import { GetTerms } from '../../core/application/useCases/GetTerms'
-import { CreateTerm } from '../../core/application/useCases/CreateTerm'
+import { GetTerms } from '../../core/application/useCases/useCasesTerm/GetTerms'
+import { CreateTerm } from '../../core/application/useCases/useCasesTerm/CreateTerm'
 import { type Term } from '../../core/domain/Term'
 import { type CreateTermInput } from '../../core/application/ports/TermRepository'
 import Title from '../components/TitlePage'
-import TermModal from '../components/TermModal'
+import TermModal from '../components/TermScreen/TermModal'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()

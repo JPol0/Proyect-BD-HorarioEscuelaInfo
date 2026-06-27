@@ -1,5 +1,5 @@
-import type { WeeklyScheduleRepository } from '../ports/WeeklyScheduleRepository'
-import type { WeeklySchedule } from '../../domain/WeeklySchedule'
+import type { WeeklyScheduleRepository } from '../../ports/WeeklyScheduleRepository'
+import type { WeeklySchedule } from '../../../domain/WeeklySchedule'
 
 export class GetWeeklySchedule {
   private readonly repository: WeeklyScheduleRepository

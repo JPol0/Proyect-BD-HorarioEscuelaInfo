@@ -21,9 +21,9 @@ interface NavItemEnabled extends NavItemBase {
 type NavItem = NavItemDisabled | NavItemEnabled
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'materias', label: 'Materias', icon: '📓', disponible: false },
   { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: false },
   { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: false },
+  { id: 'materias', label: 'Materias', icon: '📓', disponible: true, path: '/materias' },
   { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: true, path: '/horarios' },
   { id: 'peligros', label: 'Peligros', icon: '⚠️', disponible: true, path: '/peligros' },
   { id: 'terms', label: 'Seleccionar Term', icon: '🗓️', disponible: true, path: '/terms' }

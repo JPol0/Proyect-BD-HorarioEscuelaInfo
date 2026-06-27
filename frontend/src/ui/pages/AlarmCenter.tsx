@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAlertRepository'
-import { ObtenerAlertasPendientes } from '../../core/application/useCases/GetAlarmsPending'
-import { GuardarEstadoAlerta } from '../../core/application/useCases/saveAlarmsState'
+import { ObtenerAlertasPendientes } from '../../core/application/useCases/useCasesAlarm/GetAlarmsPending'
+import { GuardarEstadoAlerta } from '../../core/application/useCases/useCasesAlarm/saveAlarmsState'
 import { type Alerta, type EstadoAlerta } from '../../core/domain/Alarm'
-import { AlertCard } from '../components/AlertCard'
+import { AlertCard } from '../components/AlertScreen/AlertCard'
 import Title from '../components/TitlePage'
 
 // Instanciación manual de dependencias

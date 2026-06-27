@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { WeeklySchedule } from '../../core/domain/WeeklySchedule'
-import { GetWeeklySchedule } from '../../core/application/useCases/GetWeeklySchedule'
+import { GetWeeklySchedule } from '../../core/application/useCases/useCasesWeeklySchedule/GetWeeklySchedule'
 import { ApiWeeklyScheduleRepository } from '../../core/infrastructure/adapters/ApiWeeklyScheduleRepository'
 
 const repository = new ApiWeeklyScheduleRepository()

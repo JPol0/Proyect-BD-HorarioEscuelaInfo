@@ -1,5 +1,5 @@
-import { type Alerta } from '../../domain/Alarm'
-import { type AlertRepository } from '../ports/AlertRepository'
+import { type Alerta } from '../../../domain/Alarm'
+import { type AlertRepository } from '../../ports/AlertRepository'
 
 export class ObtenerAlertasPendientes {
   private readonly repository: AlertRepository
