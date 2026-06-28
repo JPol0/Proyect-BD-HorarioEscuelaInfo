@@ -75,8 +75,8 @@ export default function TermsPage () {
       {/* Header: Título + Botones */}
       <div className="flex items-start justify-between mb-2">
         <Title
-          title="TERMS ACADEMICOS"
-          subtitle="Selecciona un term para ver su horario o crea un nuevo term para configurar su horario."
+          title="Términos Académicos"
+          subtitle="Selecciona un término para ver su horario o crea un nuevo término para configurar su horario."
         />
         <div className="flex items-center gap-3 shrink-0 mt-1">
           {/* Botón Filter */}
@@ -121,7 +121,7 @@ export default function TermsPage () {
             {termsActivos.length > 0 && (
               <section className="mb-8">
                 <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4">
-                  <span>📅</span> Terms Activos
+                  <span>📅</span> Términos Activos
                 </h2>
                 <TermsTable terms={termsActivos} />
               </section>
@@ -130,7 +130,7 @@ export default function TermsPage () {
             {/* Sección: Terms Archivados */}
             <section>
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4 border-t border-slate-100 pt-6">
-                <span>🗄</span> Terms Archivados
+                <span>🗄</span> Términos Archivados
               </h2>
               {termsArchivados.length === 0
                 ? (
@@ -164,7 +164,7 @@ function TermsTable ({ terms }: TermsTableProps) {
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}
       <div className="grid grid-cols-[1fr_220px] px-6 py-3 bg-white border-b border-slate-100">
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Term</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Término</span>
         <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
       </div>
 
