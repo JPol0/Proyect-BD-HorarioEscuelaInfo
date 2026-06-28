@@ -1,13 +1,13 @@
-import { type TermRepository } from '../ports/TermRepository'
+import { type TermRepository } from '../../ports/TermRepository'
 
 export class ToggleTermArchive {
   private readonly repository: TermRepository
 
-  constructor (repository: TermRepository) {
+  constructor(repository: TermRepository) {
     this.repository = repository
   }
 
-  async execute (id: string, archived: boolean): Promise<void> {
+  async execute(id: string, archived: boolean): Promise<void> {
     await this.repository.toggleArchive(id, archived)
   }
 }

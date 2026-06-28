@@ -1,17 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { WeeklySchedule } from '../../core/domain/WeeklySchedule'
 import { GetWeeklySchedule } from '../../core/application/useCases/useCasesWeeklySchedule/GetWeeklySchedule'
 import { ApiWeeklyScheduleRepository } from '../../core/infrastructure/adapters/ApiWeeklyScheduleRepository'
+import { useActiveTerm } from '../contexts/ActiveTermContext'
 
 const repository = new ApiWeeklyScheduleRepository()
 const getWeeklyScheduleUseCase = new GetWeeklySchedule(repository)
 
 export default function WeeklySchedulePage () {
+  const navigate = useNavigate()
+  const { activeTerm } = useActiveTerm()
+
   const [data, setData] = useState<WeeklySchedule | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [periodId, setPeriodId] = useState('')
-  const [selectedTerm, setSelectedTerm] = useState('2026-15')
+  // Usamos el id del term activo como punto de partida; cuando el backend real
+  // esté conectado, este id se enviará directamente para consultar la BD.
+  const [selectedTerm, setSelectedTerm] = useState(activeTerm?.id ?? '')
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -42,6 +49,26 @@ export default function WeeklySchedulePage () {
 
   return (
     <div className="px-10 py-9 max-w-[1200px]">
+      {/* Banner: si no hay term activo, pedimos que seleccione uno */}
+      {activeTerm === null && (
+        <div className="mb-6 flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <span className="text-amber-500 text-lg">⚠️</span>
+          <div>
+            <p className="text-sm font-semibold text-amber-800 font-hanken">No hay ningún Term seleccionado</p>
+            <p className="text-xs text-amber-700 font-hanken mt-0.5">
+              Ve a{' '}
+              <button
+                className="underline font-semibold"
+                onClick={() => { void navigate('/terms') }}
+              >
+                Seleccionar Term
+              </button>
+              {' '}para establecer el periodo académico de trabajo.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-6 mb-7">
         <div>
           <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#2a6eea] block mb-6">

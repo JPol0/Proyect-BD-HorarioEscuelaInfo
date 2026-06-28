@@ -1,19 +1,23 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { HttpTermRepository } from '../../core/infrastructure/adapters/HttpTermRepository'
 import { GetTerms } from '../../core/application/useCases/useCasesTerm/GetTerms'
 import { CreateTerm } from '../../core/application/useCases/useCasesTerm/CreateTerm'
+import { ToggleTermArchive } from '../../core/application/useCases/useCasesTerm/ToggleTermArchive'
 import { type Term } from '../../core/domain/Term'
 import { type CreateTermInput } from '../../core/application/ports/TermRepository'
 import Title from '../components/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
+import { useActiveTerm } from '../contexts/ActiveTermContext'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
 const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
+const toggleArchiveUseCase = new ToggleTermArchive(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
-function formatPeriodo (startDate: string, endDate: string): string {
+function formatPeriodo(startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
     '02': 'Feb',
@@ -33,12 +37,16 @@ function formatPeriodo (startDate: string, endDate: string): string {
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage () {
+export default function TermsPage() {
+  const navigate = useNavigate()
+  const { activeTerm, setActiveTerm } = useActiveTerm()
+
   const [terms, setTerms] = useState<Term[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'activos' | 'archivados'>('todos')
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   const cargarTerms = async () => {
     try {
@@ -61,6 +69,25 @@ export default function TermsPage () {
     await cargarTerms()
   }
 
+  // Cambia el estado archivado del término y recarga la lista
+  const handleToggleArchive = async (e: React.MouseEvent, term: Term) => {
+    e.stopPropagation() // Evita disparar el onClick de la fila (selección)
+    setTogglingId(term.id)
+    try {
+      await toggleArchiveUseCase.execute(term.id, !term.archived)
+      await cargarTerms()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al cambiar el estado del término')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  // Selecciona el término activo
+  const handleSelectTerm = (term: Term) => {
+    setActiveTerm(term)
+  }
+
   const termsVisibles = terms.filter((t) => {
     if (filtroActivo === 'activos') return !t.archived
     if (filtroActivo === 'archivados') return t.archived
@@ -75,8 +102,8 @@ export default function TermsPage () {
       {/* Header: Título + Botones */}
       <div className="flex items-start justify-between mb-2">
         <Title
-          title="Términos Académicos"
-          subtitle="Selecciona un término para ver su horario o crea un nuevo término para configurar su horario."
+          title="Terms Academicos"
+          subtitle="Selecciona un term para trabajar sobre él, o crea un nuevo term para configurar su horario."
         />
         <div className="flex items-center gap-3 shrink-0 mt-1">
           {/* Botón Filter */}
@@ -114,34 +141,46 @@ export default function TermsPage () {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-          )
+        )
         : (
           <>
-            {/* Sección: Terms Activos (si existen) */}
+            {/* Sección: Terms Activos */}
             {termsActivos.length > 0 && (
               <section className="mb-8">
                 <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4">
-                  <span>📅</span> Términos Activos
+                  <span>📅</span> Terms Activos
                 </h2>
-                <TermsTable terms={termsActivos} />
+                <TermsTable
+                  terms={termsActivos}
+                  activeTermId={activeTerm?.id ?? null}
+                  togglingId={togglingId}
+                  onSelect={handleSelectTerm}
+                  onToggleArchive={handleToggleArchive}
+                />
               </section>
             )}
 
             {/* Sección: Terms Archivados */}
             <section>
               <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4 border-t border-slate-100 pt-6">
-                <span>🗄</span> Términos Archivados
+                <span>🗄</span> Terms Archivados
               </h2>
               {termsArchivados.length === 0
                 ? (
                   <p className="text-slate-400 text-sm italic font-hanken">No hay términos archivados que mostrar.</p>
-                  )
+                )
                 : (
-                  <TermsTable terms={termsArchivados} />
-                  )}
+                  <TermsTable
+                    terms={termsArchivados}
+                    activeTermId={activeTerm?.id ?? null}
+                    togglingId={togglingId}
+                    onSelect={handleSelectTerm}
+                    onToggleArchive={handleToggleArchive}
+                  />
+                )}
             </section>
           </>
-          )}
+        )}
 
       {/* Modal */}
       {showModal && (
@@ -157,29 +196,75 @@ export default function TermsPage () {
 // Sub-componente: tabla de terms (reutilizable para activos y archivados)
 interface TermsTableProps {
   terms: Term[]
+  activeTermId: string | null
+  togglingId: string | null
+  onSelect: (term: Term) => void
+  onToggleArchive: (e: React.MouseEvent, term: Term) => void
 }
 
-function TermsTable ({ terms }: TermsTableProps) {
+function TermsTable({ terms, activeTermId, togglingId, onSelect, onToggleArchive }: TermsTableProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}
-      <div className="grid grid-cols-[1fr_220px] px-6 py-3 bg-white border-b border-slate-100">
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Término</span>
+      <div className="grid grid-cols-[1fr_220px_120px] px-6 py-3 bg-white border-b border-slate-100">
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Term</span>
         <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">Acción</span>
       </div>
 
       {/* Filas */}
-      {terms.map((term, index) => (
-        <div
-          key={term.id}
-          className={`grid grid-cols-[1fr_220px] px-6 py-4 items-center hover:bg-slate-50 transition-colors cursor-pointer ${index !== 0 ? 'border-t border-slate-50' : ''}`}
-        >
-          <span className="text-sm font-semibold text-slate-800 font-hanken">{term.name}</span>
-          <span className="text-sm text-slate-400 font-hanken tracking-wide">
-            {formatPeriodo(term.startDate, term.endDate)}
-          </span>
-        </div>
-      ))}
+      {terms.map((term, index) => {
+        const isActive = term.id === activeTermId
+        return (
+          <div
+            key={term.id}
+            onClick={() => { onSelect(term) }}
+            className={[
+              'grid grid-cols-[1fr_220px_120px] px-6 py-4 items-center transition-colors cursor-pointer',
+              index !== 0 ? 'border-t border-slate-50' : '',
+              isActive
+                ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
+                : 'hover:bg-slate-50'
+            ].join(' ')}
+          >
+            {/* Nombre del term + badge "Activo" */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-800 font-hanken">{term.name}</span>
+              {isActive && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5">
+                  ✓ Trabajando
+                </span>
+              )}
+            </div>
+
+            {/* Periodo */}
+            <span className="text-sm text-slate-400 font-hanken tracking-wide">
+              {formatPeriodo(term.startDate, term.endDate)}
+            </span>
+
+            {/* Botón Archivar / Desarchivar */}
+            <div className="flex justify-end">
+              <button
+                onClick={(e) => { void onToggleArchive(e, term) }}
+                disabled={togglingId === term.id}
+                className={[
+                  'text-xs font-semibold px-3 py-1.5 rounded-lg transition font-hanken',
+                  term.archived
+                    ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                  togglingId === term.id ? 'opacity-50 cursor-not-allowed' : ''
+                ].join(' ')}
+              >
+                {togglingId === term.id
+                  ? '...'
+                  : term.archived
+                    ? 'Desarchivar'
+                    : 'Archivar'}
+              </button>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
