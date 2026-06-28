@@ -8,7 +8,7 @@ import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/Ge
 import { SaveMateria } from '../../core/application/useCases/useCasesMaterias/SaveMateria'
 import { type Materia } from '../../core/domain/Materia'
 
-import { getByCodigo, calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
+import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
 import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
@@ -58,27 +58,21 @@ export function MateriasPage () {
     void cargarMaterias()
   }, [])
 
-  const handleUpdateSecciones = (codMateria: string, delta: number) => {
+  const handleSaveMateria = async (materiaActualizada: Materia) => {
+    // 1. Respaldamos el estado actual por si ocurre un error (Rollback)
+    const estadoPrevio = [...materias]
+
+    // 2. ACTUALIZACIÓN OPTIMISTA: Modificamos la UI de inmediato en memoria
     setMaterias((prev) =>
-      prev.map((m) => {
-        if (m.codMateria === codMateria) {
-          const nuevoNro = Math.max(0, m.nroSecciones + delta)
-          return { ...m, nroSecciones: nuevoNro }
-        }
-        return m
-      })
+      prev.map((m) => m.codMateria === materiaActualizada.codMateria ? materiaActualizada : m)
     )
-  }
-
-  const handleSaveMateria = async (materia: Materia) => {
     try {
-      const verificacion = getByCodigo(materias, materia.codMateria)
-      if (verificacion === undefined) throw new Error('La materia no existe en el catálogo local')
-
-      await saveMateriaUseCase.execute(materia)
-      alert(`Materia "${materia.nombre}" guardada correctamente.`)
+    // 3. Enviamos al backend en segundo plano (SIN cambiar el estado 'loading' global)
+      await saveMateriaUseCase.execute(materiaActualizada)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'No se pudo guardar la materia')
+    // 4. Si el backend falla, restauramos el estado anterior y avisamos al usuario
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudieron guardar los cambios en el servidor')
     }
   }
 
@@ -97,7 +91,7 @@ export function MateriasPage () {
   }
 
   // --- Lógica del Estado Derivado ---
-  // 👇 Usamos la función pura para calcular dinámicamente los semestres
+  // Usamos la función pura para calcular dinámicamente los semestres
   const semestreMaximo = calcularSemestreMaximo(materias)
   const opcionesSemestres = Array.from({ length: semestreMaximo }, (_, i) => i + 1)
 
@@ -195,8 +189,7 @@ export function MateriasPage () {
             <MateriaCard
               key={materia.codMateria}
               materia={materia}
-              onUpdateSecciones={handleUpdateSecciones}
-              onSave={handleSaveMateria}
+              onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
             />
           ))}
         </div>

@@ -1,32 +1,21 @@
-import { Card, Button } from '@heroui/react'
-import { Minus, Plus, Pencil, PersonPlus, Clock } from '@gravity-ui/icons'
+import { Card, Button, Modal } from '@heroui/react'
+import { Minus, Plus, Magnifier, PersonPlus, Clock } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
+import { MateriaConsultarModal } from './MateriaConsultarModal'
 
 interface MateriaCardProps {
   materia: Materia
-  onUpdateSecciones: (codMateria: string, delta: number) => void
-  onSave?: (materia: Materia) => void
-  onEdit?: (materia: Materia) => void
+  onSave: (materia: Materia) => void
   onManageTeachers?: (materia: Materia) => void
   onAssignHours?: (materia: Materia) => void
 }
 
 export function MateriaCard ({
   materia,
-  onUpdateSecciones,
   onSave,
-  onEdit,
   onManageTeachers,
   onAssignHours
 }: MateriaCardProps) {
-  const handleEditClick = () => {
-    if (onEdit) {
-      onEdit(materia)
-    } else if (onSave) {
-      onSave(materia)
-    }
-  }
-
   return (
     <Card className="w-full bg-white border border-slate-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-md transition-all duration-200 rounded-xl h-full flex flex-col">
 
@@ -53,7 +42,10 @@ export function MateriaCard ({
             <button
               type="button"
               disabled={materia.nroSecciones <= 0}
-              onClick={() => onUpdateSecciones(materia.codMateria, -1)}
+              onClick={() => {
+                const nuevoNro = Math.max(0, materia.nroSecciones - 1)
+                onSave({ ...materia, nroSecciones: nuevoNro }) // 👈 Despacha directo al back
+              }}
               className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
             >
               <Minus className="w-3.5 h-3.5" />
@@ -65,7 +57,9 @@ export function MateriaCard ({
 
             <button
               type="button"
-              onClick={() => onUpdateSecciones(materia.codMateria, 1)}
+              onClick={() => {
+                onSave({ ...materia, nroSecciones: materia.nroSecciones + 1 }) // 👈 Despacha directo al back
+              }}
               className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -79,14 +73,22 @@ export function MateriaCard ({
 
         {/* Botones Secundarios: Iconos pasados directamente como children */}
         <div className="grid grid-cols-2 gap-2 w-full">
-          <Button
-            variant="secondary"
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
-            onPress={handleEditClick}
-          >
-            <Pencil className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            Editar
-          </Button>
+          <Modal>
+            {/* El primer botón dentro del Modal se convierte en el disparador (trigger) automáticamente */}
+            <Button
+              variant="secondary"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
+            >
+              <Magnifier className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              Consultar
+            </Button>
+
+            {/* El contenido del modal se renderiza aquí y recibe la función onSave de forma segura para evitar problemas de linter con promesas */}
+            <MateriaConsultarModal
+              materia={materia}
+              onSave={(materiaActualizada) => { if (onSave) void onSave(materiaActualizada) }}
+            />
+          </Modal>
 
           <Button
             variant="secondary"
