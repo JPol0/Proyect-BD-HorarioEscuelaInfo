@@ -1,5 +1,5 @@
-import { type Term } from '../../domain/Term.js'
-import { type TermRepository } from '../ports/TermRepository.js'
+import { type Term } from '../../../domain/Term'
+import { type TermRepository } from '../../ports/TermRepository'
 
 export class GetTerms {
   private readonly repository: TermRepository

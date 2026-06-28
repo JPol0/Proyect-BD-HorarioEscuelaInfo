@@ -1,5 +1,5 @@
-import { type Alert } from '../../domain/Alert.js'
-import { type AlertRepository } from '../ports/AlertRepository.js'
+import { type Alert } from '../../../domain/Alert.js'
+import { type AlertRepository } from '../../ports/AlertRepository.js'
 
 export class GetAlertPending {
   private readonly repository: AlertRepository

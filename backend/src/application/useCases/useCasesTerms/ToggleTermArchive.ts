@@ -1,4 +1,4 @@
-import { type TermRepository } from '../ports/TermRepository.js'
+import { type TermRepository } from '../../ports/TermRepository.js'
 
 export class ToggleTermArchive {
   private readonly repository: TermRepository
