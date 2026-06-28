@@ -6,27 +6,40 @@ import { Magnifier } from '@gravity-ui/icons'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
 import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/GetMaterias'
 import { SaveMateria } from '../../core/application/useCases/useCasesMaterias/SaveMateria'
-import { GetMateriaByCodigo } from '../../core/application/useCases/useCasesMaterias/GetMateriaByCodigo'
 import { type Materia } from '../../core/domain/Materia'
+
+import { getByCodigo, calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
 import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
-import Title from '../components/TitlePage' // Componente institucional integrado
+import Title from '../components/TitlePage'
 
-// Inyección manual de dependencias
+// Inyección manual de dependencias (Ya no instanciamos GetMateriaByCodigo)
 const repository = new HttpMateriaRepository()
 const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
-const getMateriaByCodigoUseCase = new GetMateriaByCodigo()
+
+// Helper para convertir números a romanos
+const convertirARomano = (num: number): string => {
+  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+  let resultado = ''
+  let valorRestante = num
+  for (const key in valoresRomanos) {
+    while (valorRestante >= valoresRomanos[key]) {
+      resultado += key
+      valorRestante -= valoresRomanos[key]
+    }
+  }
+  return resultado
+}
 
 export function MateriasPage () {
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Filtros locales
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [selectedSemestre, setSelectedSemestre] = useState<string>('todos') // Por defecto todos los semestres
+  const [selectedSemestre, setSelectedSemestre] = useState<string>('todos')
 
   const cargarMaterias = async () => {
     try {
@@ -49,7 +62,7 @@ export function MateriasPage () {
     setMaterias((prev) =>
       prev.map((m) => {
         if (m.codMateria === codMateria) {
-          const nuevoNro = Math.max(1, m.nroSecciones + delta)
+          const nuevoNro = Math.max(0, m.nroSecciones + delta)
           return { ...m, nroSecciones: nuevoNro }
         }
         return m
@@ -59,7 +72,7 @@ export function MateriasPage () {
 
   const handleSaveMateria = async (materia: Materia) => {
     try {
-      const verificacion = getMateriaByCodigoUseCase.execute(materias, materia.codMateria)
+      const verificacion = getByCodigo(materias, materia.codMateria)
       if (verificacion === undefined) throw new Error('La materia no existe en el catálogo local')
 
       await saveMateriaUseCase.execute(materia)
@@ -69,7 +82,6 @@ export function MateriasPage () {
     }
   }
 
-  // Filtrado local en memoria: Búsqueda por nombre + Semestre
   const materiasFiltradas = materias.filter((materia) => {
     const matchesSemestre = selectedSemestre === 'todos' || materia.semestre.toString() === selectedSemestre
     const matchesNombre = materia.nombre.toLowerCase().includes(searchQuery.toLowerCase())
@@ -77,26 +89,27 @@ export function MateriasPage () {
     return matchesSemestre && matchesNombre
   })
 
-  // Generar subtítulo dinámico según el filtro seleccionado
   const obtenerSubtitulo = () => {
     if (selectedSemestre === 'todos') {
       return 'Visualizando el catálogo completo de asignaturas de la escuela.'
     }
-    return `Gestionando las asignaturas correspondientes al Semestre ${selectedSemestre}.`
+    return `Gestionando las asignaturas correspondientes al Semestre ${convertirARomano(Number(selectedSemestre))}.`
   }
+
+  // --- Lógica del Estado Derivado ---
+  // 👇 Usamos la función pura para calcular dinámicamente los semestres
+  const semestreMaximo = calcularSemestreMaximo(materias)
+  const opcionesSemestres = Array.from({ length: semestreMaximo }, (_, i) => i + 1)
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Encabezado y Controles Principales */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 
-        {/* Uso del componente Title reutilizable */}
         <Title
           title="Gestión de Materias"
           subtitle={obtenerSubtitulo()}
         />
 
-        {/* Barra de Controles y Filtros */}
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
 
           {/* Selector de Semestre */}
@@ -105,12 +118,10 @@ export function MateriasPage () {
             <Select
               aria-label="Filtrar por semestre"
               placeholder="Seleccionar semestre"
-              variant="primary"
-              value={selectedSemestre}
-              onChange={(valor) => {
-                if (typeof valor === 'string' || typeof valor === 'number') {
-                  setSelectedSemestre(String(valor))
-                }
+              variant="primary" // <-- Corregido a 'primary' según tu documentación
+              value={selectedSemestre} // <-- Corregido a 'value'
+              onChange={(valor) => { // <-- Corregido a 'onChange'
+                if (valor) setSelectedSemestre(String(valor))
               }}
               className="w-full text-xs"
             >
@@ -119,26 +130,23 @@ export function MateriasPage () {
                 <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
               </Select.Trigger>
 
-              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[180px] z-50">
+              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
                 <ListBox>
                   <ListBox.Item id="todos" textValue="Todos los semestres" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
                     Todos los semestres
                   </ListBox.Item>
-                  <ListBox.Item id="1" textValue="Semestre I" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                    Semestre I
-                  </ListBox.Item>
-                  <ListBox.Item id="2" textValue="Semestre II" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                    Semestre II
-                  </ListBox.Item>
-                  <ListBox.Item id="3" textValue="Semestre III" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                    Semestre III
-                  </ListBox.Item>
-                  <ListBox.Item id="4" textValue="Semestre IV" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                    Semestre IV
-                  </ListBox.Item>
-                  <ListBox.Item id="5" textValue="Semestre V" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                    Semestre V
-                  </ListBox.Item>
+
+                  {/* --- Mapeo Dinámico --- */}
+                  {opcionesSemestres.map((semestre) => (
+                    <ListBox.Item
+                      key={semestre.toString()}
+                      id={semestre.toString()}
+                      textValue={`Semestre ${convertirARomano(semestre)}`}
+                      className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                    >
+                      Semestre {convertirARomano(semestre)}
+                    </ListBox.Item>
+                  ))}
                 </ListBox>
               </Select.Popover>
             </Select>
@@ -156,7 +164,7 @@ export function MateriasPage () {
                 placeholder="Buscar por nombre de materia..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                variant="primary"
+                variant="primary" // <-- Corregido a 'primary' según tu documentación
                 className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
@@ -165,7 +173,6 @@ export function MateriasPage () {
         </div>
       </div>
 
-      {/* Grid Dinámico de Contenido */}
       {loading
         ? (
         <div className="text-center py-12 text-slate-400 font-sans">Cargando catálogo de materias...</div>
@@ -179,7 +186,7 @@ export function MateriasPage () {
           : materiasFiltradas.length === 0
             ? (
         <div className="text-center py-12 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 font-sans">
-          No se encontraron materias bajo ese nombre.
+          No se encontraron materias bajo ese filtro.
         </div>
               )
             : (
