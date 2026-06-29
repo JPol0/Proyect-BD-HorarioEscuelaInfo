@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { WeeklySchedule } from '../../core/domain/WeeklySchedule'
 import { GetWeeklySchedule } from '../../core/application/useCases/useCasesWeeklySchedule/GetWeeklySchedule'
@@ -15,10 +15,10 @@ export default function WeeklySchedulePage () {
   const [data, setData] = useState<WeeklySchedule | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [periodId, setPeriodId] = useState('')
   // Usamos el id del term activo como punto de partida; cuando el backend real
   // esté conectado, este id se enviará directamente para consultar la BD.
-  const [selectedTerm, setSelectedTerm] = useState(activeTerm?.id ?? '')
+  const [selectedTerm] = useState(activeTerm?.id ?? '')
+  const [selectedSemester, setSelectedSemester] = useState<number>(1)
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -27,9 +27,6 @@ export default function WeeklySchedulePage () {
       try {
         const payload = await getWeeklyScheduleUseCase.execute(selectedTerm)
         setData(payload)
-        if (payload.periods.length > 0) {
-          setPeriodId(payload.periods[0].id)
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo conectar con el servidor.')
       } finally {
@@ -39,11 +36,6 @@ export default function WeeklySchedulePage () {
 
     void loadSchedule()
   }, [selectedTerm])
-
-  const periodOptions = useMemo(() => {
-    if (!data) return []
-    return data.periods
-  }, [data])
 
   const scheduleRows = data?.schedule ?? []
 
@@ -83,16 +75,48 @@ export default function WeeklySchedulePage () {
         </div>
 
         <div className="flex items-end gap-3 shrink-0">
+          <div className="min-w-[150px]">
+            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em]">
+              Semestre
+            </label>
+            <div className="relative mt-2">
+              <select
+                className="w-full h-12 appearance-none rounded-xl border border-slate-200 bg-white px-4 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
+                value={selectedSemester}
+                onChange={(event) => { setSelectedSemester(Number(event.target.value)) }}
+              >
+                {['1er', '2do', '3er', '4to', '5to', '6to', '7mo', '8vo'].map((label, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    {label} Semestre
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </div>
+          </div>
+
           <button
             type="button"
             className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-semibold shadow-sm transition-colors hover:bg-slate-50"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7h10M4 17h7M4 12h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="18" cy="7" r="2" stroke="currentColor" strokeWidth="1.8" />
-              <circle cx="14" cy="17" r="2" stroke="currentColor" strokeWidth="1.8" />
+              <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Filtros
+            Crear Horario
+          </button>
+
+          <button
+            type="button"
+            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-semibold shadow-sm transition-colors hover:bg-red-50"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Eliminar Horario
           </button>
           <button
             type="button"
