@@ -7,6 +7,7 @@ import { type CreateTermInput } from '../../core/application/ports/TermRepositor
 import Title from '../components/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
 import { useActiveTerm } from '../contexts/ActiveTermContext'
+import { useNavigate } from 'react-router-dom'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
@@ -36,6 +37,7 @@ function formatPeriodo(startDate: string, endDate: string): string {
 
 export default function TermsPage() {
   const { activeTerm, setActiveTerm } = useActiveTerm()
+  const navigate = useNavigate()
 
   const [terms, setTerms] = useState<Term[]>([])
   const [cargando, setCargando] = useState(true)
@@ -66,6 +68,7 @@ export default function TermsPage() {
   // Selecciona el término activo
   const handleSelectTerm = (term: Term) => {
     setActiveTerm(term)
+    void navigate('/horarios')
   }
 
   return (

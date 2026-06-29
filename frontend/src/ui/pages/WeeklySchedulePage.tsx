@@ -83,49 +83,6 @@ export default function WeeklySchedulePage () {
         </div>
 
         <div className="flex items-end gap-3 shrink-0">
-          <div className="min-w-[180px]">
-            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em]">
-              Semestre
-            </label>
-            <div className="relative mt-2">
-              <select
-                className="w-full h-12 appearance-none rounded-xl border border-slate-200 bg-white px-4 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                value={selectedTerm}
-                onChange={(event) => setSelectedTerm(event.target.value)}
-              >
-                <option value="2026-15">1er Semestre - 2026</option>
-                <option value="2026-20">2do Semestre - 2026</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="min-w-[210px]">
-            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em]">
-              Periodo
-            </label>
-            <div className="relative mt-2">
-              <select
-                className="w-full h-12 appearance-none rounded-xl border border-slate-200 bg-white px-4 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                value={periodId}
-                onChange={(event) => setPeriodId(event.target.value)}
-                disabled={periodOptions.length === 0}
-              >
-                <option value="" disabled>
-                  Seleccionar periodo
-                </option>
-                {periodOptions.map(period => (
-                  <option key={period.id} value={period.id}>
-                    {period.label}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </div>
-          </div>
           <button
             type="button"
             className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-semibold shadow-sm transition-colors hover:bg-slate-50"

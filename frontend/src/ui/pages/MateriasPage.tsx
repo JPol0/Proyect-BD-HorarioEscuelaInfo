@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Input, Select, ListBox } from '@heroui/react'
 import { Magnifier } from '@gravity-ui/icons'
+import { useNavigate } from 'react-router-dom'
 
 // Core Clean Architecture
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
@@ -34,6 +35,7 @@ const convertirARomano = (num: number): string => {
 }
 
 export function MateriasPage () {
+  const navigate = useNavigate()
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -190,6 +192,7 @@ export function MateriasPage () {
               key={materia.codMateria}
               materia={materia}
               onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
+              onAssignHours={() => { void navigate('/horarios') }}
             />
           ))}
         </div>
