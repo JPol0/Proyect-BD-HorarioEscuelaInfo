@@ -7,7 +7,6 @@ import { type CreateTermInput } from '../../core/application/ports/TermRepositor
 import Title from '../components/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
 import { useActiveTerm } from '../contexts/ActiveTermContext'
-import { useNavigate } from 'react-router-dom'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
@@ -15,7 +14,7 @@ const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
-function formatPeriodo(startDate: string, endDate: string): string {
+function formatPeriodo (startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
     '02': 'Feb',
@@ -35,9 +34,8 @@ function formatPeriodo(startDate: string, endDate: string): string {
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage() {
+export default function TermsPage () {
   const { activeTerm, setActiveTerm } = useActiveTerm()
-  const navigate = useNavigate()
 
   const [terms, setTerms] = useState<Term[]>([])
   const [cargando, setCargando] = useState(true)
@@ -68,7 +66,6 @@ export default function TermsPage() {
   // Selecciona el término activo
   const handleSelectTerm = (term: Term) => {
     setActiveTerm(term)
-    void navigate('/horarios')
   }
 
   return (
@@ -101,23 +98,25 @@ export default function TermsPage() {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-        )
+          )
         : (
           <section className="mb-8">
             <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4">
-              <span>📅</span> Términos Académicos
+              <span>📅</span> Terms Académicos
             </h2>
-            {terms.length === 0 ? (
+            {terms.length === 0
+              ? (
               <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
-            ) : (
+                )
+              : (
               <TermsTable
                 terms={terms}
                 activeTermId={activeTerm?.id ?? null}
                 onSelect={handleSelectTerm}
               />
-            )}
+                )}
           </section>
-        )}
+          )}
 
       {/* Modal */}
       {showModal && (
@@ -137,7 +136,7 @@ interface TermsTableProps {
   onSelect: (term: Term) => void
 }
 
-function TermsTable({ terms, activeTermId, onSelect }: TermsTableProps) {
+function TermsTable ({ terms, activeTermId, onSelect }: TermsTableProps) {
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}
