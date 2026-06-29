@@ -3,6 +3,7 @@ import Layout from './ui/components/Layout'
 import AlarmCenter from './ui/pages/AlarmCenter'
 import TermsPage from './ui/pages/TermsPage'
 import WeeklySchedulePage from './ui/pages/WeeklySchedulePage'
+import { DisponibilidadProfesorPage } from './ui/pages/DisponibilidadProfesorPage'
 import { MateriasPage } from './ui/pages/MateriasPage'
 
 function App () {
