@@ -23,7 +23,7 @@ type NavItem = NavItemDisabled | NavItemEnabled
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: false },
-  { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: false },
+  { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: true, path: '/laboratorios' },
   { id: 'materias', label: 'Materias', icon: '📓', disponible: true, path: '/materias' },
   { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: true, path: '/horarios' },
   { id: 'peligros', label: 'Peligros', icon: '⚠️', disponible: true, path: '/peligros' },

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { WeeklySchedule } from '../../core/domain/WeeklySchedule'
 import { GetWeeklySchedule } from '../../core/application/useCases/useCasesWeeklySchedule/GetWeeklySchedule'
@@ -15,10 +15,7 @@ export default function WeeklySchedulePage () {
   const [data, setData] = useState<WeeklySchedule | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [periodId, setPeriodId] = useState('')
-  // Usamos el id del term activo como punto de partida; cuando el backend real
-  // esté conectado, este id se enviará directamente para consultar la BD.
-  const [selectedTerm, setSelectedTerm] = useState(activeTerm?.id ?? '')
+  const [selectedTerm] = useState(activeTerm?.id ?? '')
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -28,7 +25,7 @@ export default function WeeklySchedulePage () {
         const payload = await getWeeklyScheduleUseCase.execute(selectedTerm)
         setData(payload)
         if (payload.periods.length > 0) {
-          setPeriodId(payload.periods[0].id)
+          // periodo inicial disponible: payload.periods[0]
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo conectar con el servidor.')
@@ -39,11 +36,6 @@ export default function WeeklySchedulePage () {
 
     void loadSchedule()
   }, [selectedTerm])
-
-  const periodOptions = useMemo(() => {
-    if (!data) return []
-    return data.periods
-  }, [data])
 
   const scheduleRows = data?.schedule ?? []
 
