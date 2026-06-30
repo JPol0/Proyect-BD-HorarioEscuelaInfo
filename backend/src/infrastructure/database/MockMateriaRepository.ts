@@ -12,7 +12,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 2,
     modalidad: 'PRE',
     esComun: true,
-    preReq: ['Calculo I']
+    preReq: ['Calculo I'],
+    laboratorioId: undefined
   },
   {
     codMateria: 'INF-202',
@@ -23,7 +24,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 2,
     modalidad: 'PRE',
     esComun: false,
-    preReq: ['Introduccion a la Informatica']
+    preReq: ['Introduccion a la Informatica'],
+    laboratorioId: undefined
   },
   {
     codMateria: 'INF-301',
@@ -34,7 +36,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 3,
     modalidad: 'PRE',
     esComun: false,
-    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta']
+    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta'],
+    laboratorioId: undefined
   }
 ]
 
@@ -42,7 +45,7 @@ export class MockMateriaRepository implements MateriaRepository {
   /**
    * Retorna todo el universo de materias en memoria.
    */
-  async getAll (): Promise<Materia[]> {
+  async getAll(): Promise<Materia[]> {
     return MOCK_MATERIAS
   }
 
@@ -50,7 +53,7 @@ export class MockMateriaRepository implements MateriaRepository {
    * Guarda una materia. Si ya existe el código lo actualiza (Upsert),
    * en caso contrario, registra la nueva entidad en el array.
    */
-  async save (materia: Materia): Promise<void> {
+  async save(materia: Materia): Promise<void> {
     const index = MOCK_MATERIAS.findIndex(
       (m) => m.codMateria === materia.codMateria
     )
