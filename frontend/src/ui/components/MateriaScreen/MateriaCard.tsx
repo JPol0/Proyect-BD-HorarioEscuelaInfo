@@ -3,15 +3,17 @@ import { Minus, Plus, Magnifier, PersonPlus, Clock } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
 import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
+import { MateriaHoraModal } from './MateriaHoraModal'
+import { type DaysOfWeek } from '../../../core/domain/Horario'
 
 interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
   onManageTeachers?: (materia: Materia) => void
-  onAssignHours?: (materia: Materia) => void
+  onAssignHours?: (materia: Materia, manualHours: { dia: DaysOfWeek, hora: string, cantidad: number }[]) => void
 }
 
-export function MateriaCard({
+export function MateriaCard ({
   materia,
   onSave,
   onManageTeachers,
@@ -115,15 +117,20 @@ export function MateriaCard({
             </Modal>
           )}
 
-          <Button
-            variant="secondary"
-            className={`bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 ${materia.horasLab === 0 ? 'col-span-2' : ''
-              }`}
-            onPress={() => onAssignHours?.(materia)}
-          >
-            <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            Asignar Horas
-          </Button>
+          <Modal>
+            <Button
+              variant="secondary"
+              className={`bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 ${materia.horasLab === 0 ? 'col-span-2' : ''
+                }`}
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              Asignar Horas
+            </Button>
+            <MateriaHoraModal 
+              materia={materia} 
+              onSave={(manualHours) => onAssignHours?.(materia, manualHours)} 
+            />
+          </Modal>
         </div>
 
       </Card.Footer>

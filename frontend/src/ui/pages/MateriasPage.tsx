@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
 import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/GetMaterias'
 import { SaveMateria } from '../../core/application/useCases/useCasesMaterias/SaveMateria'
+import { ValidateAssignHours } from '../../core/application/useCases/useCasesMaterias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
@@ -19,6 +20,7 @@ import Title from '../components/TitlePage'
 const repository = new HttpMateriaRepository()
 const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
+const validateAssignHoursUseCase = new ValidateAssignHours()
 
 // Helper para convertir números a romanos
 const convertirARomano = (num: number): string => {
@@ -192,7 +194,14 @@ export function MateriasPage () {
               key={materia.codMateria}
               materia={materia}
               onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
-              onAssignHours={() => { void navigate('/horarios') }}
+              onAssignHours={(materiaParaAsignar, manualHours) => {
+                try {
+                  validateAssignHoursUseCase.execute(materiaParaAsignar)
+                  void navigate('/horarios', { state: { materia: materiaParaAsignar, manualHours } })
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : 'Error al validar horas')
+                }
+              }}
             />
           ))}
         </div>
