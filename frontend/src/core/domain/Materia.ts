@@ -10,4 +10,5 @@ export interface Materia {
   modalidad: MateriaModalidad
   esComun: boolean
   preReq: string[]
+  laboratorioId?: string
 }
