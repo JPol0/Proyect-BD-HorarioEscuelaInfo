@@ -3,7 +3,7 @@ import { Modal, Button, Select, ListBox } from '@heroui/react'
 import { type Materia } from '../../../core/domain/Materia'
 import { type Laboratorio } from '../../../core/domain/Laboratorio'
 import { HttpLaboratorioRepository } from '../../../core/infrastructure/adapters/HttpLaboratorioRepository'
-import { GetLaboratorios } from '../../../core/application/useCases/useCasesLaboratorios/GetLaboratorios'
+import { GetLaboratorios } from '../../../core/application/useCases/Laboratorios/GetLaboratorios'
 
 interface MateriaLaboratorioModalProps {
   materia: Materia

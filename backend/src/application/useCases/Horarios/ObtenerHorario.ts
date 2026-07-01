@@ -1,4 +1,4 @@
-import { HorarioRepository } from '../../ports/HorarioRepository.js'
+import { type HorarioRepository } from '../../ports/HorarioRepository.js'
 import { type Horario } from '../../../domain/Horario.js'
 
 export class ObtenerHorario {

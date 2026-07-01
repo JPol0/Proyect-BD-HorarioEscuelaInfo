@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { HorarioController } from '../controllers/HorarioController.js'
-import { ObtenerHorario } from '../../../application/useCases/useCasesHorarios/ObtenerHorario.js'
-import { GuardarHorario } from '../../../application/useCases/useCasesHorarios/GuardarHorario.js'
+import { ObtenerHorario } from '../../../application/useCases/Horarios/ObtenerHorario.js'
+import { GuardarHorario } from '../../../application/useCases/Horarios/GuardarHorario.js'
 import { JsonHorarioRepository } from '../../database/JsonHorarioRepository.js'
 
 const router = Router()

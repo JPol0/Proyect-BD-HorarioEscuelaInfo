@@ -1,21 +1,24 @@
 import { Card, Button, Modal } from '@heroui/react'
-import { Minus, Plus, Magnifier, PersonPlus, Clock } from '@gravity-ui/icons'
+import { Minus, Plus, Magnifier, PersonPlus, Clock, Microscope } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
 import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
 import { MateriaHoraModal } from './MateriaHoraModal'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
+import { MateriaDeleteButton } from './MateriaDeleteButton'
 
 interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
+  onDelete?: (codMateria: string) => void
   onManageTeachers?: (materia: Materia) => void
-  onAssignHours?: (materia: Materia, manualHours: { dia: DaysOfWeek, hora: string, cantidad: number }[]) => void
+  onAssignHours?: (materia: Materia, manualHours: Array<{ dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
 export function MateriaCard ({
   materia,
   onSave,
+  onDelete,
   onManageTeachers,
   onAssignHours
 }: MateriaCardProps) {
@@ -24,10 +27,12 @@ export function MateriaCard ({
 
       {/* 1. Header Oficial de HeroUI v3 */}
       <Card.Header className="px-1 pt-0.5 pb-0 flex flex-col items-start gap-1">
-        <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-          Semestre {materia.semestre}
-        </span>
-        {/* Le quité el text-center y el w-full de aquí para que vuelva a la izquierda */}
+          <div className="flex items-center justify-between w-full gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+              Semestre {materia.semestre}
+              {onDelete && (
+              <MateriaDeleteButton materia={materia} onDelete={onDelete} />
+              )}
+          </div>
         <Card.Title className="text-base font-bold text-slate-800 leading-snug">
           {materia.nombre}
         </Card.Title>
@@ -107,7 +112,7 @@ export function MateriaCard ({
                 variant="secondary"
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
               >
-                <span className="text-[13px] shrink-0">🔬</span>
+                <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 Laboratorio
               </Button>
               <MateriaLaboratorioModal
@@ -126,9 +131,9 @@ export function MateriaCard ({
               <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               Asignar Horas
             </Button>
-            <MateriaHoraModal 
-              materia={materia} 
-              onSave={(manualHours) => onAssignHours?.(materia, manualHours)} 
+            <MateriaHoraModal
+              materia={materia}
+              onSave={(manualHours) => onAssignHours?.(materia, manualHours)}
             />
           </Modal>
         </div>

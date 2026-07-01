@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Modal, Button, Input, Select, ListBox } from '@heroui/react'
 import { type Materia } from '../../../core/domain/Materia'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
 
 interface MateriaHoraModalProps {
   materia: Materia | null
-  onSave: (manualHours: { dia: DaysOfWeek, hora: string, cantidad: number }[]) => void
+  onSave: (manualHours: Array<{ dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
 export interface ManualBlock {
@@ -101,7 +101,6 @@ export function MateriaHoraModal ({ materia, onSave }: MateriaHoraModalProps) {
                           </Select.Popover>
                         </Select>
                       </div>
-                      
                       {/* Selector de Hora */}
                       <div className="w-full sm:w-[30%] flex flex-col gap-1.5">
                         <span className="text-xs font-semibold text-slate-500">Hora Inicio</span>

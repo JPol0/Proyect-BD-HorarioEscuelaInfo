@@ -1,6 +1,6 @@
-import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria'
-import { DIAS_SEMANA, MODULOS_HORARIO } from '../../domain/DisponibilidadHoraria'
-import type { DisponibilidadRepository } from '../ports/DisponibilidadRepository'
+import type { DisponibilidadHoraria } from '../../../domain/DisponibilidadHoraria.js'
+import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../domain/DisponibilidadHoraria.js'
+import type { DisponibilidadRepository } from '../../ports/DisponibilidadRepository.js'
 
 export class ObtenerDisponibilidadHoraria {
   constructor (private readonly disponibilidadRepository: DisponibilidadRepository) {}

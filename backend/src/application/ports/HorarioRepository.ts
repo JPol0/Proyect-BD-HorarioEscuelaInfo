@@ -1,6 +1,6 @@
-import { type Horario } from '../../domain/Horario.js';
+import { type Horario } from '../../domain/Horario.js'
 
 export interface HorarioRepository {
-  getScheduleByTerm(term: string): Promise<Horario[] | null>;
-  saveSchedule(term: string, schedule: Horario[]): Promise<void>;
+  getScheduleByTerm: (term: string) => Promise<Horario[] | null>
+  saveSchedule: (term: string, schedule: Horario[]) => Promise<void>
 }

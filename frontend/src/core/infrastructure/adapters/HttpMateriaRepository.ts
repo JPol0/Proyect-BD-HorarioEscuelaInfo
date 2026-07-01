@@ -38,4 +38,26 @@ export class HttpMateriaRepository implements MateriaRepository {
       throw new Error(errorMessage)
     }
   }
+
+  async deleteMateria (codMateria: string): Promise<void> {
+    const response = await fetch(`${this.apiUrl}/${codMateria}`, {
+      method: 'DELETE'
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al eliminar la materia del servidor'
+
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {
+        // Si el servidor no devolvió un JSON válido, nos quedamos con el mensaje por defecto
+      }
+
+      throw new Error(errorMessage)
+    }
+  }
 }

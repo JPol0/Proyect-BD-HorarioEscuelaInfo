@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { MockLaboratorioRepository } from '../../database/MockLaboratorioRepository.js'
-import { GetLaboratorios } from '../../../application/useCases/useCasesLaboratorio/GetLaboratorios.js'
-import { SaveLaboratorio } from '../../../application/useCases/useCasesLaboratorio/SaveLaboratorio.js'
-import { DeleteLaboratorio } from '../../../application/useCases/useCasesLaboratorio/DeleteLaboratorio.js'
+import { GetLaboratorios } from '../../../application/useCases/Laboratorio/GetLaboratorios.js'
+import { SaveLaboratorio } from '../../../application/useCases/Laboratorio/SaveLaboratorio.js'
+import { DeleteLaboratorio } from '../../../application/useCases/Laboratorio/DeleteLaboratorio.js'
 import { LaboratorioController } from '../controllers/LaboratorioController.js'
 
 const router = Router()
