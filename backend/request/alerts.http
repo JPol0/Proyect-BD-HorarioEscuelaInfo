@@ -1,6 +1,2 @@
 ### recuperar todas las alertas pendientes
 GET http://localhost:3000/api/alerts/pendings
-
-### recuperar todas las materias
-
-GET http://localhost:3000/api/materias

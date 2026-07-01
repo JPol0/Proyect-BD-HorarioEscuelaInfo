@@ -12,7 +12,7 @@ export class DisponibilidadController {
 
   obtener = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { cedula } = req.params
+      const { cedula } = req.params as { cedula: string }
       const codTerm = typeof req.query.term === 'string' ? req.query.term : '202615'
       const profesor = await this.obtenerProfesorActivoUseCase.execute(cedula)
       const disponibilidad = await this.obtenerDisponibilidadHorariaUseCase.execute(cedula, codTerm)
@@ -26,7 +26,7 @@ export class DisponibilidadController {
 
   guardar = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { cedula } = req.params
+      const { cedula } = req.params as { cedula: string }
       const codTerm = typeof req.query.term === 'string' ? req.query.term : '202615'
       const grilla = req.body
 

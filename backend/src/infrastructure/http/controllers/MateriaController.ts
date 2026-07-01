@@ -60,7 +60,7 @@ export class MateriaController {
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { codMateria } = req.params
+      const { codMateria } = req.params as { codMateria: string }
       if (codMateria === undefined || codMateria.trim() === '') {
         res.status(400).json({ error: 'El código de la materia es obligatorio para eliminar' })
         return

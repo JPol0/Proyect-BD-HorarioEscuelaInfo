@@ -55,9 +55,7 @@ export class MockMateriaRepository implements MateriaRepository {
    */
   async save (materia: Materia): Promise<void> {
     if (materia.codMateria === undefined || materia.codMateria.trim() === '') {
-      // Generamos un código único para la nueva materia
-      const numExistentes = MOCK_MATERIAS.length
-      materia.codMateria = `MAT-${200 + numExistentes + Math.floor(Math.random() * 100)}`
+      throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
 
     const index = MOCK_MATERIAS.findIndex(
@@ -68,7 +66,7 @@ export class MockMateriaRepository implements MateriaRepository {
       // Si existe, reemplazamos por completo con la nueva información del formulario/PDF
       MOCK_MATERIAS[index] = materia
     } else {
-      // Si no existe, es una materia nueva (ej. procesada desde el PDF masivo)
+      // Si no existe, es una materia nueva
       MOCK_MATERIAS.push(materia)
     }
   }
