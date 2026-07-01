@@ -152,7 +152,7 @@ export function MateriasPage () {
             <Modal>
               <Button
                 variant="primary"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 Crear Materia
@@ -247,7 +247,7 @@ export function MateriasPage () {
               key={materia.codMateria}
               materia={materia}
               onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
-              onDelete={(codMateria) => { void handleDeleteMateria(codMateria) }}
+              onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
               onAssignHours={(materiaParaAsignar, manualHours) => {
                 try {
                   validateAssignHoursUseCase.execute(materiaParaAsignar)
