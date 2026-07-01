@@ -6,6 +6,10 @@
     "dev": "pnpm -r dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
-    "lint:fix": "pnpm -r lint:fix"
+    "lint:fix": "pnpm -r lint:fix",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:downAll": "docker compose down -v",
+    "db:logs": "docker compose logs -f"
   }
 }
