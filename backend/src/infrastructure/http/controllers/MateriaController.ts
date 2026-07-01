@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express'
-import { type GetMaterias } from '../../../application/useCases/useCasesMateria/GetMaterias.js'
-import { type SaveMateria } from '../../../application/useCases/useCasesMateria/SaveMateria.js'
+import { type GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
+import { type SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { type Materia } from '../../../domain/Materia.js'
 
 export class MateriaController {

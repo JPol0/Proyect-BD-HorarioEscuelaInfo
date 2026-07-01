@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { MockDisponibilidadRepository } from '../../database/MockDisponibilidadRepository.js'
 import { MockProfesorRepository } from '../../database/MockProfesorRepository.js'
-import { ObtenerDisponibilidadHoraria } from '../../../application/useCases/ObtenerDisponibilidadHoraria.js'
-import { GuardarDisponibilidadHoraria } from '../../../application/useCases/GuardarDisponibilidadHoraria.js'
-import { ObtenerProfesorActivo } from '../../../application/useCases/ObtenerProfesorActivo.js'
+import { ObtenerDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria.js'
+import { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
+import { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
 import { DisponibilidadController } from '../controllers/DisponibilidadController.js'
 
 const router = Router()

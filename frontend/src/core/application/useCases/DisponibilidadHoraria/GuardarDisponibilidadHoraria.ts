@@ -1,6 +1,6 @@
-import type { DiaSemana, DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria'
-import { DIAS_SEMANA, MODULOS_HORARIO } from '../../domain/DisponibilidadHoraria'
-import type { DisponibilidadRepository } from '../ports/DisponibilidadRepository'
+import type { DiaSemana, DisponibilidadHoraria } from '../../../domain/DisponibilidadHoraria'
+import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../domain/DisponibilidadHoraria'
+import type { DisponibilidadRepository } from '../../ports/DisponibilidadRepository'
 
 const DIAS_VALIDOS = new Set<DiaSemana>(DIAS_SEMANA)
 const MODULOS_VALIDOS = new Set<number>(MODULOS_HORARIO.map((modulo) => modulo.numeroModulo))

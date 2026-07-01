@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { ObtenerHorario } from '../../../application/useCases/useCasesHorarios/ObtenerHorario.js';
-import { GuardarHorario } from '../../../application/useCases/useCasesHorarios/GuardarHorario.js';
+import { ObtenerHorario } from '../../../application/useCases/Horarios/ObtenerHorario.js';
+import { GuardarHorario } from '../../../application/useCases/Horarios/GuardarHorario.js';
 
 export class HorarioController {
   constructor(

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { MockMateriaRepository } from '../../database/MockMateriaRepository.js'
-import { GetMaterias } from '../../../application/useCases/useCasesMateria/GetMaterias.js'
-import { SaveMateria } from '../../../application/useCases/useCasesMateria/SaveMateria.js'
+import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
+import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { MateriaController } from '../controllers/MateriaController.js'
 
 const router = Router()

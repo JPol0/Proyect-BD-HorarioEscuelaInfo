@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom'
 
 // Core Clean Architecture
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
-import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/GetMaterias'
-import { SaveMateria } from '../../core/application/useCases/useCasesMaterias/SaveMateria'
-import { ValidateAssignHours } from '../../core/application/useCases/useCasesMaterias/ValidateAssignHours'
+import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
+import { SaveMateria } from '../../core/application/useCases/Materias/SaveMateria'
+import { ValidateAssignHours } from '../../core/application/useCases/Materias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'

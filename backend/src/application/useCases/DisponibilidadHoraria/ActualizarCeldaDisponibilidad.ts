@@ -1,4 +1,4 @@
-import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../domain/DisponibilidadHoraria.js'
+import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../../domain/DisponibilidadHoraria.js'
 
 const SIGUIENTE_NIVEL: Record<NivelDisponibilidad, NivelDisponibilidad> = {
   0: 1,

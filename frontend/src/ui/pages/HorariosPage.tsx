@@ -2,15 +2,14 @@ import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Alert } from '@heroui/react'
 import type { Horario, ScheduleRow, DaysOfWeek } from '../../core/domain/Horario'
-import { ObtenerHorario } from '../../core/application/useCases/useCasesHorarios/ObtenerHorario'
-import { AutoAsignarMateria } from '../../core/application/useCases/useCasesHorarios/AutoAsignarMateria'
-import { GuardarHorario } from '../../core/application/useCases/useCasesHorarios/GuardarHorario'
+import { ObtenerHorario } from '../../core/application/useCases/Horarios/ObtenerHorario'
+import { AutoAsignarMateria } from '../../core/application/useCases/Horarios/AutoAsignarMateria'
+import { GuardarHorario } from '../../core/application/useCases/Horarios/GuardarHorario'
 import { ApiHorarioRepository } from '../../core/infrastructure/adapters/ApiHorarioRepository'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
-import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/GetMaterias'
+import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
 import { useActiveTerm } from '../contexts/ActiveTermContext'
 import { type Materia } from '../../core/domain/Materia'
-import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
 import Title from '../components/TitlePage'
 
 const repository = new ApiHorarioRepository()
@@ -20,7 +19,7 @@ const getMateriasUseCase = new GetMaterias(materiaRepository)
 const autoAssignUseCase = new AutoAsignarMateria()
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
 
-export default function HorariosPage() {
+export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
@@ -58,7 +57,7 @@ export default function HorariosPage() {
         let currentTuplas = draftStr ? JSON.parse(draftStr) as Horario[] : (payload ?? [])
 
         const materiaFromState = location.state?.materia as Materia | undefined
-        const manualHours = location.state?.manualHours as { dia: DaysOfWeek, hora: string, cantidad: number }[] | undefined
+        const manualHours = location.state?.manualHours as Array<{ dia: DaysOfWeek, hora: string, cantidad: number }> | undefined
 
         if (materiaFromState != null && manualHours != null) {
           try {
@@ -182,7 +181,6 @@ export default function HorariosPage() {
 
       <div className="flex items-start justify-between gap-6 mb-7">
 
-
         <div className="flex items-end gap-3 shrink-0">
           <div className="min-w-[150px]">
             <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em]">
@@ -219,7 +217,7 @@ export default function HorariosPage() {
               const newErrors: string[] = []
               setAssignmentErrors([])
 
-              // Validación: las materias comunes (esComun === true) DEL SEMESTRE ACTUAL 
+              // Validación: las materias comunes (esComun === true) DEL SEMESTRE ACTUAL
               // DEBEN estar asignadas manualmente antes de poder crear el horario automático.
               const materiasComunesSinAsignar = materias.filter(
                 m => m.esComun && m.semestre === selectedSemester && !newTuplas.some(t => t.codAsig === m.codMateria)
@@ -318,7 +316,7 @@ export default function HorariosPage() {
             <div className="flex justify-center py-12">
               <div className="w-8 h-8 border-3 border-border border-t-primary rounded-full animate-spin" />
             </div>
-          )
+            )
           : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse min-w-[760px]">
@@ -369,7 +367,7 @@ export default function HorariosPage() {
                 </tbody>
               </table>
             </div>
-          )}
+            )}
       </div>
     </div>
   )

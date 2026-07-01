@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express'
-import { type GetLaboratorios } from '../../../application/useCases/useCasesLaboratorio/GetLaboratorios.js'
-import { type SaveLaboratorio } from '../../../application/useCases/useCasesLaboratorio/SaveLaboratorio.js'
-import { type DeleteLaboratorio } from '../../../application/useCases/useCasesLaboratorio/DeleteLaboratorio.js'
+import { type GetLaboratorios } from '../../../application/useCases/Laboratorio/GetLaboratorios.js'
+import { type SaveLaboratorio } from '../../../application/useCases/Laboratorio/SaveLaboratorio.js'
+import { type DeleteLaboratorio } from '../../../application/useCases/Laboratorio/DeleteLaboratorio.js'
 import { type Laboratorio } from '../../../domain/Laboratorio.js'
 
 export class LaboratorioController {

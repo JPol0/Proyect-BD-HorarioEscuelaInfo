@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { type Laboratorio } from '../../core/domain/Laboratorio'
 import { HttpLaboratorioRepository } from '../../core/infrastructure/adapters/HttpLaboratorioRepository'
-import { GetLaboratorios } from '../../core/application/useCases/useCasesLaboratorios/GetLaboratorios'
-import { SaveLaboratorio } from '../../core/application/useCases/useCasesLaboratorios/SaveLaboratorio'
-import { DeleteLaboratorio } from '../../core/application/useCases/useCasesLaboratorios/DeleteLaboratorio'
+import { GetLaboratorios } from '../../core/application/useCases/Laboratorios/GetLaboratorios'
+import { SaveLaboratorio } from '../../core/application/useCases/Laboratorios/SaveLaboratorio'
+import { DeleteLaboratorio } from '../../core/application/useCases/Laboratorios/DeleteLaboratorio'
 import Title from '../components/TitlePage'
 import LaboratorioModal from '../components/LaboratorioScreen/LaboratorioModal'
 

@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { MockTermRepository } from '../../database/MockTermRepository.js'
-import { GetTerms } from '../../../application/useCases/useCasesTerms/GetTerms.js'
-import { CreateTerm } from '../../../application/useCases/useCasesTerms/CreateTerm.js'
-import { ToggleTermArchive } from '../../../application/useCases/useCasesTerms/ToggleTermArchive.js'
+import { GetTerms } from '../../../application/useCases/Terms/GetTerms.js'
+import { CreateTerm } from '../../../application/useCases/Terms/CreateTerm.js'
+import { ToggleTermArchive } from '../../../application/useCases/Terms/ToggleTermArchive.js'
 import { TermController } from '../controllers/TermController.js'
 
 const router = Router()

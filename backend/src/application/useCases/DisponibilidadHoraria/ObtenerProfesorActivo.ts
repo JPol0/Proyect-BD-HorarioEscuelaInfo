@@ -1,5 +1,5 @@
-import type { Profesor } from '../../domain/Profesor'
-import type { ProfesorRepository } from '../ports/ProfesorRepository'
+import type { Profesor } from '../../../domain/Profesor.js'
+import type { ProfesorRepository } from '../../ports/ProfesorRepository.js'
 
 export class ObtenerProfesorActivo {
   constructor (private readonly profesorRepository: ProfesorRepository) {}

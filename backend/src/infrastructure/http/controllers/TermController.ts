@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express'
-import { type GetTerms } from '../../../application/useCases/useCasesTerms/GetTerms.js'
-import { type CreateTerm } from '../../../application/useCases/useCasesTerms/CreateTerm.js'
-import { type ToggleTermArchive } from '../../../application/useCases/useCasesTerms/ToggleTermArchive.js'
+import { type GetTerms } from '../../../application/useCases/Terms/GetTerms.js'
+import { type CreateTerm } from '../../../application/useCases/Terms/CreateTerm.js'
+import { type ToggleTermArchive } from '../../../application/useCases/Terms/ToggleTermArchive.js'
 
 export class TermController {
   private readonly getUseCase: GetTerms
