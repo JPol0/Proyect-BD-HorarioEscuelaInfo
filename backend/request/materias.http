@@ -1,0 +1,3 @@
+### recuperar todas las materias
+
+GET http://localhost:3000/api/materias
