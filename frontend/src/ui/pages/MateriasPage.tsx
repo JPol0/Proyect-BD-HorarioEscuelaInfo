@@ -1,23 +1,29 @@
 import { useEffect, useState } from 'react'
-import { Input, Select, ListBox } from '@heroui/react'
-import { Magnifier } from '@gravity-ui/icons'
+import { Input, Select, ListBox, Modal, Button } from '@heroui/react'
+import { Magnifier, Plus } from '@gravity-ui/icons'
+import { useNavigate } from 'react-router-dom'
 
 // Core Clean Architecture
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
-import { GetMaterias } from '../../core/application/useCases/useCasesMaterias/GetMaterias'
-import { SaveMateria } from '../../core/application/useCases/useCasesMaterias/SaveMateria'
+import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
+import { SaveMateria } from '../../core/application/useCases/Materias/SaveMateria'
+import { DeleteMateria } from '../../core/application/useCases/Materias/DeleteMateria'
+import { ValidateAssignHours } from '../../core/application/useCases/Materias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
 import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
+import { MateriaCrearModal } from '../components/MateriaScreen/MateriaCrearModal'
 import Title from '../components/TitlePage'
 
 // Inyección manual de dependencias (Ya no instanciamos GetMateriaByCodigo)
 const repository = new HttpMateriaRepository()
 const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
+const deleteMateriaUseCase = new DeleteMateria(repository)
+const validateAssignHoursUseCase = new ValidateAssignHours()
 
 // Helper para convertir números a romanos
 const convertirARomano = (num: number): string => {
@@ -34,6 +40,7 @@ const convertirARomano = (num: number): string => {
 }
 
 export function MateriasPage () {
+  const navigate = useNavigate()
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -76,6 +83,39 @@ export function MateriasPage () {
     }
   }
 
+  const handleDeleteMateria = async (codMateria: string) => {
+    const estadoPrevio = [...materias]
+    setMaterias((prev) => prev.filter((m) => m.codMateria !== codMateria))
+    try {
+      await deleteMateriaUseCase.execute(codMateria)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo eliminar la materia en el servidor')
+    }
+  }
+
+  const handleCreateMateria = async (nuevaMateriaSinCodigo: Omit<Materia, 'codMateria'>) => {
+    const tempCod = `TEMP-${Date.now()}`
+    const nuevaMateriaProvisional: Materia = {
+      ...nuevaMateriaSinCodigo,
+      codMateria: tempCod
+    }
+
+    const estadoPrevio = [...materias]
+    setMaterias((prev) => [...prev, nuevaMateriaProvisional])
+
+    try {
+      await saveMateriaUseCase.execute({
+        ...nuevaMateriaProvisional,
+        codMateria: '' // Enviamos vacío para indicar que el backend debe generarlo
+      })
+      await cargarMaterias()
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo crear la materia en el servidor')
+    }
+  }
+
   const materiasFiltradas = materias.filter((materia) => {
     const matchesSemestre = selectedSemestre === 'todos' || materia.semestre.toString() === selectedSemestre
     const matchesNombre = materia.nombre.toLowerCase().includes(searchQuery.toLowerCase())
@@ -105,6 +145,23 @@ export function MateriasPage () {
         />
 
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
+
+          {/* Botón Crear Materia */}
+          <div className="w-full sm:w-auto flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+            <Modal>
+              <Button
+                variant="primary"
+                className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+              >
+                <Plus className="w-4 h-4 shrink-0" />
+                Crear Materia
+              </Button>
+              <MateriaCrearModal
+                onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
+              />
+            </Modal>
+          </div>
 
           {/* Selector de Semestre */}
           <div className="w-full sm:w-48 flex flex-col gap-1.5">
@@ -190,6 +247,15 @@ export function MateriasPage () {
               key={materia.codMateria}
               materia={materia}
               onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
+              onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
+              onAssignHours={(materiaParaAsignar, manualHours) => {
+                try {
+                  validateAssignHoursUseCase.execute(materiaParaAsignar)
+                  void navigate('/horarios', { state: { materia: materiaParaAsignar, manualHours } })
+                } catch (e) {
+                  alert(e instanceof Error ? e.message : 'Error al validar horas')
+                }
+              }}
             />
           ))}
         </div>

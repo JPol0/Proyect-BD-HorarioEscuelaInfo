@@ -12,7 +12,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 2,
     modalidad: 'PRE',
     esComun: true,
-    preReq: ['Calculo I']
+    preReq: ['Calculo I'],
+    laboratorioId: undefined
   },
   {
     codMateria: 'INF-202',
@@ -23,7 +24,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 2,
     modalidad: 'PRE',
     esComun: false,
-    preReq: ['Introduccion a la Informatica']
+    preReq: ['Introduccion a la Informatica'],
+    laboratorioId: undefined
   },
   {
     codMateria: 'INF-301',
@@ -34,7 +36,8 @@ const MOCK_MATERIAS: Materia[] = [
     semestre: 3,
     modalidad: 'PRE',
     esComun: false,
-    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta']
+    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta'],
+    laboratorioId: undefined
   }
 ]
 
@@ -51,6 +54,12 @@ export class MockMateriaRepository implements MateriaRepository {
    * en caso contrario, registra la nueva entidad en el array.
    */
   async save (materia: Materia): Promise<void> {
+    if (materia.codMateria === undefined || materia.codMateria.trim() === '') {
+      // Generamos un código único para la nueva materia
+      const numExistentes = MOCK_MATERIAS.length
+      materia.codMateria = `MAT-${200 + numExistentes + Math.floor(Math.random() * 100)}`
+    }
+
     const index = MOCK_MATERIAS.findIndex(
       (m) => m.codMateria === materia.codMateria
     )
@@ -61,6 +70,20 @@ export class MockMateriaRepository implements MateriaRepository {
     } else {
       // Si no existe, es una materia nueva (ej. procesada desde el PDF masivo)
       MOCK_MATERIAS.push(materia)
+    }
+  }
+
+  /**
+   * Elimina una materia de la lista en memoria por su código.
+   */
+  async delete (codMateria: string): Promise<void> {
+    const index = MOCK_MATERIAS.findIndex(
+      (m) => m.codMateria === codMateria
+    )
+    if (index !== -1) {
+      MOCK_MATERIAS.splice(index, 1)
+    } else {
+      throw new Error(`No se encontró la materia con código ${codMateria}`)
     }
   }
 }

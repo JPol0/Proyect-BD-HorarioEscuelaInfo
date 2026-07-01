@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import heroImg from '../../assets/hero.png'
+import { useActiveTerm } from '../contexts/ActiveTermContext'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios'
 
@@ -22,7 +23,7 @@ type NavItem = NavItemDisabled | NavItemEnabled
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'profesores', label: 'Profesores', icon: '🎓', disponible: false },
-  { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: false },
+  { id: 'laboratorios', label: 'Laboratorios', icon: '🔬', disponible: true, path: '/laboratorios' },
   { id: 'materias', label: 'Materias', icon: '📓', disponible: true, path: '/materias' },
   { id: 'horarios', label: 'Generar Horario', icon: '📅', disponible: true, path: '/horarios' },
   { id: 'peligros', label: 'Peligros', icon: '⚠️', disponible: true, path: '/peligros' },
@@ -30,13 +31,25 @@ const NAV_ITEMS: NavItem[] = [
 ]
 
 export default function Layout () {
+  const { activeTerm } = useActiveTerm()
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
       <aside className="w-56 bg-[#0B132B] text-white flex flex-col shrink-0 select-none overflow-hidden">
         <div className="px-5 pt-6 pb-5">
           <h2 className="text-base font-bold tracking-wide font-hanken">SGBD HORARIOS</h2>
           <p className="text-[11px] text-slate-400 mt-0.5 font-hanken">Universidad Católica Andrés Bello</p>
-          <p className="text-[11px] text-slate-400 font-hanken">Semestre 2026-15</p>
+          {activeTerm !== null
+            ? (
+              <p className="text-[11px] text-[#57a8c8] font-hanken font-semibold truncate" title={activeTerm.name}>
+                {activeTerm.name}
+              </p>
+              )
+            : (
+              <p className="text-[11px] text-slate-500 font-hanken italic">
+                Ningún term activo
+              </p>
+              )}
         </div>
 
         <nav className="flex flex-col gap-0.5 px-3 flex-1">

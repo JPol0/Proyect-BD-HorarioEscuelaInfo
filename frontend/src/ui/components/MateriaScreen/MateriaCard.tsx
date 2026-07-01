@@ -1,18 +1,24 @@
 import { Card, Button, Modal } from '@heroui/react'
-import { Minus, Plus, Magnifier, PersonPlus, Clock } from '@gravity-ui/icons'
+import { Minus, Plus, Magnifier, PersonPlus, Clock, Microscope } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
+import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
+import { MateriaHoraModal } from './MateriaHoraModal'
+import { type DaysOfWeek } from '../../../core/domain/Horario'
+import { MateriaDeleteButton } from './MateriaDeleteButton'
 
 interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
+  onDelete?: (codMateria: string) => void
   onManageTeachers?: (materia: Materia) => void
-  onAssignHours?: (materia: Materia) => void
+  onAssignHours?: (materia: Materia, manualHours: Array<{ dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
 export function MateriaCard ({
   materia,
   onSave,
+  onDelete,
   onManageTeachers,
   onAssignHours
 }: MateriaCardProps) {
@@ -21,10 +27,12 @@ export function MateriaCard ({
 
       {/* 1. Header Oficial de HeroUI v3 */}
       <Card.Header className="px-1 pt-0.5 pb-0 flex flex-col items-start gap-1">
-        <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
-          Semestre {materia.semestre}
-        </span>
-        {/* Le quité el text-center y el w-full de aquí para que vuelva a la izquierda */}
+          <div className="flex items-center justify-between w-full gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+              Semestre {materia.semestre}
+              {onDelete && (
+              <MateriaDeleteButton materia={materia} onDelete={onDelete} />
+              )}
+          </div>
         <Card.Title className="text-base font-bold text-slate-800 leading-snug">
           {materia.nombre}
         </Card.Title>
@@ -71,7 +79,6 @@ export function MateriaCard ({
       {/* 3. Footer Oficial de HeroUI v3 */}
       <Card.Footer className="px-1 pb-1 flex flex-col gap-2">
 
-        {/* Botones Secundarios: Iconos pasados directamente como children */}
         <div className="grid grid-cols-2 gap-2 w-full">
           <Modal>
             {/* El primer botón dentro del Modal se convierte en el disparador (trigger) automáticamente */}
@@ -83,7 +90,7 @@ export function MateriaCard ({
               Consultar
             </Button>
 
-            {/* El contenido del modal se renderiza aquí y recibe la función onSave de forma segura para evitar problemas de linter con promesas */}
+            {/* El contenido del modal se renderiza aquí */}
             <MateriaConsultarModal
               materia={materia}
               onSave={(materiaActualizada) => { if (onSave) void onSave(materiaActualizada) }}
@@ -98,17 +105,38 @@ export function MateriaCard ({
             <PersonPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             Profesores
           </Button>
-        </div>
 
-        {/* Botón Principal */}
-        <Button
-          variant="primary"
-          className="bg-button-primary hover:bg-button-primary-hover text-white font-medium text-xs h-9 shadow-sm cursor-pointer w-full flex items-center justify-center gap-2"
-          onPress={() => onAssignHours?.(materia)}
-        >
-          <Clock className="w-3.5 h-3.5 shrink-0" />
-          Asignar Horas
-        </Button>
+          {materia.horasLab > 0 && (
+            <Modal>
+              <Button
+                variant="secondary"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
+              >
+                <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                Laboratorio
+              </Button>
+              <MateriaLaboratorioModal
+                materia={materia}
+                onSave={(materiaActualizada) => { if (onSave) void onSave(materiaActualizada) }}
+              />
+            </Modal>
+          )}
+
+          <Modal>
+            <Button
+              variant="secondary"
+              className={`bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 ${materia.horasLab === 0 ? 'col-span-2' : ''
+                }`}
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              Asignar Horas
+            </Button>
+            <MateriaHoraModal
+              materia={materia}
+              onSave={(manualHours) => onAssignHours?.(materia, manualHours)}
+            />
+          </Modal>
+        </div>
 
       </Card.Footer>
     </Card>

@@ -117,7 +117,8 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
                   seleccionada != null &&
                   seleccionada.diaIndex === diaIndex &&
                   seleccionada.moduloIndex === moduloIndex
-                return celda != null ? (
+                return celda != null
+                  ? (
                   <DisponibilidadCell
                     key={`${dia}-${modulo.numeroModulo}`}
                     celda={celda}
@@ -125,7 +126,8 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
                     onClick={handleClick}
                     onKeyDown={handleKeyDown}
                   />
-                ) : null
+                    )
+                  : null
               })}
             </tr>
           ))}
