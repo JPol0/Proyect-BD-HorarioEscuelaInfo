@@ -1,10 +1,10 @@
-import { HorarioRepository } from '../../ports/HorarioRepository.js';
-import { Horario } from '../../../domain/Horario.js';
+import { type HorarioRepository } from '../../ports/HorarioRepository.js'
+import { type Horario } from '../../../domain/Horario.js'
 
 export class GuardarHorario {
-  constructor(private repository: HorarioRepository) {}
+  constructor (private readonly repository: HorarioRepository) {}
 
-  async execute(term: string, schedule: Horario[]): Promise<void> {
-    await this.repository.saveSchedule(term, schedule);
+  async execute (term: string, schedule: Horario[]): Promise<void> {
+    await this.repository.saveSchedule(term, schedule)
   }
 }
