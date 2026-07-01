@@ -16,13 +16,26 @@ Both packages follow hexagonal (clean) architecture:
 | UI          | —                  | `src/ui/` (components/ + pages/)   |
 
 ## Commands
-- Root scripts proxy to `pnpm -r`: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm lint:fix`.
+- Root scripts proxy to `pnpm -r` or manage Docker containers:
+  - `pnpm dev`: Starts both backend and frontend dev servers.
+  - `pnpm build`: Builds all packages.
+  - `pnpm lint` / `pnpm lint:fix`: Lints and fixes TypeScript code across packages.
+  - `pnpm db:up`: Starts the PostgreSQL Docker container in detached mode.
+  - `pnpm db:down`: Stops the PostgreSQL Docker container.
+  - `pnpm db:logs`: Displays and follows logs from the PostgreSQL container.
 - Frontend: `pnpm --filter frontend dev|build|preview|lint|lint:fix` (build uses `tsc -b`).
 - Backend: `pnpm --filter backend dev|build|lint|lint:fix` (dev uses `tsx watch src/server.ts`, start runs `node dist/server.js`).
 
 ## Linting
 - ESLint uses `.eslintrc.cjs` in each package with `eslint-config-standard-with-typescript`.
 - Backend ESLint uses `backend/tsconfig.json`; frontend ESLint uses `frontend/tsconfig.app.json` + `frontend/tsconfig.node.json`.
+
+## Database specifics
+- PostgreSQL runs via Docker container defined in [docker-compose.yml]
+- Schema initialization: PostgreSQL automatically runs all SQL scripts in [database/] when initialized.
+  - [01-schema.sql] creates tables.
+  - [02-seed.sql] seeds initial mock data.
+- Connection settings: Configured via environment variables in `.env` (`DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`).
 
 ## Frontend specifics
 - Built with Vite + React + Tailwind CSS v4 (`@tailwindcss/vite` plugin).
