@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Alert } from '@heroui/react'
+import { Alert, Select, ListBox } from '@heroui/react'
 import type { Horario, ScheduleRow, DaysOfWeek } from '../../core/domain/Horario'
 import { ObtenerHorario } from '../../core/application/useCases/Horarios/ObtenerHorario'
 import { AutoAsignarMateria } from '../../core/application/useCases/Horarios/AutoAsignarMateria'
@@ -10,6 +10,7 @@ import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMa
 import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
 import { useActiveTerm } from '../contexts/ActiveTermContext'
 import { type Materia } from '../../core/domain/Materia'
+import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 import Title from '../components/TitlePage'
 
 const repository = new ApiHorarioRepository()
@@ -40,6 +41,22 @@ export default function HorariosPage () {
   const [selectedTerm] = useState(activeTerm?.id ?? '')
   const [selectedSemester, setSelectedSemester] = useState<number>(1)
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
+
+  const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8;
+  const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1);
+
+  const convertirARomano = (num: number): string => {
+    const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 };
+    let resultado = '';
+    let valorRestante = num;
+    for (const key in valoresRomanos) {
+      while (valorRestante >= valoresRomanos[key]) {
+        resultado += key;
+        valorRestante -= valoresRomanos[key];
+      }
+    }
+    return resultado;
+  }
 
   useEffect(() => {
     const loadSchedule = async () => {
@@ -81,7 +98,15 @@ export default function HorariosPage () {
                 if (startIndex + i >= horasDisponiblesBase.length) break
                 const horaAsignar = horasDisponiblesBase[startIndex + i]
 
-                // Si ya está ocupado, podemos lanzar error o simplemente sobreescribir (aquí elegimos ignorar conflictos forzados si es manual)
+                // Chequeamos si ya hay un horario reservado para ese día y hora en el mismo semestre
+                const estaOcupado = currentTuplas.some(
+                  t => t.semestre === materiaFromState.semestre && t.dia === block.dia && t.hora === horaAsignar
+                )
+
+                if (estaOcupado) {
+                  throw new Error(`Choque de horarios: El ${block.dia} a las ${horaAsignar} ya está reservado en el semestre ${materiaFromState.semestre}.`)
+                }
+
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
                   codTerm: selectedTerm,
@@ -104,7 +129,8 @@ export default function HorariosPage () {
             // Limpiamos el state para que si recarga no se vuelva a autogenerar
             window.history.replaceState({}, document.title)
           } catch (e) {
-            alert(e instanceof Error ? e.message : 'Error al asignar y guardar')
+            setAssignmentErrors([e instanceof Error ? e.message : 'Error al asignar y guardar'])
+            // Si hubo error de choque, no agregamos las nuevas tuplas, se mantiene currentTuplas intacto
           }
         }
         setTuplas(currentTuplas)
@@ -163,14 +189,6 @@ export default function HorariosPage () {
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-6 mb-7">
-        <Title
-          title="Horario Semanal"
-          subtitle="Vista general del horario."
-        />
-
-      </div>
-
       {assignmentErrors.length > 0 && (
         <div className="flex flex-col gap-2 mb-6 w-full">
           {assignmentErrors.map((err, idx) => (
@@ -180,30 +198,50 @@ export default function HorariosPage () {
       )}
 
       <div className="flex items-start justify-between gap-6 mb-7">
+        <Title
+          title="Horario Semanal"
+          subtitle="Vista general del horario."
+        />
 
         <div className="flex items-end gap-3 shrink-0">
           <div className="min-w-[150px]">
-            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em]">
+            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em] mb-2 block">
               Semestre
             </label>
-            <div className="relative mt-2">
-              <select
-                className="w-full h-12 appearance-none rounded-xl border border-slate-200 bg-white px-4 pr-10 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200"
-                value={selectedSemester}
-                onChange={(event) => { setSelectedSemester(Number(event.target.value)) }}
-              >
-                {['1er', '2do', '3er', '4to', '5to', '6to', '7mo', '8vo'].map((label, index) => (
-                  <option key={index + 1} value={index + 1}>
-                    {label} Semestre
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </div>
+            <Select
+              aria-label="Filtrar por semestre"
+              placeholder="Seleccionar semestre"
+              variant="primary"
+              value={String(selectedSemester)}
+              onChange={(valor) => {
+                if (valor) setSelectedSemester(Number(valor))
+              }}
+              className="w-full h-12"
+            >
+              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-xl px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors text-sm font-medium text-slate-700 h-12">
+                <Select.Value />
+                <Select.Indicator className="text-slate-400">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Select.Indicator>
+              </Select.Trigger>
+
+              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[150px] z-50">
+                <ListBox>
+                  {opcionesSemestres.map((semestre) => (
+                    <ListBox.Item
+                      key={semestre.toString()}
+                      id={semestre.toString()}
+                      textValue={`Semestre ${convertirARomano(semestre)}`}
+                      className="px-4 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                    >
+                      Semestre {convertirARomano(semestre)}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
           </div>
 
           <button
@@ -248,17 +286,23 @@ export default function HorariosPage () {
                 setAssignmentErrors(newErrors)
               }
             }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-semibold shadow-sm transition-colors hover:bg-slate-50"
+            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Crear Horario
+            Generar Horario
           </button>
 
           <button
             type="button"
             onClick={() => {
+              const tieneAsignaciones = tuplas.some(t => t.semestre === selectedSemester)
+              if (!tieneAsignaciones) {
+                alert('No hay ningún horario asignado para eliminar en este semestre.')
+                return
+              }
+
               if (window.confirm(`¿Estás seguro de que deseas eliminar todas las asignaciones del semestre ${selectedSemester}?`)) {
                 const remainingTuplas = tuplas.filter(t => t.semestre !== selectedSemester)
                 setTuplas(remainingTuplas)
@@ -272,7 +316,7 @@ export default function HorariosPage () {
                 })()
               }
             }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-semibold shadow-sm transition-colors hover:bg-red-50"
+            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -292,7 +336,7 @@ export default function HorariosPage () {
                 }
               })()
             }}
-            className="flex items-center gap-2 h-12 px-6 rounded-xl bg-[#131a2a] text-white text-sm font-semibold shadow-sm transition-colors hover:bg-[#1a2340]"
+            className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
