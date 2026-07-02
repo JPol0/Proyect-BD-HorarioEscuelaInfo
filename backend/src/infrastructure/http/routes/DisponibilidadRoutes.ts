@@ -1,22 +1,24 @@
 import { Router } from 'express'
-import { MockDisponibilidadRepository } from '../../database/MockDisponibilidadRepository.js'
-import { MockProfesorRepository } from '../../database/MockProfesorRepository.js'
+import { type DisponibilidadRepository } from '../../../application/ports/DisponibilidadRepository.js'
+import { type ProfesorRepository } from '../../../application/ports/ProfesorRepository.js'
 import { ObtenerDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria.js'
 import { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
 import { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
 import { DisponibilidadController } from '../controllers/DisponibilidadController.js'
 
-const router = Router()
+export default function createDisponibilidadRouter (
+  disponibilidadRepository: DisponibilidadRepository,
+  profesorRepository: ProfesorRepository
+): Router {
+  const router = Router()
 
-// Inyección manual de dependencias
-const disponibilidadRepository = new MockDisponibilidadRepository()
-const profesorRepository = new MockProfesorRepository()
-const obtenerUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
-const guardarUseCase = new GuardarDisponibilidadHoraria(disponibilidadRepository)
-const obtenerProfesorUseCase = new ObtenerProfesorActivo(profesorRepository)
-const controller = new DisponibilidadController(obtenerUseCase, guardarUseCase, obtenerProfesorUseCase)
+  const obtenerUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
+  const guardarUseCase = new GuardarDisponibilidadHoraria(disponibilidadRepository)
+  const obtenerProfesorUseCase = new ObtenerProfesorActivo(profesorRepository)
+  const controller = new DisponibilidadController(obtenerUseCase, guardarUseCase, obtenerProfesorUseCase)
 
-router.get('/:cedula/disponibilidad', controller.obtener)
-router.put('/:cedula/disponibilidad', controller.guardar)
+  router.get('/:cedula/disponibilidad', controller.obtener)
+  router.put('/:cedula/disponibilidad', controller.guardar)
 
-export default router
+  return router
+}

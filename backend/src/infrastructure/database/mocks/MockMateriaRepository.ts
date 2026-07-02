@@ -1,5 +1,5 @@
-import { type MateriaRepository } from '../../application/ports/MateriaRepository.js'
-import { type Materia } from '../../domain/Materia.js'
+import { type MateriaRepository } from '../../../application/ports/MateriaRepository.js'
+import { type Materia } from '../../../domain/Materia.js'
 
 // El mock con datos iniciales consistentes con la UI de Gestión de Materias
 const MOCK_MATERIAS: Materia[] = [

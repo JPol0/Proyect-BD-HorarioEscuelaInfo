@@ -1,19 +1,19 @@
 import { readFile, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { type HorarioRepository } from '../../application/ports/HorarioRepository.js'
-import { type Horario } from '../../domain/Horario.js'
+import { type HorarioRepository } from '../../../application/ports/HorarioRepository.js'
+import { type Horario } from '../../../domain/Horario.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const DATA_PATH = join(__dirname, './horarios.json')
+const filename = fileURLToPath(import.meta.url)
+const dirName = dirname(filename)
+const DATA_PATH = join(dirName, './horarios.json')
 
 export class JsonHorarioRepository implements HorarioRepository {
   async getScheduleByTerm (term: string): Promise<Horario[] | null> {
     try {
       const raw = await readFile(DATA_PATH, 'utf-8')
       const data: Record<string, Horario[]> = JSON.parse(raw)
-      return data[term] || null
+      return data[term] ?? null
     } catch {
       return null
     }
@@ -29,6 +29,7 @@ export class JsonHorarioRepository implements HorarioRepository {
         // file doesn't exist or is invalid, start fresh
       }
       if (schedule.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete data[term]
       } else {
         data[term] = schedule

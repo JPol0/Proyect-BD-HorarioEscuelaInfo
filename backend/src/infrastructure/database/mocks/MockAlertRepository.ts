@@ -1,5 +1,5 @@
-import { type AlertRepository } from '../../application/ports/AlertRepository.js'
-import { type Alert, type AlertState } from '../../domain/Alert.js'
+import { type AlertRepository } from '../../../application/ports/AlertRepository.js'
+import { type Alert, type AlertState } from '../../../domain/Alert.js'
 
 // El mock ahora vive en el servidor
 const MOCK_ALERTAS: Alert[] = [

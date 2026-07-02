@@ -1,5 +1,5 @@
-import { type TermRepository } from '../../application/ports/TermRepository.js'
-import { type Term } from '../../domain/Term.js'
+import { type TermRepository } from '../../../application/ports/TermRepository.js'
+import { type Term } from '../../../domain/Term.js'
 
 // Datos de mock en memoria — reemplazar por adaptador de BD cuando se implemente
 const MOCK_TERMS: Term[] = [
