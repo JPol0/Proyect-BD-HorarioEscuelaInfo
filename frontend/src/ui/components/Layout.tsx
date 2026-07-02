@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import heroImg from '../../assets/hero.png'
-import { useActiveTerm } from '../contexts/ActiveTermContext'
+import { useActiveTerm } from '../store/activeTermStore'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios'
 

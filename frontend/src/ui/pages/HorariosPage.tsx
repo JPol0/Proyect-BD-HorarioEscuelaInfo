@@ -8,7 +8,7 @@ import { GuardarHorario } from '../../core/application/useCases/Horarios/Guardar
 import { ApiHorarioRepository } from '../../core/infrastructure/adapters/ApiHorarioRepository'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
 import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
-import { useActiveTerm } from '../contexts/ActiveTermContext'
+import { useActiveTerm } from '../store/activeTermStore'
 import { type Materia } from '../../core/domain/Materia'
 import Title from '../components/TitlePage'
 
