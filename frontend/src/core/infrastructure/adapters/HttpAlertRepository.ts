@@ -5,8 +5,8 @@ import { API_CONFIG } from '../config/api'
 export class HttpAlertRepository implements AlertRepository {
   private readonly apiUrl = `${API_CONFIG.BASE_URL}/alerts`
 
-  async getAlarmsPending (): Promise<Alerta[]> {
-    const response = await fetch(`${this.apiUrl}/pendings`)
+  async getAllAlarms (): Promise<Alerta[]> {
+    const response = await fetch(this.apiUrl)
     if (!response.ok) {
       throw new Error('Error al conectar con el servidor de horarios')
     }

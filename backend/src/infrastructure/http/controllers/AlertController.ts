@@ -1,21 +1,21 @@
 import { type Request, type Response } from 'express'
-import { type GetAlertPending } from '../../../application/useCases/Alerts/GetAlertPending.js'
+import { type GetAllAlerts } from '../../../application/useCases/Alerts/GetAllAlerts.js'
 import { type SaveAlertState } from '../../../application/useCases/Alerts/SaveAlertState.js'
 import { type AlertState } from '../../../domain/Alert.js'
 
 export class AlertController {
-  private readonly getUseCase: GetAlertPending
+  private readonly getUseCase: GetAllAlerts
   private readonly saveUseCase: SaveAlertState
 
   constructor (
-    getUseCase: GetAlertPending,
+    getUseCase: GetAllAlerts,
     saveUseCase: SaveAlertState
   ) {
     this.getUseCase = getUseCase
     this.saveUseCase = saveUseCase
   }
 
-  getPending = async (req: Request, res: Response): Promise<void> => {
+  getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const alerts = await this.getUseCase.execute()
       res.json(alerts)
