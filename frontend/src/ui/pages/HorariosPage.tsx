@@ -42,20 +42,20 @@ export default function HorariosPage () {
   const [selectedSemester, setSelectedSemester] = useState<number>(1)
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
 
-  const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8;
-  const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1);
+  const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
+  const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
 
   const convertirARomano = (num: number): string => {
-    const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 };
-    let resultado = '';
-    let valorRestante = num;
+    const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+    let resultado = ''
+    let valorRestante = num
     for (const key in valoresRomanos) {
       while (valorRestante >= valoresRomanos[key]) {
-        resultado += key;
-        valorRestante -= valoresRomanos[key];
+        resultado += key
+        valorRestante -= valoresRomanos[key]
       }
     }
-    return resultado;
+    return resultado
   }
 
   useEffect(() => {

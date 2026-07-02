@@ -1,8 +1,8 @@
-INSERT INTO usuarios (nombre, correo) VALUES
-('Luis Gordillo', 'gordillo@correo.com'),
-('Ignacio Camburin', 'cambur@correo.com'),
-('KinJon Cora', 'kinjon@correo.com')
-ON CONFLICT (correo) DO NOTHING;
+INSERT INTO usuarios (nombre, password, rol) VALUES
+('Luis Gordillo', 'gordillo123', 'administrador'),
+('Ignacio Camburin', 'cambur123', 'lector'),
+('KinJon Cora', 'kinjon123', 'lector')
+ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO materias (cod_materia, nombre, nro_secciones, horas_teo, horas_lab, semestre, modalidad, es_comun)
 VALUES 

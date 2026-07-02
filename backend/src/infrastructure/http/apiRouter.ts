@@ -5,6 +5,7 @@ import createDisponibilidadRouter from './routes/DisponibilidadRoutes.js'
 import createMateriaRouter from './routes/MateriaRoutes.js'
 import createLaboratorioRouter from './routes/LaboratorioRoutes.js'
 import createHorarioRouter from './routes/HorarioRoutes.js'
+import createAuthRouter from './routes/AuthRoutes.js'
 
 // Import repository implementations (mocks for now)
 import { MockAlertRepository } from '../database/mocks/MockAlertRepository.js'
@@ -14,6 +15,7 @@ import { MockProfesorRepository } from '../database/mocks/MockProfesorRepository
 import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
 import { MockLaboratorioRepository } from '../database/mocks/MockLaboratorioRepository.js'
 import { JsonHorarioRepository } from '../database/mocks/JsonHorarioRepository.js'
+import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 
 const apiRouter = Router()
 
@@ -25,8 +27,10 @@ const profesorRepository = new MockProfesorRepository()
 const materiaRepository = new PgMateriaRepository()
 const laboratorioRepository = new MockLaboratorioRepository()
 const horarioRepository = new JsonHorarioRepository()
+const userRepository = new PgUserRepository()
 
 // Wire routes
+apiRouter.use('/auth', createAuthRouter(userRepository))
 apiRouter.use('/alerts', createAlertRouter(alertRepository))
 apiRouter.use('/terms', createTermRouter(termRepository))
 apiRouter.use('/weekly-schedule', createHorarioRouter(horarioRepository))
