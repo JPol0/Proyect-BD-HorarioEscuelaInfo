@@ -30,7 +30,7 @@ export const autoAsignarMateria = (
     '19:00', '20:00', '21:00', '22:00'
   ]
 
-  let horasFaltantes = totalHoras
+  const horasFaltantes = totalHoras
   const nuevasTuplas: Horario[] = []
 
   const asignarBloques = (horasNecesarias: number, tipo: string) => {
@@ -50,7 +50,7 @@ export const autoAsignarMateria = (
 
       for (const hora of horasDisponiblesBase) {
         const estaOcupado = horarioSinEstaMateria.some((t) => t.dia === dia && t.hora === hora && t.semestre === materia.semestre)
-        
+
         if (!estaOcupado) {
           bloqueActual.push(hora)
         } else {

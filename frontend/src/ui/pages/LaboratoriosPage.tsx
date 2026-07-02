@@ -4,6 +4,7 @@ import { HttpLaboratorioRepository } from '../../core/infrastructure/adapters/Ht
 import { GetLaboratorios } from '../../core/application/useCases/Laboratorios/GetLaboratorios'
 import { SaveLaboratorio } from '../../core/application/useCases/Laboratorios/SaveLaboratorio'
 import { DeleteLaboratorio } from '../../core/application/useCases/Laboratorios/DeleteLaboratorio'
+import { TrashBin } from '@gravity-ui/icons'
 import Title from '../components/TitlePage'
 import LaboratorioModal from '../components/LaboratorioScreen/LaboratorioModal'
 
@@ -170,10 +171,10 @@ function LaboratorioCard ({ laboratorio, onModificar, onEliminar }: LaboratorioC
       {/* Botón eliminar flotante y elegante (se muestra al hacer hover) */}
       <button
         onClick={onEliminar}
-        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm"
+        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm cursor-pointer"
         aria-label={`Eliminar ${laboratorio.name}`}
       >
-        🗑️
+        <TrashBin className="w-4 h-4" />
       </button>
 
       {/* Nombre del laboratorio */}

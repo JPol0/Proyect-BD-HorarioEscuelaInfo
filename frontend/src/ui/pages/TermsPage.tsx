@@ -6,7 +6,7 @@ import { type Term } from '../../core/domain/Term'
 import { type CreateTermInput } from '../../core/application/ports/TermRepository'
 import Title from '../components/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
-import { useActiveTerm } from '../contexts/ActiveTermContext'
+import { useActiveTerm } from '../store/activeTermStore'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()

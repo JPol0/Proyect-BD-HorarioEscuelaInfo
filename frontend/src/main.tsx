@@ -3,14 +3,11 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
-import { ActiveTermProvider } from './ui/contexts/ActiveTermContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ActiveTermProvider>
-        <App />
-      </ActiveTermProvider>
+      <App />
     </BrowserRouter>
   </React.StrictMode>
 )
