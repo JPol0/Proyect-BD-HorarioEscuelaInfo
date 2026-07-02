@@ -5,11 +5,11 @@ import { type MateriaRepository } from '../../ports/MateriaRepository.js'
 export class SaveMateria {
   private readonly repository: MateriaRepository
 
-  constructor (repository: MateriaRepository) {
+  constructor(repository: MateriaRepository) {
     this.repository = repository
   }
 
-  async execute (materia: Materia): Promise<void> {
+  async execute(materia: Materia): Promise<void> {
     const codMateria = (materia.codMateria === undefined || materia.codMateria.trim() === '')
       ? randomUUID()
       : materia.codMateria

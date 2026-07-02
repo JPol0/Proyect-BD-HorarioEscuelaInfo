@@ -1,4 +1,4 @@
-import type { Profesor } from '../../domain/Profesor'
+import type { Profesor } from '../../../domain/Profesor.js'
 
 export const profesoresMock: Profesor[] = [
   { cedula: 'V-12345678', nombre: 'Yoel Gutierrez', correo: 'ygutierrez@ucab.edu', status: 'A' },

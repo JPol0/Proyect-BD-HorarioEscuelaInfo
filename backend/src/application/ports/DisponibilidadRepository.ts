@@ -1,4 +1,4 @@
-import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria'
+import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria.js'
 
 export interface DisponibilidadRepository {
   obtenerPorProfesorYTerm: (cedulaProfesor: string, codTerm: string) => Promise<DisponibilidadHoraria[]>

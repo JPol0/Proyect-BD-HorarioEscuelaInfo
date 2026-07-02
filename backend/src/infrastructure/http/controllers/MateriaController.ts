@@ -28,6 +28,7 @@ export class MateriaController {
       const materias = await this.getUseCase.execute()
       res.json(materias)
     } catch (error) {
+      console.error('Error en MateriaController.getAll:', error)
       res.status(500).json({ error: 'Error al recuperar las materias del servidor' })
     }
   }

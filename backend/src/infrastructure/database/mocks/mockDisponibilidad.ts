@@ -1,5 +1,5 @@
-import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria.js'
-import { DIAS_SEMANA, MODULOS_HORARIO } from '../../domain/DisponibilidadHoraria.js'
+import type { DisponibilidadHoraria } from '../../../domain/DisponibilidadHoraria.js'
+import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../domain/DisponibilidadHoraria.js'
 
 export const mockDisponibilidad: DisponibilidadHoraria[] = DIAS_SEMANA.flatMap((dia) =>
   MODULOS_HORARIO.map((modulo) => ({

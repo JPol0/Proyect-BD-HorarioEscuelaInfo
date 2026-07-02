@@ -1,5 +1,5 @@
-import { type LaboratorioRepository } from '../../application/ports/LaboratorioRepository.js'
-import { type Laboratorio } from '../../domain/Laboratorio.js'
+import { type LaboratorioRepository } from '../../../application/ports/LaboratorioRepository.js'
+import { type Laboratorio } from '../../../domain/Laboratorio.js'
 
 // Datos de mock en memoria — reemplazar por adaptador de BD cuando se implemente
 const MOCK_LABORATORIOS: Laboratorio[] = [

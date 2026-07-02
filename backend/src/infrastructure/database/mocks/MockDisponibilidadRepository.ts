@@ -1,5 +1,5 @@
-import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria.js'
-import type { DisponibilidadRepository } from '../../application/ports/DisponibilidadRepository.js'
+import type { DisponibilidadHoraria } from '../../../domain/DisponibilidadHoraria.js'
+import type { DisponibilidadRepository } from '../../../application/ports/DisponibilidadRepository.js'
 import { mockDisponibilidad } from './mockDisponibilidad.js'
 
 export class MockDisponibilidadRepository implements DisponibilidadRepository {
