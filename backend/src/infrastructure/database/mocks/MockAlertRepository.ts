@@ -24,8 +24,8 @@ const MOCK_ALERTAS: Alert[] = [
 ]
 
 export class MockAlertRepository implements AlertRepository {
-  async getAlertsPending (): Promise<Alert[]> {
-    return MOCK_ALERTAS.filter((alert) => alert.estado === 'PENDIENTE')
+  async getAllAlerts (): Promise<Alert[]> {
+    return MOCK_ALERTAS
   }
 
   async saveState (id: string, estado: AlertState, motivo?: string): Promise<void> {
