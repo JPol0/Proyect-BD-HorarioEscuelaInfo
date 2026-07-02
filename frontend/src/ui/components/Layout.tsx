@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useActiveTerm } from '../store/activeTermStore'
+import { useUser } from '../store/userStore'
 import {
   Book,
   GraduationCap,
@@ -38,8 +39,9 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'terms', label: 'Seleccionar Term', Icon: LayoutHeaderSideContent, disponible: true, path: '/terms' }
 ]
 
-export default function Layout() {
+export default function Layout () {
   const { activeTerm } = useActiveTerm()
+  const { currentUser, clearCurrentUser } = useUser()
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
@@ -52,15 +54,15 @@ export default function Layout() {
               <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.name}>
                 {'Term: ' + activeTerm.name}
               </p>
-            )
+              )
             : (
               <p className="text-sm text-slate-500 font-hanken italic mt-3.5">
                 Ningún term activo
               </p>
-            )}
+              )}
         </div>
 
-        <nav className="flex flex-col gap-1.5 px-3 flex-1">
+        <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.Icon
             if (!item.disponible) {
@@ -96,6 +98,24 @@ export default function Layout() {
             )
           })}
         </nav>
+
+        {/* Sección de Usuario en la parte inferior */}
+        <div className="mt-auto px-6 py-6 border-t border-slate-800 flex flex-col gap-3 bg-sidebar shrink-0">
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-slate-200 truncate" title={currentUser?.nombre}>
+              {currentUser?.nombre}
+            </span>
+            <span className="text-xs text-[#57a8c8] font-semibold uppercase tracking-wider mt-0.5">
+              {currentUser?.rol}
+            </span>
+          </div>
+          <button
+            onClick={() => { clearCurrentUser() }}
+            className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </aside>
 
       <main className="flex-1 p-10 overflow-y-auto bg-bgmain">

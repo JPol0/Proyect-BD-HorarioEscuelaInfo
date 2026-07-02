@@ -1,6 +1,6 @@
 import { type MateriaRepository } from '../../../application/ports/MateriaRepository.js'
 import { type Materia, type MateriaModalidad } from '../../../domain/Materia.js'
-import { pool } from './db.js'
+import { getPool } from './db.js'
 
 export class PgMateriaRepository implements MateriaRepository {
   /**
@@ -10,7 +10,7 @@ export class PgMateriaRepository implements MateriaRepository {
     const query =
       `SELECT cod_materia, nombre, nro_secciones, horas_teo, horas_lab, semestre, modalidad, es_comun 
       FROM materias;`
-    const result = await pool.query(query)
+    const result = await getPool().query(query)
 
     // Mapeamos las columnas snake_case de BD al formato camelCase de nuestro Dominio
     return result.rows.map(row => {
@@ -60,7 +60,14 @@ export class PgMateriaRepository implements MateriaRepository {
       materia.modalidad,
       materia.esComun
     ]
-    await pool.query(query, values)
+    try {
+      await getPool().query(query, values)
+    } catch (error: any) {
+      if (error.code === '42501') {
+        throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
+      }
+      throw error
+    }
   }
 
   /**
@@ -68,10 +75,17 @@ export class PgMateriaRepository implements MateriaRepository {
    */
   async delete (codMateria: string): Promise<void> {
     const query = 'DELETE FROM materias WHERE cod_materia = $1'
-    const result = await pool.query(query, [codMateria])
+    try {
+      const result = await getPool().query(query, [codMateria])
 
-    if (result.rowCount === 0) {
-      throw new Error(`No se encontró la materia con código ${codMateria}`)
+      if (result.rowCount === 0) {
+        throw new Error(`No se encontró la materia con código ${codMateria}`)
+      }
+    } catch (error: any) {
+      if (error.code === '42501') {
+        throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
+      }
+      throw error
     }
   }
 }
