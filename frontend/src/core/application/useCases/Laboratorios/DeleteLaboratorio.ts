@@ -1,7 +1,11 @@
 import { type LaboratorioRepository } from '../../ports/LaboratorioRepository'
 
 export class DeleteLaboratorio {
-  constructor (private readonly repository: LaboratorioRepository) {}
+  private readonly repository: LaboratorioRepository
+
+  constructor (repository: LaboratorioRepository) {
+    this.repository = repository
+  }
 
   async execute (id: string): Promise<void> {
     await this.repository.delete(id)

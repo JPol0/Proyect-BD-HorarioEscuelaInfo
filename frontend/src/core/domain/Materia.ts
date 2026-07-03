@@ -4,6 +4,7 @@ export interface Materia {
   codMateria: string
   nombre: string
   nroSecciones: number
+  horasPrac: number
   horasTeo: number
   horasLab: number
   semestre: number

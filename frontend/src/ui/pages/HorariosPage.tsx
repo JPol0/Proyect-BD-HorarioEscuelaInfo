@@ -65,7 +65,7 @@ export default function HorariosPage () {
       try {
         const [payload, materiasPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(selectedTerm),
-          getMateriasUseCase.execute()
+          getMateriasUseCase.execute(selectedTerm)
         ])
 
         setMaterias(materiasPayload)

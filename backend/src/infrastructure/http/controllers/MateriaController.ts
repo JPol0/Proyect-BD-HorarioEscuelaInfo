@@ -25,7 +25,8 @@ export class MateriaController {
    */
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const materias = await this.getUseCase.execute()
+      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      const materias = await this.getUseCase.execute(term)
       res.json(materias)
     } catch (error) {
       console.error('Error en MateriaController.getAll:', error)
@@ -39,6 +40,7 @@ export class MateriaController {
    */
   save = async (req: Request, res: Response): Promise<void> => {
     try {
+      const term = typeof req.query.term === 'string' ? req.query.term : '1'
       const materiaData = req.body as Materia
 
       // Validación: El nombre es obligatorio. El código se generará en el repositorio si no se provee.
@@ -47,7 +49,7 @@ export class MateriaController {
         return
       }
 
-      await this.saveUseCase.execute(materiaData)
+      await this.saveUseCase.execute(term, materiaData)
       res.json({ ok: true, message: 'Materia guardada correctamente' })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'
@@ -66,7 +68,8 @@ export class MateriaController {
         res.status(400).json({ error: 'El código de la materia es obligatorio para eliminar' })
         return
       }
-      await this.deleteUseCase.execute(codMateria)
+      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      await this.deleteUseCase.execute(term, codMateria)
       res.json({ ok: true, message: 'Materia eliminada correctamente' })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'

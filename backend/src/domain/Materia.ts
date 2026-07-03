@@ -4,6 +4,7 @@ export interface Materia {
   codMateria: string // CodMateria en BD
   nombre: string // Nombre
   nroSecciones: number // NroSecciones
+  horasPrac: number // HorasPracticas
   horasTeo: number // HorasTeoricas
   horasLab: number // HorasLab
   semestre: number // semestre (asumiendo numérico: 1, 2, 3...)
