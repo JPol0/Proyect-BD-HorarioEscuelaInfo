@@ -5,16 +5,16 @@ import { API_CONFIG } from '../config/api'
 export class HttpMateriaRepository implements MateriaRepository {
   private readonly apiUrl = `${API_CONFIG.BASE_URL}/materias`
 
-  async getMaterias (): Promise<Materia[]> {
-    const response = await fetch(this.apiUrl)
+  async getMaterias (term: string): Promise<Materia[]> {
+    const response = await fetch(`${this.apiUrl}?term=${encodeURIComponent(term)}`)
     if (!response.ok) {
       throw new Error('Error al recuperar las materias del servidor')
     }
     return await response.json()
   }
 
-  async saveMateria (materia: Materia): Promise<void> {
-    const response = await fetch(this.apiUrl, {
+  async saveMateria (term: string, materia: Materia): Promise<void> {
+    const response = await fetch(`${this.apiUrl}?term=${encodeURIComponent(term)}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -39,8 +39,8 @@ export class HttpMateriaRepository implements MateriaRepository {
     }
   }
 
-  async deleteMateria (codMateria: string): Promise<void> {
-    const response = await fetch(`${this.apiUrl}/${codMateria}`, {
+  async deleteMateria (term: string, codMateria: string): Promise<void> {
+    const response = await fetch(`${this.apiUrl}/${encodeURIComponent(codMateria)}?term=${encodeURIComponent(term)}`, {
       method: 'DELETE'
     })
 

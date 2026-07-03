@@ -7,7 +7,7 @@ export class DeleteMateria {
     this.repository = repository
   }
 
-  async execute (codMateria: string): Promise<void> {
-    await this.repository.deleteMateria(codMateria)
+  async execute (term: string, codMateria: string): Promise<void> {
+    await this.repository.deleteMateria(term, codMateria)
   }
 }

@@ -17,8 +17,8 @@ import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServic
 import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
 import { MateriaCrearModal } from '../components/MateriaScreen/MateriaCrearModal'
 import Title from '../components/TitlePage'
+import { useActiveTerm } from '../store/activeTermStore'
 
-// Inyección manual de dependencias (Ya no instanciamos GetMateriaByCodigo)
 const repository = new HttpMateriaRepository()
 const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
@@ -39,8 +39,11 @@ const convertirARomano = (num: number): string => {
   return resultado
 }
 
-export function MateriasPage () {
+export function MateriasPage() {
   const navigate = useNavigate()
+  const { activeTerm } = useActiveTerm()
+  const termId = activeTerm?.id ?? '1'
+
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +54,7 @@ export function MateriasPage () {
   const cargarMaterias = async () => {
     try {
       setLoading(true)
-      const data = await getMateriasUseCase.execute()
+      const data = await getMateriasUseCase.execute(termId)
       setMaterias(data)
       setError(null)
     } catch (err) {
@@ -63,7 +66,7 @@ export function MateriasPage () {
 
   useEffect(() => {
     void cargarMaterias()
-  }, [])
+  }, [termId])
 
   const handleSaveMateria = async (materiaActualizada: Materia) => {
     // 1. Respaldamos el estado actual por si ocurre un error (Rollback)
@@ -74,10 +77,10 @@ export function MateriasPage () {
       prev.map((m) => m.codMateria === materiaActualizada.codMateria ? materiaActualizada : m)
     )
     try {
-    // 3. Enviamos al backend en segundo plano (SIN cambiar el estado 'loading' global)
-      await saveMateriaUseCase.execute(materiaActualizada)
+      // 3. Enviamos al backend en segundo plano (SIN cambiar el estado 'loading' global)
+      await saveMateriaUseCase.execute(termId, materiaActualizada)
     } catch (err) {
-    // 4. Si el backend falla, restauramos el estado anterior y avisamos al usuario
+      // 4. Si el backend falla, restauramos el estado anterior y avisamos al usuario
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudieron guardar los cambios en el servidor')
     }
@@ -87,7 +90,7 @@ export function MateriasPage () {
     const estadoPrevio = [...materias]
     setMaterias((prev) => prev.filter((m) => m.codMateria !== codMateria))
     try {
-      await deleteMateriaUseCase.execute(codMateria)
+      await deleteMateriaUseCase.execute(termId, codMateria)
     } catch (err) {
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudo eliminar la materia en el servidor')
@@ -105,7 +108,7 @@ export function MateriasPage () {
     setMaterias((prev) => [...prev, nuevaMateriaProvisional])
 
     try {
-      await saveMateriaUseCase.execute({
+      await saveMateriaUseCase.execute(termId, {
         ...nuevaMateriaProvisional,
         codMateria: '' // Enviamos vacío para indicar que el backend debe generarlo
       })
@@ -226,40 +229,40 @@ export function MateriasPage () {
 
       {loading
         ? (
-        <div className="text-center py-12 text-slate-400 font-sans">Cargando catálogo de materias...</div>
-          )
+          <div className="text-center py-12 text-slate-400 font-sans">Cargando catálogo de materias...</div>
+        )
         : error
           ? (
-        <div className="text-center py-8 text-red-500 bg-red-50 border border-red-200 rounded-xl max-w-xl mx-auto p-4 font-sans">
-          {error}
-        </div>
-            )
+            <div className="text-center py-8 text-red-500 bg-red-50 border border-red-200 rounded-xl max-w-xl mx-auto p-4 font-sans">
+              {error}
+            </div>
+          )
           : materiasFiltradas.length === 0
             ? (
-        <div className="text-center py-12 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 font-sans">
-          No se encontraron materias bajo ese filtro.
-        </div>
-              )
+              <div className="text-center py-12 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 font-sans">
+                No se encontraron materias bajo ese filtro.
+              </div>
+            )
             : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materiasFiltradas.map((materia) => (
-            <MateriaCard
-              key={materia.codMateria}
-              materia={materia}
-              onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
-              onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
-              onAssignHours={(materiaParaAsignar, manualHours) => {
-                try {
-                  validateAssignHoursUseCase.execute(materiaParaAsignar)
-                  void navigate('/horarios', { state: { materia: materiaParaAsignar, manualHours } })
-                } catch (e) {
-                  alert(e instanceof Error ? e.message : 'Error al validar horas')
-                }
-              }}
-            />
-          ))}
-        </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {materiasFiltradas.map((materia) => (
+                  <MateriaCard
+                    key={materia.codMateria}
+                    materia={materia}
+                    onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
+                    onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
+                    onAssignHours={(materiaParaAsignar, manualHours) => {
+                      try {
+                        validateAssignHoursUseCase.execute(materiaParaAsignar)
+                        void navigate('/horarios', { state: { materia: materiaParaAsignar, manualHours } })
+                      } catch (e) {
+                        alert(e instanceof Error ? e.message : 'Error al validar horas')
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            )}
     </div>
   )
 }

@@ -38,16 +38,6 @@ CREATE TABLE IF NOT EXISTS Terms(
     PRIMARY KEY(CodTerm)
 );
 
--- creacion de tabla Plan de Estudio
-CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
-    CodAsig VARCHAR(40) NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
-    NroSeccionesPE dom_num_secciones NOT NULL,
-    
-    PRIMARY KEY(CodAsig, CodTerm),
-    FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
 -- creacion de tabla Materias
 CREATE TABLE IF NOT EXISTS Materias (
     CodAsig VARCHAR(40) NOT NULL,
@@ -59,6 +49,17 @@ CREATE TABLE IF NOT EXISTS Materias (
     EsComunPE BOOLEAN NOT NULL,
     ModalidadPE dom_modalidad NOT NULL, -- PRE o VIT
     
-    PRIMARY KEY (CodAsig),
-    FOREIGN KEY (CodAsig) REFERENCES Plan_de_Estudio(CodAsig) ON UPDATE CASCADE ON DELETE CASCADE
+    PRIMARY KEY (CodAsig)
 );
+
+-- creacion de tabla Plan de Estudio
+CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
+    CodAsig VARCHAR(40) NOT NULL,
+    CodTerm VARCHAR(30) NOT NULL,
+    NroSeccionesPE dom_num_secciones NOT NULL,
+    
+    PRIMARY KEY(CodAsig, CodTerm),
+    FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(CodAsig) REFERENCES Materias(CodAsig) ON UPDATE CASCADE ON DELETE CASCADE
+);
+

@@ -8,7 +8,7 @@ export class SaveMateria {
     this.repository = repository
   }
 
-  async execute (materia: Materia): Promise<void> {
-    await this.repository.saveMateria(materia)
+  async execute (term: string, materia: Materia): Promise<void> {
+    await this.repository.saveMateria(term, materia)
   }
 }

@@ -1,7 +1,7 @@
 import { type Materia } from '../../domain/Materia.js'
 
 export interface MateriaRepository {
-  getAll: () => Promise<Materia[]>
-  save: (materia: Materia) => Promise<void>
-  delete: (codMateria: string) => Promise<void>
+  getAll: (term: string) => Promise<Materia[]>
+  save: (term: string, materia: Materia) => Promise<void>
+  delete: (term: string, codMateria: string) => Promise<void>
 }

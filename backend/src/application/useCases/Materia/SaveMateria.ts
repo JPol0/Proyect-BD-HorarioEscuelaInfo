@@ -9,7 +9,7 @@ export class SaveMateria {
     this.repository = repository
   }
 
-  async execute (materia: Materia): Promise<void> {
+  async execute (term: string, materia: Materia): Promise<void> {
     const codMateria = (materia.codMateria === undefined || materia.codMateria.trim() === '')
       ? randomUUID()
       : materia.codMateria
@@ -19,6 +19,6 @@ export class SaveMateria {
       codMateria
     }
 
-    await this.repository.save(materiaToSave)
+    await this.repository.save(term, materiaToSave)
   }
 }

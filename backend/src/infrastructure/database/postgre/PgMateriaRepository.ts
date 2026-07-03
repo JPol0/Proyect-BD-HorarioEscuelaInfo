@@ -6,7 +6,7 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Obtiene todas las materias de la base de datos relacional.
    */
-  async getAll (): Promise<Materia[]> {
+  async getAll (term: string): Promise<Materia[]> {
     const queryMaterias =
       `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE 
       FROM Materias;`
@@ -14,11 +14,7 @@ export class PgMateriaRepository implements MateriaRepository {
     const queryPlan =
       `SELECT CodAsig, NroSeccionesPE 
       FROM Plan_de_Estudio 
-      WHERE CodTerm = COALESCE(
-        (SELECT CodTerm FROM Terms WHERE StatusT = 'A' LIMIT 1),
-        (SELECT CodTerm FROM Terms ORDER BY CodTerm DESC LIMIT 1),
-        '1'
-      );`
+      WHERE CodTerm = $1;`
 
     interface MateriaRow {
       codasig: string
@@ -38,7 +34,7 @@ export class PgMateriaRepository implements MateriaRepository {
 
     const [materiasResult, planResult] = await Promise.all([
       getPool().query<MateriaRow>(queryMaterias),
-      getPool().query<PlanRow>(queryPlan)
+      getPool().query<PlanRow>(queryPlan, [term])
     ])
 
     const planMap = new Map<string, number>()
@@ -68,7 +64,7 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Guarda una materia mediante un Upsert (inserta o actualiza si ya existe).
    */
-  async save (materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia): Promise<void> {
     if (materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
@@ -77,31 +73,16 @@ export class PgMateriaRepository implements MateriaRepository {
     try {
       await client.query('BEGIN')
 
-      // 1. Obtener el término activo o fallback
-      interface TermRow {
-        codterm: string
-      }
-      const termResult = await client.query<TermRow>(
-        'SELECT CodTerm FROM Terms WHERE StatusT = \'A\' LIMIT 1;'
-      )
-      let codTerm = termResult.rows[0]?.codterm
-      if (codTerm === undefined || codTerm === null) {
-        const fallbackResult = await client.query<TermRow>(
-          'SELECT CodTerm FROM Terms ORDER BY CodTerm DESC LIMIT 1;'
-        )
-        codTerm = fallbackResult.rows[0]?.codterm ?? '1'
-      }
-
-      // 2. Upsert en Plan_de_Estudio
+      // 1. Upsert en Plan_de_Estudio
       const planQuery = `
         INSERT INTO Plan_de_Estudio (CodAsig, CodTerm, NroSeccionesPE)
         VALUES ($1, $2, $3)
         ON CONFLICT (CodAsig, CodTerm) 
         DO UPDATE SET NroSeccionesPE = EXCLUDED.NroSeccionesPE;
       `
-      await client.query(planQuery, [materia.codMateria, codTerm, materia.nroSecciones])
+      await client.query(planQuery, [materia.codMateria, term, materia.nroSecciones])
 
-      // 3. Upsert en Materias
+      // 2. Upsert en Materias
       const materiaQuery = `
         INSERT INTO Materias (CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -141,13 +122,13 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Elimina una materia por su clave primaria.
    */
-  async delete (codMateria: string): Promise<void> {
-    const query = 'DELETE FROM Plan_de_Estudio WHERE CodAsig = $1'
+  async delete (term: string, codMateria: string): Promise<void> {
+    const query = 'DELETE FROM Plan_de_Estudio WHERE CodAsig = $1 AND CodTerm = $2'
     try {
-      const result = await getPool().query(query, [codMateria])
+      const result = await getPool().query(query, [codMateria, term])
 
       if (result.rowCount === 0) {
-        throw new Error(`No se encontró la materia con código ${codMateria}`)
+        throw new Error(`No se encontró la materia con código ${codMateria} para el término ${term}`)
       }
     } catch (error: any) {
       if (error.code === '42501') {
