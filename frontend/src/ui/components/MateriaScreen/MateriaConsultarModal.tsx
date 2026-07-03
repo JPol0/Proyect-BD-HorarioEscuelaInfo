@@ -12,6 +12,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
   const [nombre, setNombre] = useState(materia.nombre)
   const [semestre, setSemestre] = useState(materia.semestre)
   const [horasTeoricas, setHorasTeoricas] = useState(materia.horasTeo)
+  const [horasPrac, setHorasPrac] = useState(materia.horasPrac)
   const [horasLab, setHorasLab] = useState(materia.horasLab)
   const [modalidad, setModalidad] = useState<MateriaModalidad>(materia.modalidad)
   const [esComun, setEsComun] = useState<string>(materia.esComun ? 'si' : 'no')
@@ -23,6 +24,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
         nombre,
         semestre: Number(semestre),
         horasTeo: Number(horasTeoricas),
+        horasPrac: Number(horasPrac),
         horasLab: Number(horasLab),
         modalidad,
         esComun: esComun === 'si'
@@ -87,14 +89,25 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                   />
                 </div>
 
-                {/* Fila 3: Horas de Teoría y Horas de Laboratorio */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Fila 3: Horas de Teoría, Horas Práctica y Horas de Laboratorio */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">Horas Teóricas</span>
                     <Input
                       type="number"
                       value={horasTeoricas.toString()}
                       onChange={(e) => setHorasTeoricas(Number(e.target.value))}
+                      variant="primary"
+                      className="w-full text-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-slate-500">Horas Prácticas</span>
+                    <Input
+                      type="number"
+                      value={horasPrac.toString()}
+                      onChange={(e) => setHorasPrac(Number(e.target.value))}
                       variant="primary"
                       className="w-full text-sm"
                     />
@@ -182,7 +195,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                 </Button>
                 <Button
                   variant="primary"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
+                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
                   onPress={() => handleGuardar(close)}
                 >
                   Guardar Cambios
