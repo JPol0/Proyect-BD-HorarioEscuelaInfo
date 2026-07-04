@@ -22,9 +22,14 @@ Antes de iniciar el contenedor, debes crear y configurar tus variables de entorn
 Puedes basarte en el archivo [.env.example]:
 
 1. Copia el archivo de ejemplo y nómbralo `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+   - En Bash / zsh:
+     ```bash
+     cp .env.example .env
+     ```
+   - En PowerShell de Windows:
+     ```powershell
+     if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+     ```
 2. Modifica los valores en el archivo `.env` según tus preferencias locales.
 
 ### 2. Comandos para Gestionar la Base de Datos con Docker
