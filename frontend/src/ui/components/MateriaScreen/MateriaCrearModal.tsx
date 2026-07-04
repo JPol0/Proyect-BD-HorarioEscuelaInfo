@@ -32,8 +32,7 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
         horasLab: Number(horasLab),
         modalidad,
         esComun: esComun === 'si',
-        nroSecciones: 1, // Por defecto al crear una materia
-        preReq: []
+        nroSecciones: 1 // Por defecto al crear una materia
       })
     }
 

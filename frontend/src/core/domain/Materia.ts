@@ -10,6 +10,4 @@ export interface Materia {
   semestre: number
   modalidad: MateriaModalidad
   esComun: boolean
-  preReq: string[]
-  laboratorioId?: string
 }

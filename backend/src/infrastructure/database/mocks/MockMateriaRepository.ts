@@ -12,9 +12,7 @@ const MOCK_MATERIAS: Materia[] = [
     horasLab: 0,
     semestre: 2,
     modalidad: 'PRE',
-    esComun: true,
-    preReq: ['Calculo I'],
-    laboratorioId: undefined
+    esComun: true
   },
   {
     codMateria: 'INF-202',
@@ -25,9 +23,7 @@ const MOCK_MATERIAS: Materia[] = [
     horasLab: 2,
     semestre: 2,
     modalidad: 'PRE',
-    esComun: false,
-    preReq: ['Introduccion a la Informatica'],
-    laboratorioId: undefined
+    esComun: false
   },
   {
     codMateria: 'INF-301',
@@ -38,9 +34,7 @@ const MOCK_MATERIAS: Materia[] = [
     horasLab: 2,
     semestre: 3,
     modalidad: 'PRE',
-    esComun: false,
-    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta'],
-    laboratorioId: undefined
+    esComun: false
   }
 ]
 

@@ -5,7 +5,8 @@ export const autoAsignarMateria = (
   materia: Materia,
   horarioActual: Horario[],
   termId: string,
-  seccion: number = 1
+  seccion: number = 1,
+  laboratorioId?: string
 ): Horario[] => {
   const totalHoras = materia.horasTeo + materia.horasLab
   if (totalHoras === 0) return horarioActual
@@ -30,7 +31,6 @@ export const autoAsignarMateria = (
     '19:00', '20:00', '21:00', '22:00'
   ]
 
-  const horasFaltantes = totalHoras
   const nuevasTuplas: Horario[] = []
 
   const asignarBloques = (horasNecesarias: number, tipo: string) => {
@@ -78,7 +78,7 @@ export const autoAsignarMateria = (
             dia,
             hora,
             semestre: materia.semestre,
-            codLaboratorio: materia.laboratorioId
+            codLaboratorio: laboratorioId
           })
           faltantes--
         }
