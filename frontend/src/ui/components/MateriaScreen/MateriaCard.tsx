@@ -5,6 +5,7 @@ import { MateriaConsultarModal } from './MateriaConsultarModal'
 import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
 import { MateriaHoraModal } from './MateriaHoraModal'
 import { useMateriaLabStore } from '../../store/materiaLabStore'
+import { MateriaProfesorModal } from './MateriaProfesorModal'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
 import { MateriaDeleteButton } from './MateriaDeleteButton'
 
@@ -12,7 +13,6 @@ interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
   onDelete?: (codMateria: string) => void
-  onManageTeachers?: (materia: Materia) => void
   onAssignHours?: (materia: Materia, manualHours: Array<{ dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
@@ -20,7 +20,6 @@ export function MateriaCard ({
   materia,
   onSave,
   onDelete,
-  onManageTeachers,
   onAssignHours
 }: MateriaCardProps) {
   const currentLabId = useMateriaLabStore((state) => state.assignments[materia.codMateria])
@@ -100,14 +99,16 @@ export function MateriaCard ({
             />
           </Modal>
 
-          <Button
-            variant="secondary"
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
-            onPress={() => onManageTeachers?.(materia)}
-          >
-            <PersonPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            Profesores
-          </Button>
+          <Modal>
+            <Button
+              variant="secondary"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
+            >
+              <PersonPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              Profesores
+            </Button>
+            <MateriaProfesorModal materia={materia} />
+          </Modal>
 
           {materia.horasLab > 0 && (
             <Modal>

@@ -4,6 +4,7 @@ import { type ProfesorRepository } from '../../../application/ports/ProfesorRepo
 import { ObtenerDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria.js'
 import { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
 import { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
+import { GetProfesores } from '../../../application/useCases/Profesores/GetProfesores.js'
 import { DisponibilidadController } from '../controllers/DisponibilidadController.js'
 
 export default function createDisponibilidadRouter (
@@ -15,8 +16,10 @@ export default function createDisponibilidadRouter (
   const obtenerUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
   const guardarUseCase = new GuardarDisponibilidadHoraria(disponibilidadRepository)
   const obtenerProfesorUseCase = new ObtenerProfesorActivo(profesorRepository)
-  const controller = new DisponibilidadController(obtenerUseCase, guardarUseCase, obtenerProfesorUseCase)
+  const getProfesoresUseCase = new GetProfesores(profesorRepository)
+  const controller = new DisponibilidadController(obtenerUseCase, guardarUseCase, obtenerProfesorUseCase, getProfesoresUseCase)
 
+  router.get('/', controller.getAll)
   router.get('/:cedula/disponibilidad', controller.obtener)
   router.put('/:cedula/disponibilidad', controller.guardar)
 

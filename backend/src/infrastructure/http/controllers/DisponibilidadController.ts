@@ -2,13 +2,25 @@ import type { Request, Response } from 'express'
 import type { ObtenerDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria.js'
 import type { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
 import type { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
+import type { GetProfesores } from '../../../application/useCases/Profesores/GetProfesores.js'
 
 export class DisponibilidadController {
   constructor (
     private readonly obtenerDisponibilidadHorariaUseCase: ObtenerDisponibilidadHoraria,
     private readonly guardarDisponibilidadHorariaUseCase: GuardarDisponibilidadHoraria,
-    private readonly obtenerProfesorActivoUseCase: ObtenerProfesorActivo
+    private readonly obtenerProfesorActivoUseCase: ObtenerProfesorActivo,
+    private readonly getProfesoresUseCase: GetProfesores
   ) {}
+
+  getAll = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const profesores = await this.getProfesoresUseCase.execute()
+      res.json(profesores)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado'
+      res.status(500).json({ message })
+    }
+  }
 
   obtener = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -16,7 +28,6 @@ export class DisponibilidadController {
       const codTerm = typeof req.query.term === 'string' ? req.query.term : '202615'
       const profesor = await this.obtenerProfesorActivoUseCase.execute(cedula)
       const disponibilidad = await this.obtenerDisponibilidadHorariaUseCase.execute(cedula, codTerm)
-
       res.json({ profesor, disponibilidad })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
@@ -29,7 +40,6 @@ export class DisponibilidadController {
       const { cedula } = req.params as { cedula: string }
       const codTerm = typeof req.query.term === 'string' ? req.query.term : '202615'
       const grilla = req.body
-
       await this.guardarDisponibilidadHorariaUseCase.execute(cedula, codTerm, grilla)
       res.json({ ok: true, message: 'Disponibilidad guardada' })
     } catch (error) {
