@@ -32,7 +32,7 @@ type NavItem = NavItemDisabled | NavItemEnabled
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'materias', label: 'Materias', Icon: Book, disponible: true, path: '/materias' },
-  { id: 'profesores', label: 'Profesores', Icon: GraduationCap, disponible: false },
+  { id: 'profesores', label: 'Profesores', Icon: GraduationCap, disponible: true, path: '/profesores' },
   { id: 'laboratorios', label: 'Laboratorios', Icon: Flask, disponible: true, path: '/laboratorios' },
   { id: 'horarios', label: 'Generar Horario', Icon: Calendar, disponible: true, path: '/horarios' },
   { id: 'peligros', label: 'Peligros', Icon: TriangleExclamation, disponible: true, path: '/peligros' },
