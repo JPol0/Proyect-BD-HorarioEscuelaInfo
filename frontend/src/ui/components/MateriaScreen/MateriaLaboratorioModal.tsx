@@ -7,17 +7,22 @@ import { GetLaboratorios } from '../../../core/application/useCases/Laboratorios
 
 interface MateriaLaboratorioModalProps {
   materia: Materia
-  onSave?: (materia: Materia) => void
+  currentLabId?: string
+  onSaveLab?: (codMateria: string, laboratorioId?: string) => void
 }
 
 const repository = new HttpLaboratorioRepository()
 const getLaboratoriosUseCase = new GetLaboratorios(repository)
 
-export function MateriaLaboratorioModal ({ materia, onSave }: MateriaLaboratorioModalProps) {
+export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: MateriaLaboratorioModalProps) {
   const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLabId, setSelectedLabId] = useState<string>(materia.laboratorioId ?? 'ninguno')
+  const [selectedLabId, setSelectedLabId] = useState<string>(currentLabId ?? 'ninguno')
+
+  useEffect(() => {
+    setSelectedLabId(currentLabId ?? 'ninguno')
+  }, [currentLabId])
 
   useEffect(() => {
     const cargarLaboratorios = async () => {
@@ -35,11 +40,11 @@ export function MateriaLaboratorioModal ({ materia, onSave }: MateriaLaboratorio
   }, [])
 
   const handleGuardar = (close: () => void) => {
-    if (onSave) {
-      onSave({
-        ...materia,
-        laboratorioId: selectedLabId === 'ninguno' ? undefined : selectedLabId
-      })
+    if (onSaveLab) {
+      onSaveLab(
+        materia.codMateria,
+        selectedLabId === 'ninguno' ? undefined : selectedLabId
+      )
     }
     close()
   }
