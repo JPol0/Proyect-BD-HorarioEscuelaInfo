@@ -13,7 +13,7 @@ interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
   onDelete?: (codMateria: string) => void
-  onAssignHours?: (materia: Materia, manualHours: Array<{ dia: DaysOfWeek, hora: string, cantidad: number }>) => void
+  onAssignHours?: (materia: Materia, manualHours: Array<{ nroSeccion: number, dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
 export function MateriaCard ({

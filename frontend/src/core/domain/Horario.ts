@@ -4,6 +4,8 @@ export type ScheduleRow = {
   hour: string
 } & Record<DaysOfWeek, string>
 
+import type { Laboratorio } from './Laboratorio'
+
 export interface Horario {
   codAsig: string
   codTerm: string
@@ -11,5 +13,5 @@ export interface Horario {
   dia: DaysOfWeek
   hora: string // Ej: "07:00"
   semestre: number
-  codLaboratorio?: string
+  laboratorio?: Laboratorio | null
 }

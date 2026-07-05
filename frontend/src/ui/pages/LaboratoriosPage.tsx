@@ -7,6 +7,8 @@ import { DeleteLaboratorio } from '../../core/application/useCases/Laboratorios/
 import { TrashBin } from '@gravity-ui/icons'
 import Title from '../components/TitlePage'
 import LaboratorioModal from '../components/LaboratorioScreen/LaboratorioModal'
+import { LaboratorioDisponibilidadModal } from '../components/LaboratorioScreen/LaboratorioDisponibilidadModal'
+import { Modal, Button } from '@heroui/react'
 
 // ─── Instanciación manual de dependencias (Hexagonal) ──────────────────────────
 const repository = new HttpLaboratorioRepository()
@@ -139,6 +141,7 @@ export default function LaboratoriosPage () {
                 <LaboratorioCard
                   key={lab.id}
                   laboratorio={lab}
+                  laboratorios={laboratorios}
                   onModificar={() => { setModal({ open: true, laboratorio: lab }) }}
                   onEliminar={() => { void handleEliminar(lab.id) }}
                 />
@@ -161,11 +164,12 @@ export default function LaboratoriosPage () {
 // ─── Sub-componente: tarjeta de laboratorio ────────────────────────────────────
 interface LaboratorioCardProps {
   laboratorio: Laboratorio
+  laboratorios: Laboratorio[]
   onModificar: () => void
   onEliminar: () => void
 }
 
-function LaboratorioCard ({ laboratorio, onModificar, onEliminar }: LaboratorioCardProps) {
+function LaboratorioCard ({ laboratorio, laboratorios, onModificar, onEliminar }: LaboratorioCardProps) {
   return (
     <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200">
       {/* Botón eliminar flotante y elegante (se muestra al hacer hover) */}
@@ -188,13 +192,20 @@ function LaboratorioCard ({ laboratorio, onModificar, onEliminar }: LaboratorioC
       <div className="border-t border-slate-100" />
 
       {/* Acciones */}
-      <div className="py-4 px-6 flex justify-center bg-white">
+      <div className="py-4 px-6 flex justify-center gap-2 bg-white">
         <button
           onClick={onModificar}
-          className="px-6 py-2 text-xs font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase"
+          className="px-4 py-2 text-[11px] font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase"
         >
           Modificar
         </button>
+
+        <Modal>
+          <Button className="px-4 py-2 text-[11px] h-auto min-w-0 font-bold text-white bg-[#1A5F7A] rounded-lg hover:bg-[#14495e] transition-colors font-hanken tracking-wider uppercase cursor-pointer">
+            Disponibilidad
+          </Button>
+          <LaboratorioDisponibilidadModal laboratorios={laboratorios} initialLabId={laboratorio.id} />
+        </Modal>
       </div>
     </div>
   )

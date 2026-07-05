@@ -76,13 +76,16 @@ export default function HorariosPage () {
         let currentTuplas = draftStr ? JSON.parse(draftStr) as Horario[] : (payload ?? [])
 
         const materiaFromState = location.state?.materia as Materia | undefined
-        const manualHours = location.state?.manualHours as Array<{ dia: DaysOfWeek, hora: string, cantidad: number }> | undefined
+        const manualHours = location.state?.manualHours as Array<{ nroSeccion: number, dia: DaysOfWeek, hora: string, cantidad: number }> | undefined
 
         if (materiaFromState != null && manualHours != null) {
           try {
-            // Limpiamos las horas previas
+            // Sabemos qué sección estamos asignando porque ahora el modal manda solo esa sección
+            const secToOverwrite = manualHours.length > 0 ? manualHours[0].nroSeccion : 1;
+
+            // Limpiamos las horas previas SOLO para esa sección
             currentTuplas = currentTuplas.filter(
-              (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === selectedTerm)
+              (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === selectedTerm && t.nroSeccion === secToOverwrite)
             )
 
             const horasDisponiblesBase = [
@@ -100,19 +103,19 @@ export default function HorariosPage () {
                 if (startIndex + i >= horasDisponiblesBase.length) break
                 const horaAsignar = horasDisponiblesBase[startIndex + i]
 
-                // Chequeamos si ya hay un horario reservado para ese día y hora en el mismo semestre
+                // Chequeamos si ya hay un horario reservado para ese día y hora en la MISMA sección
                 const estaOcupado = currentTuplas.some(
-                  t => t.semestre === materiaFromState.semestre && t.dia === block.dia && t.hora === horaAsignar
+                  t => t.semestre === materiaFromState.semestre && t.dia === block.dia && t.hora === horaAsignar && t.nroSeccion === block.nroSeccion
                 )
 
                 if (estaOcupado) {
-                  throw new Error(`Choque de horarios: El ${block.dia} a las ${horaAsignar} ya está reservado en el semestre ${materiaFromState.semestre}.`)
+                  throw new Error(`Choque de horarios: El ${block.dia} a las ${horaAsignar} ya está reservado para la Sección ${block.nroSeccion}.`)
                 }
 
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
                   codTerm: selectedTerm,
-                  nroSeccion: 1, // Por defecto
+                  nroSeccion: block.nroSeccion,
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
@@ -157,10 +160,28 @@ export default function HorariosPage () {
     return baseHours.map(hour => {
       const row: Partial<ScheduleRow> = { hour }
       for (const day of days) {
-        const asig = tuplas.find(t => t.dia === day && t.hora === hour && t.semestre === selectedSemester)
-        if (asig != null) {
-          const materia = materias.find(m => m.codMateria === asig.codAsig)
-          row[day] = materia ? materia.nombre : asig.codAsig
+        const asigs = tuplas.filter(t => t.dia === day && t.hora === hour && t.semestre === selectedSemester)
+        if (asigs.length > 0) {
+          // Agrupamos por materia para combinar las secciones
+          const agrupadoPorMateria: Record<string, number[]> = {}
+          for (const asig of asigs) {
+            if (!agrupadoPorMateria[asig.codAsig]) agrupadoPorMateria[asig.codAsig] = []
+            agrupadoPorMateria[asig.codAsig].push(asig.nroSeccion || 1)
+          }
+
+          const textos = Object.entries(agrupadoPorMateria).map(([codAsig, sections]) => {
+            const materia = materias.find(m => m.codMateria === codAsig)
+            if (materia) {
+              if (materia.nroSecciones > 1) {
+                // Ordenar y unir con "/" (ej. I/II/III)
+                const romans = sections.sort((a, b) => a - b).map(s => convertirARomano(s)).join('/')
+                return `${materia.nombre} (Sección ${romans})`
+              }
+              return materia.nombre
+            }
+            return codAsig
+          })
+          row[day] = textos.join(' | ')
         } else {
           row[day] = '-'
         }
@@ -273,14 +294,18 @@ export default function HorariosPage () {
                 // Solo autoasignar las materias del semestre que estamos viendo actualmente
                 if (materia.semestre !== selectedSemester) continue
 
-                const isAssigned = newTuplas.some(t => t.codAsig === materia.codMateria)
-                if (!isAssigned) {
-                  try {
-                    const labId = labAssignments[materia.codMateria]
-                    newTuplas = autoAssignUseCase.execute(materia, newTuplas, selectedTerm, materia.semestre || 1, labId)
-                  } catch (e) {
-                    console.warn('No se pudo asignar completamente:', materia.nombre)
-                    newErrors.push(e instanceof Error ? e.message : `No se pudo asignar ${materia.nombre}`)
+                const nroSecciones = Math.max(1, materia.nroSecciones)
+
+                for (let sec = 1; sec <= nroSecciones; sec++) {
+                  const isAssigned = newTuplas.some(t => t.codAsig === materia.codMateria && t.nroSeccion === sec)
+                  if (!isAssigned) {
+                    try {
+                      const labId = labAssignments[materia.codMateria]
+                      newTuplas = autoAssignUseCase.execute(materia, newTuplas, selectedTerm, sec, labId)
+                    } catch (e) {
+                      console.warn(`No se pudo asignar completamente ${materia.nombre} Sección ${sec}`)
+                      newErrors.push(e instanceof Error ? e.message : `No se pudo asignar ${materia.nombre} (Sección ${sec})`)
+                    }
                   }
                 }
               }

@@ -7,6 +7,8 @@ import { MateriasPage } from './ui/pages/MateriasPage'
 import LaboratoriosPage from './ui/pages/LaboratoriosPage'
 import LoginPage from './ui/pages/LoginPage'
 import { useUser } from './ui/store/userStore'
+import { ProfesoresPage } from './ui/pages/ProfesoresPage'
+import { DisponibilidadProfesorPage } from './ui/pages/DisponibilidadProfesorPage'
 
 function App () {
   const { currentUser } = useUser()
@@ -27,6 +29,8 @@ function App () {
         <Route path="/peligros" element={<AlarmCenter />} />
         <Route path="/materias" element={<MateriasPage />} />
         <Route path="/laboratorios" element={<LaboratoriosPage />} />
+        <Route path="/profesores" element={<ProfesoresPage />} />
+        <Route path="/profesores/:cedula/disponibilidad" element={<DisponibilidadProfesorPage />} />
       </Route>
 
       {/* Fallback general */}
