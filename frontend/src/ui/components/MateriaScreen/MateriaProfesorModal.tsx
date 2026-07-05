@@ -22,7 +22,8 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
       try {
         setError(null)
         const lista = await repository.getProfesores()
-        setProfesores(lista)
+        // Solo cargar profesores activos
+        setProfesores(lista.filter((p) => p.status === 'A'))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar profesores')
       } finally {
