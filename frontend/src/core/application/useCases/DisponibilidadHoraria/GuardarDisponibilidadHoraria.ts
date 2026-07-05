@@ -7,7 +7,11 @@ const MODULOS_VALIDOS = new Set<number>(MODULOS_HORARIO.map((modulo) => modulo.n
 const NIVELES_VALIDOS = new Set<number>([0, 1, 2])
 
 export class GuardarDisponibilidadHoraria {
-  constructor (private readonly disponibilidadRepository: DisponibilidadRepository) {}
+  private readonly disponibilidadRepository: DisponibilidadRepository
+
+  constructor (disponibilidadRepository: DisponibilidadRepository) {
+    this.disponibilidadRepository = disponibilidadRepository
+  }
 
   async execute (cedulaProfesor: string, codTerm: string, grilla: DisponibilidadHoraria[]): Promise<void> {
     for (const celda of grilla) {

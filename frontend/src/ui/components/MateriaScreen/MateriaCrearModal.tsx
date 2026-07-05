@@ -11,6 +11,7 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
   const [nombre, setNombre] = useState('')
   const [semestre, setSemestre] = useState(1)
   const [horasTeoricas, setHorasTeoricas] = useState(4)
+  const [horasPrac, setHorasPrac] = useState(0)
   const [horasLab, setHorasLab] = useState(0)
   const [modalidad, setModalidad] = useState<MateriaModalidad>('PRE')
   const [esComun, setEsComun] = useState<string>('no')
@@ -27,11 +28,11 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
         nombre: nombre.trim(),
         semestre: Number(semestre),
         horasTeo: Number(horasTeoricas),
+        horasPrac: Number(horasPrac),
         horasLab: Number(horasLab),
         modalidad,
         esComun: esComun === 'si',
-        nroSecciones: 1, // Por defecto al crear una materia
-        preReq: []
+        nroSecciones: 1 // Por defecto al crear una materia
       })
     }
 
@@ -39,6 +40,7 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
     setNombre('')
     setSemestre(1)
     setHorasTeoricas(4)
+    setHorasPrac(0)
     setHorasLab(0)
     setModalidad('PRE')
     setEsComun('no')
@@ -100,14 +102,26 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
                   />
                 </div>
 
-                {/* Fila 3: Horas de Teoría y Horas de Laboratorio */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Fila 3: Horas de Teoría, Horas Práctica y Horas de Laboratorio */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">Horas Teóricas</span>
                     <Input
                       type="number"
                       value={horasTeoricas.toString()}
                       onChange={(e) => setHorasTeoricas(Number(e.target.value))}
+                      min={0}
+                      variant="primary"
+                      className="w-full text-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-slate-500">Horas Prácticas</span>
+                    <Input
+                      type="number"
+                      value={horasPrac.toString()}
+                      onChange={(e) => setHorasPrac(Number(e.target.value))}
                       min={0}
                       variant="primary"
                       className="w-full text-sm"
@@ -197,7 +211,7 @@ export function MateriaCrearModal ({ onSave }: MateriaCrearModalProps) {
                 </Button>
                 <Button
                   variant="primary"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
+                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
                   onPress={() => handleCrear(close)}
                 >
                   Crear Materia

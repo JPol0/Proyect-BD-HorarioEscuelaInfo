@@ -3,7 +3,11 @@ import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../domain/DisponibilidadHora
 import type { DisponibilidadRepository } from '../../ports/DisponibilidadRepository'
 
 export class ObtenerDisponibilidadHoraria {
-  constructor (private readonly disponibilidadRepository: DisponibilidadRepository) {}
+  private readonly disponibilidadRepository: DisponibilidadRepository
+
+  constructor (disponibilidadRepository: DisponibilidadRepository) {
+    this.disponibilidadRepository = disponibilidadRepository
+  }
 
   async execute (cedulaProfesor: string, codTerm: string): Promise<DisponibilidadHoraria[]> {
     const registros = await this.disponibilidadRepository.obtenerPorProfesorYTerm(cedulaProfesor, codTerm)

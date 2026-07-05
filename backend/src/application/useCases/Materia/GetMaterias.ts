@@ -8,7 +8,7 @@ export class GetMaterias {
     this.repository = repository
   }
 
-  async execute (): Promise<Materia[]> {
-    return await this.repository.getAll()
+  async execute (term: string): Promise<Materia[]> {
+    return await this.repository.getAll(term)
   }
 }

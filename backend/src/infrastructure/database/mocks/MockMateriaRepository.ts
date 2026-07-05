@@ -7,37 +7,34 @@ const MOCK_MATERIAS: Materia[] = [
     codMateria: 'ING-201',
     nombre: 'Matematicas Discreta',
     nroSecciones: 1,
+    horasPrac: 0,
     horasTeo: 4,
     horasLab: 0,
     semestre: 2,
     modalidad: 'PRE',
-    esComun: true,
-    preReq: ['Calculo I'],
-    laboratorioId: undefined
+    esComun: true
   },
   {
     codMateria: 'INF-202',
     nombre: 'Algoritmos y Programacion',
     nroSecciones: 2,
+    horasPrac: 0,
     horasTeo: 4,
     horasLab: 2,
     semestre: 2,
     modalidad: 'PRE',
-    esComun: false,
-    preReq: ['Introduccion a la Informatica'],
-    laboratorioId: undefined
+    esComun: false
   },
   {
     codMateria: 'INF-301',
     nombre: 'Algoritmos y Estructuras de datos',
     nroSecciones: 1,
+    horasPrac: 0,
     horasTeo: 4,
     horasLab: 2,
     semestre: 3,
     modalidad: 'PRE',
-    esComun: false,
-    preReq: ['Algoritmos y Programacion', 'Matematicas Discreta'],
-    laboratorioId: undefined
+    esComun: false
   }
 ]
 
@@ -45,7 +42,7 @@ export class MockMateriaRepository implements MateriaRepository {
   /**
    * Retorna todo el universo de materias en memoria.
    */
-  async getAll (): Promise<Materia[]> {
+  async getAll (term: string): Promise<Materia[]> {
     return MOCK_MATERIAS
   }
 
@@ -53,7 +50,7 @@ export class MockMateriaRepository implements MateriaRepository {
    * Guarda una materia. Si ya existe el código lo actualiza (Upsert),
    * en caso contrario, registra la nueva entidad en el array.
    */
-  async save (materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia): Promise<void> {
     if (materia.codMateria === undefined || materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
@@ -74,7 +71,7 @@ export class MockMateriaRepository implements MateriaRepository {
   /**
    * Elimina una materia de la lista en memoria por su código.
    */
-  async delete (codMateria: string): Promise<void> {
+  async delete (term: string, codMateria: string): Promise<void> {
     const index = MOCK_MATERIAS.findIndex(
       (m) => m.codMateria === codMateria
     )

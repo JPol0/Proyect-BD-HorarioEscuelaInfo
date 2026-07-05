@@ -12,6 +12,7 @@ import { useActiveTerm } from '../store/activeTermStore'
 import { type Materia } from '../../core/domain/Materia'
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 import Title from '../components/TitlePage'
+import { useMateriaLabStore } from '../store/materiaLabStore'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -24,6 +25,7 @@ export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
+  const labAssignments = useMateriaLabStore((state) => state.assignments)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -65,7 +67,7 @@ export default function HorariosPage () {
       try {
         const [payload, materiasPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(selectedTerm),
-          getMateriasUseCase.execute()
+          getMateriasUseCase.execute(selectedTerm)
         ])
 
         setMaterias(materiasPayload)
@@ -114,7 +116,7 @@ export default function HorariosPage () {
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
-                  codLaboratorio: materiaFromState.laboratorioId
+                  codLaboratorio: labAssignments[materiaFromState.codMateria]
                 })
               }
             }
@@ -274,7 +276,8 @@ export default function HorariosPage () {
                 const isAssigned = newTuplas.some(t => t.codAsig === materia.codMateria)
                 if (!isAssigned) {
                   try {
-                    newTuplas = autoAssignUseCase.execute(materia, newTuplas, selectedTerm, materia.semestre || 1)
+                    const labId = labAssignments[materia.codMateria]
+                    newTuplas = autoAssignUseCase.execute(materia, newTuplas, selectedTerm, materia.semestre || 1, labId)
                   } catch (e) {
                     console.warn('No se pudo asignar completamente:', materia.nombre)
                     newErrors.push(e instanceof Error ? e.message : `No se pudo asignar ${materia.nombre}`)
