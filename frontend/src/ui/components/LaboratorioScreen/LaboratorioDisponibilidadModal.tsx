@@ -12,7 +12,7 @@ interface LaboratorioDisponibilidadModalProps {
   initialLabId: string
 }
 
-function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: string }) {
+function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: string }) {
   const { activeTerm } = useActiveTerm()
   const [selectedLabId, setSelectedLabId] = useState(initialLabId)
   const [tuplas, setTuplas] = useState<Horario[]>([])
@@ -29,6 +29,21 @@ function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { labora
         const repo = new ApiHorarioRepository()
         const getSchedule = new ObtenerHorario(repo)
         const allTuplas = await getSchedule.execute(activeTerm.id)
+
+        // También intentar leer del draft local que se usa en HorariosPage para reflejar cambios no guardados
+        const draftStr = sessionStorage.getItem(`draft_horario_${activeTerm.id}`)
+        if (draftStr) {
+          try {
+            const draftTuplas = JSON.parse(draftStr) as Horario[]
+            if (Array.isArray(draftTuplas) && draftTuplas.length > 0) {
+              setTuplas(draftTuplas)
+              return
+            }
+          } catch (e) {
+            console.error('Error parseando draft', e)
+          }
+        }
+
         setTuplas(allTuplas)
       } catch (e) {
         console.error('Error al cargar la disponibilidad', e)
@@ -47,7 +62,7 @@ function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { labora
     ]
     const days: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
-    const labTuplas = tuplas.filter(t => t.laboratorio?.id === selectedLabId)
+    const labTuplas = tuplas.filter(t => t.laboratorio?.id === selectedLabId || (t as any).codLaboratorio === selectedLabId)
 
     return baseHours.map(hour => {
       const row: Record<string, string> = { hour }
@@ -103,12 +118,14 @@ function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { labora
       </Modal.Header>
 
       <Modal.Body className="p-0 bg-white max-h-[75vh] overflow-y-auto">
-        {loading ? (
+        {loading
+          ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2a6eea] rounded-full animate-spin mb-4" />
             Cargando disponibilidad...
           </div>
-        ) : (
+            )
+          : (
           <div className="overflow-x-auto w-full max-w-full">
             <table className="w-full border-collapse min-w-[760px]">
               <thead className="sticky top-0 z-10">
@@ -155,13 +172,13 @@ function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { labora
               </tbody>
             </table>
           </div>
-        )}
+            )}
       </Modal.Body>
     </>
   )
 }
 
-export function LaboratorioDisponibilidadModal({ laboratorios, initialLabId }: LaboratorioDisponibilidadModalProps) {
+export function LaboratorioDisponibilidadModal ({ laboratorios, initialLabId }: LaboratorioDisponibilidadModalProps) {
   return (
     <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
       <Modal.Container className="flex items-center justify-center p-4">

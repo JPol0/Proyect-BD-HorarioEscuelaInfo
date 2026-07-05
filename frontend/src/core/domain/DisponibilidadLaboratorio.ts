@@ -1,4 +1,4 @@
-import { DiaSemana } from './DisponibilidadHoraria'
+import { type DiaSemana } from './DisponibilidadHoraria'
 
 export interface DisponibilidadLaboratorio {
   idLaboratorio: string

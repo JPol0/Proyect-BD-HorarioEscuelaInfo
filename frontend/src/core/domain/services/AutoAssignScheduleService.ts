@@ -1,28 +1,28 @@
 import { type Materia } from '../Materia'
 import { type Horario, type DaysOfWeek } from '../Horario'
+import { type DisponibilidadHoraria, MODULOS_HORARIO } from '../DisponibilidadHoraria'
 
 export const autoAsignarMateria = (
   materia: Materia,
   horarioActual: Horario[],
   termId: string,
   seccion: number = 1,
-  laboratorioId?: string
+  laboratorioId?: string,
+  cedulaProfesor?: string,
+  disponibilidad?: DisponibilidadHoraria[],
+  profesoresAsignados?: Record<string, Record<number, string>>
 ): Horario[] => {
-  const totalHoras = materia.horasTeo + materia.horasLab
+  const horasTeoPrac = materia.horasTeo + materia.horasPrac
+  const totalHoras = horasTeoPrac + materia.horasLab
   if (totalHoras === 0) return horarioActual
 
-  // Si la materia tiene 6 horas en total, preferimos asignar 3 bloques de 2 horas
-  // en lugar de usar bloques de 3 horas.
   const maxHorasPorDia = totalHoras === 6 ? 2 : 3
 
-  // Limpiamos las horas que ya tuviese asignadas esta materia en esta sección,
-  // así evitamos duplicarla y permitimos que se redistribuya de cero.
   const horarioSinEstaMateria = horarioActual.filter(
     (t) => !(t.codAsig === materia.codMateria && t.codTerm === termId && t.nroSeccion === seccion)
   )
 
   const diasSemanasBase: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes']
-  // Mezclamos los días para que cada vez que se presione "Asignar Horas" genere una opción diferente
   const diasSemanas = [...diasSemanasBase].sort(() => Math.random() - 0.5)
 
   const horasDisponiblesBase = [
@@ -31,16 +31,16 @@ export const autoAsignarMateria = (
     '19:00', '20:00', '21:00', '22:00'
   ]
 
-  const nuevasTuplas: Horario[] = []
+  let nuevasTuplas: Horario[] = []
 
-  const asignarBloques = (horasNecesarias: number, tipo: string) => {
+  const intentarAsignar = (horasNecesarias: number, tipo: string, soloPrioridad1: boolean): boolean => {
     let faltantes = horasNecesarias
+    const tuplasTemporales: Horario[] = []
+
     for (const dia of diasSemanas) {
       if (faltantes <= 0) break
 
-      // Solo permitimos asignar si la materia NO tiene NINGUNA hora ese día (en esta sección)
-      // garantizando que Teoría y Laboratorio queden en días distintos y un solo bloque por día.
-      const tieneHorasHoy = nuevasTuplas.some((t) => t.dia === dia)
+      const tieneHorasHoy = nuevasTuplas.some((t) => t.dia === dia) || tuplasTemporales.some((t) => t.dia === dia)
       if (tieneHorasHoy) continue
 
       const maxPosiblesHoy = Math.min(faltantes, maxHorasPorDia)
@@ -49,7 +49,40 @@ export const autoAsignarMateria = (
       const bloquesLibres: string[][] = []
 
       for (const hora of horasDisponiblesBase) {
-        const estaOcupado = horarioSinEstaMateria.some((t) => t.dia === dia && t.hora === hora && t.semestre === materia.semestre)
+        // 1. Choca con misma materia semestre
+        let estaOcupado = horarioSinEstaMateria.some((t) => t.dia === dia && t.hora === hora && t.semestre === materia.semestre)
+
+        // 2. Choca profesor
+        if (!estaOcupado && cedulaProfesor && profesoresAsignados) {
+          estaOcupado = horarioSinEstaMateria.some((t) => {
+            if (t.dia !== dia || t.hora !== hora || t.codTerm !== termId) return false
+            return profesoresAsignados[t.codAsig]?.[t.nroSeccion] === cedulaProfesor
+          })
+        }
+
+        // 3. Choca Laboratorio
+        if (!estaOcupado && tipo === 'Laboratorio' && laboratorioId) {
+          estaOcupado = horarioSinEstaMateria.some((t) =>
+            t.dia === dia &&
+            t.hora === hora &&
+            (t.laboratorio?.id === laboratorioId || (t as any).codLaboratorio === laboratorioId)
+          )
+        }
+
+        // 4. Disponibilidad profesor
+        let nivelDispo = 1
+        if (!estaOcupado && disponibilidad && disponibilidad.length > 0) {
+          const mod = MODULOS_HORARIO.find(m => m.horaInicio === hora)?.numeroModulo
+          if (mod) {
+            const dispo = disponibilidad.find(d => d.dia === dia && d.numeroModulo === mod)
+            if (dispo) {
+              nivelDispo = dispo.disponibilidad
+            }
+          }
+        }
+
+        if (nivelDispo === 0) estaOcupado = true
+        if (soloPrioridad1 && nivelDispo !== 1) estaOcupado = true
 
         if (!estaOcupado) {
           bloqueActual.push(hora)
@@ -71,33 +104,53 @@ export const autoAsignarMateria = (
         const horasAAsignar = mejorBloque.slice(0, Math.min(mejorBloque.length, maxPosiblesHoy))
 
         for (const hora of horasAAsignar) {
-          nuevasTuplas.push({
+          tuplasTemporales.push({
             codAsig: materia.codMateria,
             codTerm: termId,
             nroSeccion: seccion,
             dia,
             hora,
             semestre: materia.semestre,
-            codLaboratorio: laboratorioId
+            laboratorio: tipo === 'Laboratorio' && laboratorioId ? { id: laboratorioId, name: '' } : undefined
           })
           faltantes--
         }
       }
     }
 
-    if (faltantes > 0) {
-      throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Faltaron ${faltantes} horas.`)
+    if (faltantes === 0) {
+      nuevasTuplas = nuevasTuplas.concat(tuplasTemporales)
+      return true
+    }
+    return false
+  }
+
+  const asignarBloques = (horasNecesarias: number, tipo: string) => {
+    // Intento 1: Solo con disponibilidad 1
+    let exito = intentarAsignar(horasNecesarias, tipo, true)
+
+    // Intento 2: Fallback aceptando disponibilidad 1 y 2
+    if (!exito) {
+      exito = intentarAsignar(horasNecesarias, tipo, false)
+    }
+
+    if (!exito) {
+      if (tipo === 'Laboratorio' && laboratorioId) {
+        throw new Error(`El laboratorio asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas.`)
+      }
+      if (cedulaProfesor) {
+        throw new Error(`El profesor asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas de ${tipo}.`)
+      }
+      throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Considera las disponibilidades y cruces.`)
     }
   }
 
-  // 1. Asignamos primero las horas de Laboratorio
   if (materia.horasLab > 0) {
     asignarBloques(materia.horasLab, 'Laboratorio')
   }
 
-  // 2. Luego asignamos las horas Teóricas en los días que quedaron libres
-  if (materia.horasTeo > 0) {
-    asignarBloques(materia.horasTeo, 'Teoría')
+  if (horasTeoPrac > 0) {
+    asignarBloques(horasTeoPrac, 'Teoría/Práctica')
   }
 
   return [...horarioSinEstaMateria, ...nuevasTuplas]

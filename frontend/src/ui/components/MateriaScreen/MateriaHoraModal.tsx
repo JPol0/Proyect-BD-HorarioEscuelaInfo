@@ -25,27 +25,40 @@ const HORAS_INICIO = [
   '19:00', '20:00', '21:00', '22:00'
 ]
 
+const convertirARomano = (num: number): string => {
+  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+  let resultado = ''
+  let valorRestante = num
+  for (const key in valoresRomanos) {
+    while (valorRestante >= valoresRomanos[key]) {
+      resultado += key
+      valorRestante -= valoresRomanos[key]
+    }
+  }
+  return resultado
+}
+
 // Algoritmo para agrupar horas individuales (ej. 07:00 y 08:00) en un bloque (ej. 07:00, cantidad: 2)
-function agruparTuplasEnBloques(tuplas: Horario[]): ManualBlock[] {
+function agruparTuplasEnBloques (tuplas: Horario[]): ManualBlock[] {
   const bloques: ManualBlock[] = []
   const porDia: Record<string, string[]> = {}
-  
+
   for (const t of tuplas) {
     if (!porDia[t.dia]) porDia[t.dia] = []
     porDia[t.dia].push(t.hora)
   }
-  
+
   for (const dia of Object.keys(porDia)) {
     const horas = porDia[dia].sort()
     if (horas.length === 0) continue
-    
+
     let horaInicio = horas[0]
     let cantidad = 1
-    
+
     for (let i = 1; i < horas.length; i++) {
       const horaActual = parseInt(horas[i].split(':')[0])
-      const horaAnterior = parseInt(horas[i-1].split(':')[0])
-      
+      const horaAnterior = parseInt(horas[i - 1].split(':')[0])
+
       if (horaActual === horaAnterior + 1) {
         cantidad++
       } else {
@@ -59,9 +72,9 @@ function agruparTuplasEnBloques(tuplas: Horario[]): ManualBlock[] {
   return bloques
 }
 
-function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, onSave: MateriaHoraModalProps['onSave'], close: () => void }) {
+function MateriaHoraModalInner ({ materia, onSave, close }: { materia: Materia, onSave: MateriaHoraModalProps['onSave'], close: () => void }) {
   const { activeTerm } = useActiveTerm()
-  
+
   const maxSections = Math.max(1, materia.nroSecciones)
   const [currentSection, setCurrentSection] = useState<number>(1)
   const [blocksBySection, setBlocksBySection] = useState<Record<number, ManualBlock[]>>({})
@@ -84,9 +97,9 @@ function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, o
         const repo = new ApiHorarioRepository()
         const getSchedule = new ObtenerHorario(repo)
         const tuplas = await getSchedule.execute(activeTerm.id)
-        
+
         const tuplasMateria = tuplas.filter(t => t.codAsig === materia.codMateria)
-        
+
         const initialBlocks: Record<number, ManualBlock[]> = {}
         for (let i = 1; i <= maxSections; i++) {
           const tuplasSeccion = tuplasMateria.filter(t => (t.nroSeccion || 1) === i)
@@ -135,7 +148,7 @@ function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, o
     const maxHours = materia.horasTeo + materia.horasPrac + materia.horasLab
 
     const secBlocks = blocksBySection[currentSection] || []
-    
+
     if (secBlocks.some(b => b.cantidad < 1)) {
       alert(`La cantidad de horas debe ser al menos 1 en la Sección ${currentSection}`)
       return
@@ -144,7 +157,7 @@ function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, o
       alert(`La cantidad máxima permitida por bloque es de 3 horas en la Sección ${currentSection}`)
       return
     }
-    
+
     const totalAssigned = secBlocks.reduce((sum, b) => sum + b.cantidad, 0)
     if (totalAssigned > maxHours) {
       alert(`La Sección ${currentSection} excede el límite: has asignado ${totalAssigned} horas, pero la materia solo requiere ${maxHours} horas.`)
@@ -185,8 +198,8 @@ function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, o
         <div className="mb-2">
           <h3 className="text-sm font-semibold text-slate-700 mb-1">{materia.codMateria} - {materia.nombre}</h3>
           <p className="text-xs text-slate-500">
-            Horas requeridas: {materia.horasTeo + materia.horasPrac + materia.horasLab} 
-            (Teóricas: {materia.horasTeo}, Prácticas: {materia.horasPrac}, Laboratorio: {materia.horasLab})
+            Horas requeridas: {materia.horasTeo + materia.horasPrac + materia.horasLab}
+            {' '}(Teóricas: {materia.horasTeo}, Prácticas: {materia.horasPrac}, Laboratorio: {materia.horasLab})
           </p>
         </div>
 
@@ -206,8 +219,8 @@ function MateriaHoraModalInner({ materia, onSave, close }: { materia: Materia, o
               <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
                 <ListBox>
                   {Array.from({ length: maxSections }).map((_, i) => (
-                    <ListBox.Item key={i + 1} id={String(i + 1)} textValue={`Sección ${i + 1}`} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                      Sección {i + 1}
+                    <ListBox.Item key={i + 1} id={String(i + 1)} textValue={`Sección ${convertirARomano(i + 1)}`} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                      Sección {convertirARomano(i + 1)}
                     </ListBox.Item>
                   ))}
                 </ListBox>

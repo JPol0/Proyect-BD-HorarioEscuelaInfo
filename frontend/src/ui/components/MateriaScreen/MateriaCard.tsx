@@ -4,7 +4,6 @@ import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
 import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
 import { MateriaHoraModal } from './MateriaHoraModal'
-import { useMateriaLabStore } from '../../store/materiaLabStore'
 import { MateriaProfesorModal } from './MateriaProfesorModal'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
 import { MateriaDeleteButton } from './MateriaDeleteButton'
@@ -22,8 +21,6 @@ export function MateriaCard ({
   onDelete,
   onAssignHours
 }: MateriaCardProps) {
-  const currentLabId = useMateriaLabStore((state) => state.assignments[materia.codMateria])
-  const assignLab = useMateriaLabStore((state) => state.assignLab)
   return (
     <Card className="w-full bg-white border border-slate-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-md transition-all duration-200 rounded-xl h-full flex flex-col">
 
@@ -121,8 +118,6 @@ export function MateriaCard ({
               </Button>
               <MateriaLaboratorioModal
                 materia={materia}
-                currentLabId={currentLabId}
-                onSaveLab={assignLab}
               />
             </Modal>
           )}

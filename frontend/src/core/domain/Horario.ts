@@ -1,10 +1,10 @@
+import type { Laboratorio } from './Laboratorio'
+
 export type DaysOfWeek = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes' | 'Sabado' | 'Domingo'
 
 export type ScheduleRow = {
   hour: string
 } & Record<DaysOfWeek, string>
-
-import type { Laboratorio } from './Laboratorio'
 
 export interface Horario {
   codAsig: string

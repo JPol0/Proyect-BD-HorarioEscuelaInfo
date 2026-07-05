@@ -1,0 +1,5 @@
+import type { Profesor } from '../../domain/Profesor'
+
+export interface ProfesorRepository {
+  getProfesores: () => Promise<Profesor[]>
+}

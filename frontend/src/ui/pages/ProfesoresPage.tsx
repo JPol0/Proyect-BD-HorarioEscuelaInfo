@@ -4,9 +4,11 @@ import { Magnifier } from '@gravity-ui/icons'
 import { Input } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
+import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
 import Title from '../components/TitlePage'
 
 const repository = new HttpProfesorRepository()
+const getProfesoresUseCase = new GetProfesores(repository)
 
 export function ProfesoresPage () {
   const [profesores, setProfesores] = useState<Profesor[]>([])
@@ -19,7 +21,7 @@ export function ProfesoresPage () {
     const cargar = async () => {
       try {
         setError(null)
-        const lista = await repository.getProfesores()
+        const lista = await getProfesoresUseCase.execute()
         setProfesores(lista)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar los profesores')
@@ -69,13 +71,13 @@ export function ProfesoresPage () {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken">Cargando profesores...</p>
-        )
+          )
         : profesoresFiltrados.length === 0
           ? (
             <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200 font-hanken">
               No se encontraron profesores con ese criterio.
             </div>
-          )
+            )
           : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {profesoresFiltrados.map((profesor) => (
@@ -97,7 +99,7 @@ export function ProfesoresPage () {
                 </div>
               ))}
             </div>
-          )}
+            )}
     </div>
   )
 }

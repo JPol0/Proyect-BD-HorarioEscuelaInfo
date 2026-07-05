@@ -7,25 +7,29 @@ import { AutoAsignarMateria } from '../../core/application/useCases/Horarios/Aut
 import { GuardarHorario } from '../../core/application/useCases/Horarios/GuardarHorario'
 import { ApiHorarioRepository } from '../../core/infrastructure/adapters/ApiHorarioRepository'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
+import { HttpDisponibilidadRepository } from '../../core/infrastructure/adapters/HttpDisponibilidadRepository'
 import { GetMaterias } from '../../core/application/useCases/Materias/GetMaterias'
 import { useActiveTerm } from '../store/activeTermStore'
 import { type Materia } from '../../core/domain/Materia'
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 import Title from '../components/TitlePage'
 import { useMateriaLabStore } from '../store/materiaLabStore'
+import { useSeccionProfesorStore } from '../store/seccionProfesorStore'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
+const disponibilidadRepository = new HttpDisponibilidadRepository()
 const getWeeklyScheduleUseCase = new ObtenerHorario(repository)
 const getMateriasUseCase = new GetMaterias(materiaRepository)
-const autoAssignUseCase = new AutoAsignarMateria()
+const autoAssignUseCase = new AutoAsignarMateria(disponibilidadRepository)
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
 
 export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
-  const labAssignments = useMateriaLabStore((state) => state.assignments)
+  const profesorAssignments = useSeccionProfesorStore((state) => state.assignments)
+  const getProfesorForSeccion = useSeccionProfesorStore((state) => state.getProfesorForSeccion)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,12 +44,13 @@ export default function HorariosPage () {
   const [materias, setMaterias] = useState<Materia[]>([])
   // Usamos el id del term activo como punto de partida; cuando el backend real
   // esté conectado, este id se enviará directamente para consultar la BD.
-  const [selectedTerm] = useState(activeTerm?.id ?? '')
-  const [selectedSemester, setSelectedSemester] = useState<number>(1)
+  const [selectedTerm] = useState<string | null>(activeTerm?.id ?? null)
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
+  const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
   const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
+  const [selectedSemester, setSelectedSemester] = useState<number>(1)
 
   const convertirARomano = (num: number): string => {
     const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
@@ -81,7 +86,7 @@ export default function HorariosPage () {
         if (materiaFromState != null && manualHours != null) {
           try {
             // Sabemos qué sección estamos asignando porque ahora el modal manda solo esa sección
-            const secToOverwrite = manualHours.length > 0 ? manualHours[0].nroSeccion : 1;
+            const secToOverwrite = manualHours.length > 0 ? manualHours[0].nroSeccion : 1
 
             // Limpiamos las horas previas SOLO para esa sección
             currentTuplas = currentTuplas.filter(
@@ -119,7 +124,9 @@ export default function HorariosPage () {
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
-                  codLaboratorio: labAssignments[materiaFromState.codMateria]
+                  laboratorio: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)
+                    ? { id: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)!, name: 'Laboratorio' }
+                    : null
                 })
               }
             }
@@ -172,12 +179,17 @@ export default function HorariosPage () {
           const textos = Object.entries(agrupadoPorMateria).map(([codAsig, sections]) => {
             const materia = materias.find(m => m.codMateria === codAsig)
             if (materia) {
+              const hasLab = asigs.some(a => a.codAsig === codAsig && a.laboratorio)
+              let resultStr = materia.nombre
               if (materia.nroSecciones > 1) {
-                // Ordenar y unir con "/" (ej. I/II/III)
-                const romans = sections.sort((a, b) => a - b).map(s => convertirARomano(s)).join('/')
-                return `${materia.nombre} (Sección ${romans})`
+                const uniqueSections = Array.from(new Set(sections))
+                const romans = uniqueSections.sort((a, b) => a - b).map(s => convertirARomano(s)).join('/')
+                resultStr = `${materia.nombre} (Sección ${romans})`
               }
-              return materia.nombre
+              if (hasLab) {
+                resultStr += ' (horas laboratorio)'
+              }
+              return resultStr
             }
             return codAsig
           })
@@ -216,6 +228,14 @@ export default function HorariosPage () {
         <div className="flex flex-col gap-2 mb-6 w-full">
           {assignmentErrors.map((err, idx) => (
             <Alert key={idx} color="danger" title="Problema de Asignación">{err}</Alert>
+          ))}
+        </div>
+      )}
+
+      {assignmentWarnings.length > 0 && (
+        <div className="flex flex-col gap-2 mb-6 w-full">
+          {assignmentWarnings.map((warn, idx) => (
+            <Alert key={idx} color="warning" title="Advertencia">{warn}</Alert>
           ))}
         </div>
       )}
@@ -269,14 +289,16 @@ export default function HorariosPage () {
 
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (!activeTerm) {
                 alert('Selecciona un Term primero.')
                 return
               }
               let newTuplas = [...tuplas]
               const newErrors: string[] = []
+              const newWarnings: string[] = []
               setAssignmentErrors([])
+              setAssignmentWarnings([])
 
               // Validación: las materias comunes (esComun === true) DEL SEMESTRE ACTUAL
               // DEBEN estar asignadas manualmente antes de poder crear el horario automático.
@@ -300,8 +322,15 @@ export default function HorariosPage () {
                   const isAssigned = newTuplas.some(t => t.codAsig === materia.codMateria && t.nroSeccion === sec)
                   if (!isAssigned) {
                     try {
-                      const labId = labAssignments[materia.codMateria]
-                      newTuplas = autoAssignUseCase.execute(materia, newTuplas, selectedTerm, sec, labId)
+                      const labId = useMateriaLabStore.getState().getLabForSeccion(selectedTerm, materia.codMateria, sec)
+                      const cedulaProf = getProfesorForSeccion(selectedTerm, materia.codMateria, sec)
+
+                      if (!cedulaProf) {
+                        newWarnings.push(`La sección ${convertirARomano(sec)} de ${materia.nombre} se está auto-asignando sin ningún profesor relacionado.`)
+                      }
+
+                      const termProfAssignments = profesorAssignments[selectedTerm] || {}
+                      newTuplas = await autoAssignUseCase.execute(materia, newTuplas, selectedTerm, sec, labId, cedulaProf, termProfAssignments)
                     } catch (e) {
                       console.warn(`No se pudo asignar completamente ${materia.nombre} Sección ${sec}`)
                       newErrors.push(e instanceof Error ? e.message : `No se pudo asignar ${materia.nombre} (Sección ${sec})`)
@@ -312,6 +341,9 @@ export default function HorariosPage () {
               setTuplas(newTuplas)
               if (newErrors.length > 0) {
                 setAssignmentErrors(newErrors)
+              }
+              if (newWarnings.length > 0) {
+                setAssignmentWarnings(newWarnings)
               }
             }}
             className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
