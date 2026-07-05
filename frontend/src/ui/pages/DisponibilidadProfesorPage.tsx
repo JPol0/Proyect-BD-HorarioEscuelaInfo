@@ -1,4 +1,4 @@
-﻿import type { JSX } from 'react'
+import type { JSX } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import type { DiaSemana, DisponibilidadHoraria } from '../../core/domain/DisponibilidadHoraria'
