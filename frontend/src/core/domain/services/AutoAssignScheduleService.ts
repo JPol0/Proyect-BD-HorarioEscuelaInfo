@@ -22,13 +22,15 @@ export const autoAsignarMateria = (
     (t) => !(t.codAsig === materia.codMateria && t.codTerm === termId && t.nroSeccion === seccion)
   )
 
-  const diasSemanasBase: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes']
+  const diasSemanasBase: DaysOfWeek[] = materia.modalidad === 'VIT'
+    ? ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+    : ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes']
   const diasSemanas = [...diasSemanasBase].sort(() => Math.random() - 0.5)
 
   const horasDisponiblesBase = [
     '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
     '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
-    '19:00', '20:00', '21:00', '22:00'
+    '19:00', '20:00', '21:00'
   ]
 
   let nuevasTuplas: Horario[] = []

@@ -1,10 +1,8 @@
 import { Card, Button, Modal } from '@heroui/react'
-import { Minus, Plus, Magnifier, PersonPlus, Clock, Microscope } from '@gravity-ui/icons'
+import { Minus, Plus, Magnifier, PersonPlus, Clock, Microscope, Gear } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
-import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
-import { MateriaHoraModal } from './MateriaHoraModal'
-import { MateriaProfesorModal } from './MateriaProfesorModal'
+import { MateriaConfiguracionModal } from './MateriaConfiguracionModal'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
 import { MateriaDeleteButton } from './MateriaDeleteButton'
 
@@ -86,7 +84,7 @@ export function MateriaCard ({
               className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
             >
               <Magnifier className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Consultar
+              Información
             </Button>
 
             {/* El contenido del modal se renderiza aquí */}
@@ -101,39 +99,12 @@ export function MateriaCard ({
               variant="secondary"
               className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
             >
-              <PersonPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Profesores
+              <Gear className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              Configuración
             </Button>
-            <MateriaProfesorModal materia={materia} />
-          </Modal>
-
-          {materia.horasLab > 0 && (
-            <Modal>
-              <Button
-                variant="secondary"
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
-              >
-                <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                Laboratorio
-              </Button>
-              <MateriaLaboratorioModal
-                materia={materia}
-              />
-            </Modal>
-          )}
-
-          <Modal>
-            <Button
-              variant="secondary"
-              className={`bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 ${materia.horasLab === 0 ? 'col-span-2' : ''
-                }`}
-            >
-              <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Asignar Horas
-            </Button>
-            <MateriaHoraModal
+            <MateriaConfiguracionModal
               materia={materia}
-              onSave={(manualHours) => onAssignHours?.(materia, manualHours)}
+              onAssignHours={onAssignHours}
             />
           </Modal>
         </div>
