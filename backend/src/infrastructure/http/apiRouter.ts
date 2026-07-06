@@ -7,6 +7,7 @@ import createLaboratorioRouter from './routes/LaboratorioRoutes.js'
 import createHorarioRouter from './routes/HorarioRoutes.js'
 import createAuthRouter from './routes/AuthRoutes.js'
 import createUserRouter from './routes/UserRoutes.js'
+import { authenticateToken } from './middlewares/authMiddleware.js'
 
 // Import repository implementations (mocks for now)
 import { MockAlertRepository } from '../database/mocks/MockAlertRepository.js'
@@ -32,6 +33,9 @@ const userRepository = new MockUserRepository()
 
 // Wire routes
 apiRouter.use('/auth', createAuthRouter(userRepository))
+
+// Exigir autenticación para el resto de los endpoints
+apiRouter.use(authenticateToken)
 apiRouter.use('/alerts', createAlertRouter(alertRepository))
 apiRouter.use('/terms', createTermRouter(termRepository))
 apiRouter.use('/weekly-schedule', createHorarioRouter(horarioRepository))

@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express'
 import { type Login } from '../../../application/useCases/User/Login.js'
+import { generateToken } from '../../security/tokenService.js'
 
 export class AuthController {
   private readonly loginUseCase: Login
@@ -18,7 +19,11 @@ export class AuthController {
       }
 
       const user = await this.loginUseCase.execute(nombre.trim(), password)
-      res.json(user)
+      const token = generateToken(user.nombre, user.rol)
+      res.json({
+        ...user,
+        token
+      })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'
       res.status(401).json({ error: mensaje })

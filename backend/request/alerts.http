@@ -1,2 +1,3 @@
 ### recuperar todas las alertas pendientes
 GET http://localhost:3000/api/alerts/pendings
+Authorization: Bearer token

@@ -1,3 +1,5 @@
 ### recuperar todas las materias
 
 GET http://localhost:3000/api/materias?term=1
+x-user-role: rol
+Authorization: Bearer token
