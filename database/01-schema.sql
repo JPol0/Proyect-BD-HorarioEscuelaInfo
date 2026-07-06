@@ -99,6 +99,17 @@ CREATE TABLE IF NOT EXISTS Laboratorios(
 
 -- Creación de Tabla Disponibilidad_Laboratorios
 
+CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
+    CodLaboratorio Varchar(40) NOT NULL,
+    Codterm Varchar(30) NOT NULL,
+    Dia dom_dia_horario, 
+    Hora dom_hora_horario,
+    OcupadoD boolean NOT NULL,
+
+    primary key (CodTerm,CodLaboratorio,Dia,Hora),
+)
+
+
 -- Creación de Tabla Secciones
 CREATE TABLE IF NOT EXISTS Secciones(
     NroSeccion SERIAL NOT NULL,
@@ -125,11 +136,61 @@ CREATE TABLE IF NOT EXISTS Horarios(
 
 -- Creación de Tabla Disponibilidad_Horaria
 
+    Codterm varchar(40) not null,
+    CedulaP varchar(30) not null,
+    Dia dom_dia_horario not null, 
+    Hora dom_hora_horario not null,
+
+    ocupadoDH boolean not null,
+
+    primary key(CodTerm,CedulaP,Dia,Hora) 
+
+)
 
 -- Creación de Tabla Imparten
+CREATE TABLE IF NOT EXISTS Imparten(
+    cedulaP Varchar(40) NOT NULL,
+    CodAsig Varchar(40) NOT NULL,
+    CodTerm Varchar(30) NOT NULL,
+    NroSeccion Varchar(30) NOT NUlL,
 
+    HorasLab int NOT NULL,
+    HorasTeo int NOT NULL,
+    Asignada BOOLEAN not null,
+
+    --Llaves foraneas 
+    FOREIGN key(cedulaP) references Profesores(cedulaP) ON UPDATE CASCADE ON DELETE CASCADE,
+    
+    foreign key (CodTerm,CodAsig,NroSeccion) references Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE
+
+)
 
 -- Creación de Tabla Son_Ejerciodos
+CREATE TABLE IF NOT EXISTS Son_ejercidos(
 
+    CodLaboratorio varchar(40) not null,
+    CodAsig varchar(40) not null, 
+    CodTerm varchar(30) not null,
+    prioridad varchar(20) not null,
+
+    primery key (prioridad),
+    FOREIGN key(CodLaboratorio) references Laboratorios(CodLaboratorio) ON UPDATE CASCADE ON DELETE CASCADE,
+    foreign key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+       
+
+)
 
 -- Creación de Tabla Prerrequisitos
+CREATE TABLE IF NOT EXISTS Prerequitos(
+    CodAsig varchar(40) not null,
+    CodTerm varchar(30) not null,
+    CodAsigPreq varchar(40) not null,
+    CodTermPreq varchar(30) not null,
+
+
+    primary key (CodAsig,CodTerm,CodAsigPreq,CodTermPreq),
+    
+
+    
+
+)
