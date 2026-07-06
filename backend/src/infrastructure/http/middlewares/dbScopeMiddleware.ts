@@ -1,16 +1,18 @@
-import { type Request, type Response, type NextFunction } from 'express'
+import { type Response, type NextFunction } from 'express'
+import { type AuthenticatedRequest } from './authMiddleware.js'
 import { dbContext, adminPool, lectorPool } from '../../database/postgre/db.js'
 
 /**
  * Middleware que intercepta las peticiones HTTP y configura el pool de conexiones
- * adecuado según la cabecera 'x-user-role'. Por defecto usa el lectorPool si no se especifica.
+ * adecuado según el rol verificado del token del usuario (req.user?.rol).
+ * Por defecto usa el lectorPool si no se especifica o si no se ha autenticado.
  */
-export function dbScopeMiddleware (req: Request, res: Response, next: NextFunction): void {
-  const roleHeader = req.headers['x-user-role']
+export function dbScopeMiddleware (req: AuthenticatedRequest, res: Response, next: NextFunction): void {
+  const userRole = req.user?.rol
 
-  // Determinamos el pool según el rol especificado en los headers.
-  // Por defecto limitamos el acceso a lector si no se provee.
-  const activePool = roleHeader === 'administrador' ? adminPool : lectorPool
+  // Determinamos el pool según el rol verificado en el token.
+  // Por defecto limitamos el acceso a lector si no se provee o no es válido.
+  const activePool = userRole === 'administrador' ? adminPool : lectorPool
 
   // Ejecutamos todo el flujo de la petición dentro del contexto del pool seleccionado
   dbContext.run(activePool, () => {

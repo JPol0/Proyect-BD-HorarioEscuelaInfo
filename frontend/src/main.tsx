@@ -4,27 +4,22 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 
-// Interceptor global de Fetch para añadir la cabecera de rol del usuario
+import { useUserStore } from './ui/store/userStore.ts'
+
+// Interceptor global de Fetch para habilitar el envío automático de cookies y manejar expiración de sesión
 const originalFetch = window.fetch
 window.fetch = async (input, init) => {
-  const headers = new Headers(init?.headers)
+  const response = await originalFetch(input, {
+    ...init,
+    credentials: 'include' // Habilita el envío automático de cookies en peticiones cruzadas (CORS)
+  })
 
-  try {
-    const rawUser = localStorage.getItem('currentUser')
-    if (rawUser !== null) {
-      const user = JSON.parse(rawUser) as { rol?: string }
-      if (user !== null && typeof user.rol === 'string') {
-        headers.set('x-user-role', user.rol)
-      }
-    }
-  } catch (error) {
-    console.error('Error al parsear el usuario en el interceptor fetch:', error)
+  // Si el servidor retorna 401 o 403 (sesión inválida o expirada), deslogueamos automáticamente
+  if (response.status === 401 || response.status === 403) {
+    useUserStore.getState().clearCurrentUser()
   }
 
-  return await originalFetch(input, {
-    ...init,
-    headers
-  })
+  return response
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
