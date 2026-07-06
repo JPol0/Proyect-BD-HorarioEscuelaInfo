@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS Profesores(
 CREATE TABLE IF NOT EXISTS Warnings(
     CodWarning SERIAL NOT NULL,
     CodTerm VARCHAR(30) NOT NULL,
-    FechaW DATETIME NOT NULL,
+    FechaW TIMESTAMP NOT NULL, 
     EstadoW dom_estado_warning NOT NULL, -- Ignorado, Pendiente, Resuelto
     DescripcionW VARCHAR(250) NOT NULL,
     ComentarioW VARCHAR(250) NOT NULL,
