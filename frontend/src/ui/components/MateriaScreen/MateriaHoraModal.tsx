@@ -8,6 +8,7 @@ import { useActiveTerm } from '../../store/activeTermStore'
 
 interface MateriaHoraModalProps {
   materia: Materia | null
+  currentSection: number
   onSave: (manualHours: Array<{ nroSeccion: number, dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
@@ -22,7 +23,7 @@ const DIAS: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes',
 const HORAS_INICIO = [
   '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
   '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
-  '19:00', '20:00', '21:00', '22:00'
+  '19:00', '20:00', '21:00'
 ]
 
 const convertirARomano = (num: number): string => {
@@ -72,11 +73,10 @@ function agruparTuplasEnBloques (tuplas: Horario[]): ManualBlock[] {
   return bloques
 }
 
-function MateriaHoraModalInner ({ materia, onSave, close }: { materia: Materia, onSave: MateriaHoraModalProps['onSave'], close: () => void }) {
+function MateriaHoraModalInner ({ materia, currentSection, onSave, close }: { materia: Materia, currentSection: number, onSave: MateriaHoraModalProps['onSave'], close: () => void }) {
   const { activeTerm } = useActiveTerm()
 
   const maxSections = Math.max(1, materia.nroSecciones)
-  const [currentSection, setCurrentSection] = useState<number>(1)
   const [blocksBySection, setBlocksBySection] = useState<Record<number, ManualBlock[]>>({})
   const [loading, setLoading] = useState(true)
 
@@ -203,31 +203,7 @@ function MateriaHoraModalInner ({ materia, onSave, close }: { materia: Materia, 
           </p>
         </div>
 
-        {maxSections > 1 && (
-          <div className="mb-2 p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500">Sección a configurar</span>
-            <Select
-              variant="primary"
-              value={String(currentSection)}
-              onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
-              className="w-full sm:w-64 text-sm"
-            >
-              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10">
-                <Select.Value />
-                <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
-              </Select.Trigger>
-              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
-                <ListBox>
-                  {Array.from({ length: maxSections }).map((_, i) => (
-                    <ListBox.Item key={i + 1} id={String(i + 1)} textValue={`Sección ${convertirARomano(i + 1)}`} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                      Sección {convertirARomano(i + 1)}
-                    </ListBox.Item>
-                  ))}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-          </div>
-        )}
+        {/* Se eliminó el selector de secciones */}
 
         <div className="space-y-4">
           {currentBlocks.map((block) => (
@@ -246,7 +222,7 @@ function MateriaHoraModalInner ({ materia, onSave, close }: { materia: Materia, 
                   </Select.Trigger>
                   <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
                     <ListBox>
-                      {DIAS.map(dia => (
+                      {(materia.modalidad === 'VIT' ? DIAS : DIAS.slice(0, 5)).map(dia => (
                         <ListBox.Item key={dia} id={dia} textValue={dia} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
                           {dia}
                         </ListBox.Item>
@@ -342,7 +318,7 @@ function MateriaHoraModalInner ({ materia, onSave, close }: { materia: Materia, 
   )
 }
 
-export function MateriaHoraModal ({ materia, onSave }: MateriaHoraModalProps) {
+export function MateriaHoraModal ({ materia, currentSection, onSave }: MateriaHoraModalProps) {
   if (!materia) return null
 
   return (
@@ -350,7 +326,7 @@ export function MateriaHoraModal ({ materia, onSave }: MateriaHoraModalProps) {
       <Modal.Container className="flex items-center justify-center p-4">
         <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden font-sans border border-slate-100">
           {({ close }) => (
-            <MateriaHoraModalInner materia={materia} onSave={onSave} close={close} />
+            <MateriaHoraModalInner materia={materia} currentSection={currentSection} onSave={onSave} close={close} />
           )}
         </Modal.Dialog>
       </Modal.Container>

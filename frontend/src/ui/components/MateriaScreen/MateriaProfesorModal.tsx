@@ -25,6 +25,7 @@ const convertirARomano = (num: number): string => {
 
 interface MateriaProfesorModalProps {
   materia: Materia
+  currentSection: number
 }
 
 const repository = new HttpProfesorRepository()
@@ -32,16 +33,24 @@ const getProfesoresUseCase = new GetProfesores(repository)
 const seccionRepository = new HttpSeccionRepository()
 const saveSeccionUseCase = new SaveSeccion(seccionRepository)
 
-export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
+export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfesorModalProps) {
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
-  const [currentSection, setCurrentSection] = useState(1)
+  const [tipoHoras, setTipoHoras] = useState<'Teoría' | 'Laboratorio'>('Teoría')
   const { activeTerm } = useActiveTerm()
 
   const assignments = useSeccionProfesorStore(state => state.assignments)
-  const assignedCedula = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] : undefined
+  const assignmentsLab = useSeccionProfesorStore(state => state.assignmentsLab)
+  const assignProfesor = useSeccionProfesorStore(state => state.assignProfesor)
+  const assignProfesorLab = useSeccionProfesorStore(state => state.assignProfesorLab)
+  
+  const assignedCedula = activeTerm 
+    ? (tipoHoras === 'Teoría' 
+        ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] 
+        : assignmentsLab?.[activeTerm.id]?.[materia.codMateria]?.[currentSection])
+    : undefined
   const maxSections = Math.max(1, materia.nroSecciones)
 
   useEffect(() => {
@@ -83,41 +92,22 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
                   <p className="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">⚠️ {error}</p>
                 )}
 
-                {maxSections > 0 && (
-                  <div className="mb-2 p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-slate-500">Sección a configurar</span>
-                    <div className="flex gap-4 items-center">
-                      <Select
-                        variant="primary"
-                        value={String(currentSection)}
-                        onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
-                        className="w-full sm:w-64 text-sm"
-                      >
-                        <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10">
-                          <Select.Value />
-                          <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
-                        </Select.Trigger>
-                        <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
-                          <ListBox>
-                            {Array.from({ length: maxSections }).map((_, i) => (
-                              <ListBox.Item key={i + 1} id={String(i + 1)} textValue={`Sección ${convertirARomano(i + 1)}`} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                                Sección {convertirARomano(i + 1)}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                      {assignedCedula && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10"
-                          onPress={() => { if (activeTerm) void saveSeccionUseCase.execute({ codTerm: activeTerm.id, codMateria: materia.codMateria, nroSeccion: currentSection, profesorAsignado: null }) }}
-                        >
-                          Eliminar profesor
-                        </Button>
-                      )}
-                    </div>
+
+
+                {materia.horasLab > 0 && (
+                  <div className="flex gap-2 p-1 bg-slate-100 rounded-lg mb-2">
+                    <button
+                      onClick={() => setTipoHoras('Teoría')}
+                      className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-colors ${tipoHoras === 'Teoría' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Horas Teóricas
+                    </button>
+                    <button
+                      onClick={() => setTipoHoras('Laboratorio')}
+                      className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-colors ${tipoHoras === 'Laboratorio' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Horas de Laboratorio
+                    </button>
                   </div>
                 )}
 
@@ -152,10 +142,44 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
                             </div>
                             {assignedCedula === profesor.cedula
                               ? (
-                              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">Asignado</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">Asignado</span>
+                                <button
+                                  className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors cursor-pointer"
+                                  onClick={async () => {
+                                    if (activeTerm) {
+                                      try {
+                                        if (tipoHoras === 'Teoría') {
+                                          assignProfesor(activeTerm.id, materia.codMateria, currentSection, undefined)
+                                        } else {
+                                          assignProfesorLab(activeTerm.id, materia.codMateria, currentSection, undefined)
+                                        }
+                                        await saveSeccionUseCase.execute({ codTerm: activeTerm.id, codMateria: materia.codMateria, nroSeccion: currentSection, profesorAsignado: null })
+                                      } catch (e) {
+                                        console.error('Error al guardar sección en backend:', e)
+                                      }
+                                    }
+                                  }}
+                                >
+                                  Eliminar profesor
+                                </button>
+                              </div>
                                 )
                               : (
-                              <Button size="sm" variant="outline" isDisabled={!!assignedCedula} onPress={() => { if (activeTerm) void saveSeccionUseCase.execute({ codTerm: activeTerm.id, codMateria: materia.codMateria, nroSeccion: currentSection, profesorAsignado: profesor }) }} className="text-xs">
+                              <Button size="sm" variant="outline" isDisabled={!!assignedCedula} onPress={async () => {
+                                if (activeTerm) {
+                                  try {
+                                    if (tipoHoras === 'Teoría') {
+                                      assignProfesor(activeTerm.id, materia.codMateria, currentSection, profesor.cedula)
+                                    } else {
+                                      assignProfesorLab(activeTerm.id, materia.codMateria, currentSection, profesor.cedula)
+                                    }
+                                    await saveSeccionUseCase.execute({ codTerm: activeTerm.id, codMateria: materia.codMateria, nroSeccion: currentSection, profesorAsignado: profesor })
+                                  } catch (e) {
+                                    console.error('Error al guardar sección en backend:', e)
+                                  }
+                                }
+                              }} className="text-xs">
                                 Seleccionar
                               </Button>
                                 )}

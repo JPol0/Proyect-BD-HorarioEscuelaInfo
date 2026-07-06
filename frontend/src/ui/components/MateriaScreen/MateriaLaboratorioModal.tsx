@@ -22,16 +22,16 @@ const convertirARomano = (num: number): string => {
 
 interface MateriaLaboratorioModalProps {
   materia: Materia
+  currentSection: number
 }
 
 const repository = new HttpLaboratorioRepository()
 const getLaboratoriosUseCase = new GetLaboratorios(repository)
 
-export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalProps) {
+export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLaboratorioModalProps) {
   const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentSection, setCurrentSection] = useState(1)
 
   const { activeTerm } = useActiveTerm()
   const assignments = useMateriaLabStore(state => state.assignments)
@@ -102,36 +102,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                   </p>
                 </div>
 
-                {maxSections > 0 && (
-                  <div className="mb-2 pt-2 flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-slate-500">Sección a configurar</span>
-                    <Select
-                      variant="primary"
-                      value={String(currentSection)}
-                      onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
-                      className="w-full text-sm"
-                    >
-                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-10">
-                        <Select.Value />
-                        <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
-                      </Select.Trigger>
-                      <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
-                        <ListBox>
-                          {Array.from({ length: maxSections }).map((_, i) => (
-                            <ListBox.Item
-                              key={i + 1}
-                              id={String(i + 1)}
-                              textValue={`Sección ${convertirARomano(i + 1)}`}
-                              className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
-                            >
-                              Sección {convertirARomano(i + 1)}
-                            </ListBox.Item>
-                          ))}
-                        </ListBox>
-                      </Select.Popover>
-                    </Select>
-                  </div>
-                )}
+                {/* Se eliminó el selector de secciones */}
 
                 <div className="flex flex-col gap-1.5 pt-2">
                   <span className="text-xs font-semibold text-slate-500">Laboratorio Asignado</span>
