@@ -5,7 +5,7 @@ import { API_CONFIG } from '../config/api'
 export class HttpUserRepository implements UserRepository {
   private readonly apiUrl = `${API_CONFIG.BASE_URL}/auth/login`
 
-  async login (nombre: string, password: string): Promise<User> {
+  async login(nombre: string, password: string): Promise<User> {
     const response = await fetch(this.apiUrl, {
       method: 'POST',
       headers: {
@@ -21,7 +21,7 @@ export class HttpUserRepository implements UserRepository {
         if (errorData && typeof errorData.error === 'string') {
           errorMessage = errorData.error
         }
-      } catch {}
+      } catch { }
       throw new Error(errorMessage)
     }
 

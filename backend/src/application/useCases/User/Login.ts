@@ -1,5 +1,6 @@
 import { type UserRepository } from '../../ports/UserRepository.js'
 import { type User } from '../../../domain/User.js'
+import { generateToken } from '../../../infrastructure/security/tokenService.js'
 
 export class Login {
   private readonly userRepository: UserRepository
@@ -22,7 +23,8 @@ export class Login {
     const userResult: User = {
       id: user.id,
       nombre: user.nombre,
-      rol: user.rol
+      rol: user.rol,
+      token: generateToken(user.nombre, user.rol)
     }
     return userResult
   }

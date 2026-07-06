@@ -5,4 +5,5 @@ export interface User {
   nombre: string
   rol: UserRole
   password?: string
+  token?: string
 }
