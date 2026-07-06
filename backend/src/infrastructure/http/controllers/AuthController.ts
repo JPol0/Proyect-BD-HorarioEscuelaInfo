@@ -20,9 +20,16 @@ export class AuthController {
 
       const user = await this.loginUseCase.execute(nombre.trim(), password)
       const token = generateToken(user.nombre, user.rol)
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 1 día
+      })
       res.json({
-        ...user,
-        token
+        id: user.id,
+        nombre: user.nombre,
+        rol: user.rol
       })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'

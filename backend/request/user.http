@@ -1,5 +1,3 @@
 ### probar traer los usuarios
 
 GET http://localhost:3000/api/users
-x-role-user: rol
-Authorization: Bearer token
