@@ -100,14 +100,16 @@ CREATE TABLE IF NOT EXISTS Laboratorios(
 -- Creación de Tabla Disponibilidad_Laboratorios
 
 CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
-    CodLaboratorio Varchar(40) NOT NULL,
+    CodLab SERIAL NOT NULL,
     Codterm Varchar(30) NOT NULL,
     Dia dom_dia_horario, 
     Hora dom_hora_horario,
     OcupadoD boolean NOT NULL,
 
-    primary key (CodTerm,CodLaboratorio,Dia,Hora),
-)
+    primary key (CodTerm,CodLab,Dia,Hora),
+    FOREIGN KEY (CodTerm) REFERENCES Terms(CodTerm) on update cascade on delete cascade,
+    FOREIGN KEY (CodLab) REFERENCES Laboratorios(CodLab) on update cascade on delete cascade
+);
 
 
 -- Creación de Tabla Secciones
@@ -135,50 +137,48 @@ CREATE TABLE IF NOT EXISTS Horarios(
 );
 
 -- Creación de Tabla Disponibilidad_Horaria
-
-    Codterm varchar(40) not null,
-    CedulaP varchar(30) not null,
+CREATE TABLE IF NOT EXISTS Disponibilidad_Horaria(
+    Codterm varchar(30) not null,
+    CedulaP varchar(10) not null,
     Dia dom_dia_horario not null, 
     Hora dom_hora_horario not null,
-
+    disponibilidad smallint check (disponibilidad = 1 or disponibilidad = 2 or disponibilidad =3),
     ocupadoDH boolean not null,
 
-    primary key(CodTerm,CedulaP,Dia,Hora) 
+    primary key(CodTerm,CedulaP,Dia,Hora),
 
-)
+
+    FOREIGN KEY (Codterm) REFERENCES Terms(Codterm) on UPDATE cascade on delete cascade,
+    FOREIGN key (CedulaP) REFERENCES Profesores(CedulaP)on UPDATE cascade on delete cascade
+
+);
 
 -- Creación de Tabla Imparten
 CREATE TABLE IF NOT EXISTS Imparten(
-    cedulaP Varchar(40) NOT NULL,
+    cedulaP Varchar(10) NOT NULL,
     CodAsig Varchar(40) NOT NULL,
     CodTerm Varchar(30) NOT NULL,
-    NroSeccion Varchar(30) NOT NUlL,
+    NroSeccion SERIAL NOT NUlL,
 
-    HorasLab int NOT NULL,
-    HorasTeo int NOT NULL,
+    HorasLab dom_horas NOT NULL,
+    HorasTeo dom_horas NOT NULL,
     Asignada BOOLEAN not null,
 
-    --Llaves foraneas 
-    FOREIGN key(cedulaP) references Profesores(cedulaP) ON UPDATE CASCADE ON DELETE CASCADE,
-    
-    foreign key (CodTerm,CodAsig,NroSeccion) references Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE
+    primary key(cedulaP,CodAsig,CodTerm,NroSeccion),
 
-)
-
+    FOREIGN key(cedulaP) references Profesores(cedulaP) ON UPDATE CASCADE ON DELETE NO ACTION,
+    foreign key (CodTerm,CodAsig,NroSeccion) references Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE NO ACTION
+);
 -- Creación de Tabla Son_Ejerciodos
 CREATE TABLE IF NOT EXISTS Son_ejercidos(
-
-    CodLaboratorio varchar(40) not null,
+    CodLab SERIAL not null,
     CodAsig varchar(40) not null, 
     CodTerm varchar(30) not null,
-    prioridad varchar(20) not null,
-
-    primery key (prioridad),
-    FOREIGN key(CodLaboratorio) references Laboratorios(CodLaboratorio) ON UPDATE CASCADE ON DELETE CASCADE,
+    prioridad SMALLINT check (prioridad =1 or prioridad =2) not null,
+    primary key (CodLab,CodAsig,CodTerm),
+    FOREIGN key(CodLab) references Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
     foreign key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
-       
-
-)
+);
 
 -- Creación de Tabla Prerrequisitos
 CREATE TABLE IF NOT EXISTS Prerequitos(
@@ -186,11 +186,7 @@ CREATE TABLE IF NOT EXISTS Prerequitos(
     CodTerm varchar(30) not null,
     CodAsigPreq varchar(40) not null,
     CodTermPreq varchar(30) not null,
-
-
     primary key (CodAsig,CodTerm,CodAsigPreq,CodTermPreq),
-    
-
-    
-
-)
+    FOREIGN key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN key (CodAsigPreq,CodTermPreq) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+);
