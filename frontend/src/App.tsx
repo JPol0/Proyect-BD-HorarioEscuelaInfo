@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Layout from './ui/components/Layout'
+import Layout from './ui/layout/Layout'
 import AlarmCenter from './ui/pages/AlarmCenter'
 import TermsPage from './ui/pages/TermsPage'
 import HorariosPage from './ui/pages/HorariosPage'
