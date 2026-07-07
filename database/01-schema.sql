@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS Son_ejercidos(
     prioridad dom_prioridad_lab not null,
     primary key (CodTerm,CodAsig,CodLab),
     CONSTRAINT fk_son_ejercidos_laboratorios FOREIGN key(CodLab) references Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_son_ejercidos_plan_de_estudio foreign key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_son_ejercidos_plan_de_estudio foreign key (CodTerm,CodAsig) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 -- Creación de Tabla Prerrequisitos
@@ -198,6 +198,6 @@ CREATE TABLE IF NOT EXISTS Prerequitos(
     CodAsigPreq varchar(40) not null,
     CodTermPreq varchar(30) not null,
     primary key (CodAsig,CodTerm,CodAsigPreq,CodTermPreq),
-    CONSTRAINT fk_prerequitos_plan_de_estudio FOREIGN key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_prerequitos_plan_de_estudio_preq FOREIGN key (CodAsigPreq,CodTermPreq) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_prerequitos_plan_de_estudio FOREIGN key (CodTerm,CodAsig) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_prerequitos_plan_de_estudio_preq FOREIGN key (CodTermPreq,CodAsigPreq) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE
 );
