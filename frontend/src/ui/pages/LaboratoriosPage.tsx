@@ -4,13 +4,14 @@ import { HttpLaboratorioRepository } from '../../core/infrastructure/adapters/Ht
 import { GetLaboratorios } from '../../core/application/useCases/Laboratorios/GetLaboratorios'
 import { SaveLaboratorio } from '../../core/application/useCases/Laboratorios/SaveLaboratorio'
 import { DeleteLaboratorio } from '../../core/application/useCases/Laboratorios/DeleteLaboratorio'
-import { TrashBin } from '@gravity-ui/icons'
+import { Modal, Button, Input } from '@heroui/react'
+import { TrashBin, Magnifier } from '@gravity-ui/icons'
+import { useUser } from '../store/userStore'
+
+// Sub-componentes reutilizables/relacionados
 import Title from '../components/TitlePage'
 import LaboratorioModal from '../components/LaboratorioScreen/LaboratorioModal'
 import { LaboratorioDisponibilidadModal } from '../components/LaboratorioScreen/LaboratorioDisponibilidadModal'
-import { Modal, Button } from '@heroui/react'
-
-// ─── Instanciación manual de dependencias (Hexagonal) ──────────────────────────
 const repository = new HttpLaboratorioRepository()
 const getLaboratoriosUseCase = new GetLaboratorios(repository)
 const saveLaboratorioUseCase = new SaveLaboratorio(repository)
@@ -29,6 +30,8 @@ interface ModalStateOpen {
 type ModalState = ModalStateClosed | ModalStateOpen
 
 export default function LaboratoriosPage () {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
   const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -84,35 +87,46 @@ export default function LaboratoriosPage () {
   )
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Header: Título + Botón */}
-      <div className="flex items-start justify-between mb-4">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header: Título + Buscador + Botón */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
           title="Gestión de Laboratorios"
           subtitle="Administra los laboratorios y salas disponibles para la planificación de horarios."
         />
-        <div className="flex items-center gap-3 shrink-0 mt-1">
-          <button
-            onClick={() => { setModal({ open: true, laboratorio: null }) }}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm"
-          >
-            + Añadir Laboratorio
-          </button>
-        </div>
-      </div>
 
-      {/* Buscador */}
-      <div className="relative mb-8 max-w-md">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base">
-          🔍
-        </span>
-        <input
-          type="text"
-          placeholder="Buscar por nombre"
-          value={busqueda}
-          onChange={(e) => { setBusqueda(e.target.value) }}
-          className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#1A5F7A]/20 focus:border-[#1A5F7A] font-hanken text-slate-700 shadow-sm transition-all"
-        />
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
+          {/* Botón Añadir Laboratorio */}
+          {!isLector && (
+            <div className="w-full sm:w-auto flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+              <button
+                onClick={() => { setModal({ open: true, laboratorio: null }) }}
+                className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm h-9 cursor-pointer w-full sm:w-auto"
+              >
+                + Añadir Laboratorio
+              </button>
+            </div>
+          )}
+
+          {/* Buscador */}
+          <div className="w-full sm:w-80 flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-slate-500">Buscar</span>
+            <div className="relative w-full flex items-center">
+              <span className="absolute left-3 z-10 pointer-events-none flex items-center">
+                <Magnifier className="text-slate-400 w-4 h-4" />
+              </span>
+              <Input
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={busqueda}
+                onChange={(e) => { setBusqueda(e.target.value) }}
+                variant="primary"
+                className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Banner de error */}
@@ -144,6 +158,7 @@ export default function LaboratoriosPage () {
                   laboratorios={laboratorios}
                   onModificar={() => { setModal({ open: true, laboratorio: lab }) }}
                   onEliminar={() => { void handleEliminar(lab.id) }}
+                  isLector={isLector}
                 />
               ))}
             </div>
@@ -167,19 +182,22 @@ interface LaboratorioCardProps {
   laboratorios: Laboratorio[]
   onModificar: () => void
   onEliminar: () => void
+  isLector?: boolean
 }
 
-function LaboratorioCard ({ laboratorio, laboratorios, onModificar, onEliminar }: LaboratorioCardProps) {
+function LaboratorioCard ({ laboratorio, laboratorios, onModificar, onEliminar, isLector = false }: LaboratorioCardProps) {
   return (
     <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200">
       {/* Botón eliminar flotante y elegante (se muestra al hacer hover) */}
-      <button
-        onClick={onEliminar}
-        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm cursor-pointer"
-        aria-label={`Eliminar ${laboratorio.name}`}
-      >
-        <TrashBin className="w-4 h-4" />
-      </button>
+      {!isLector && (
+        <button
+          onClick={onEliminar}
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm cursor-pointer"
+          aria-label={`Eliminar ${laboratorio.name}`}
+        >
+          <TrashBin className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Nombre del laboratorio */}
       <div className="p-6 pt-8 pb-7 flex-1 flex flex-col justify-center min-h-[110px]">
@@ -193,12 +211,14 @@ function LaboratorioCard ({ laboratorio, laboratorios, onModificar, onEliminar }
 
       {/* Acciones */}
       <div className="py-4 px-6 flex justify-center gap-2 bg-white">
-        <button
-          onClick={onModificar}
-          className="px-4 py-2 text-[11px] font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase"
-        >
-          Modificar
-        </button>
+        {!isLector && (
+          <button
+            onClick={onModificar}
+            className="px-4 py-2 text-[11px] font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase"
+          >
+            Modificar
+          </button>
+        )}
 
         <Modal>
           <Button className="px-4 py-2 text-[11px] h-auto min-w-0 font-bold text-white bg-[#1A5F7A] rounded-lg hover:bg-[#14495e] transition-colors font-hanken tracking-wider uppercase cursor-pointer">

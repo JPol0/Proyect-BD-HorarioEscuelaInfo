@@ -16,6 +16,7 @@ import Title from '../components/TitlePage'
 import { useMateriaLabStore } from '../store/materiaLabStore'
 import { useSeccionProfesorStore } from '../store/seccionProfesorStore'
 import { DetalleHorarioModal } from '../components/MateriaScreen/DetalleHorarioModal'
+import { useUser } from '../store/userStore'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -26,6 +27,8 @@ const generarHorarioUseCase = new GenerarHorarioSemestre(disponibilidadRepositor
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
 
 export default function HorariosPage () {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
@@ -361,75 +364,79 @@ export default function HorariosPage () {
             </Select>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              const hasAutoBlocks = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
-              if (hasAutoBlocks) {
-                setIsConfirmGenerateOpen(true)
-              } else {
-                void handleGenerarHorario(false)
-              }
-            }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Generar Horario
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              const tieneAsignacionesAuto = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
-              if (!tieneAsignacionesAuto) {
-                alert('No hay ningún horario generado automáticamente para eliminar en este semestre.')
-                return
-              }
-
-              if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
-                const remainingTuplas = tuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
-                setTuplas(remainingTuplas)
-                void (async () => {
-                  try {
-                    await saveWeeklyScheduleUseCase.execute(selectedTerm, remainingTuplas)
-                    sessionStorage.setItem(`draft_horario_${selectedTerm}`, JSON.stringify(remainingTuplas))
-                  } catch (e) {
-                    console.error('No se pudo borrar el JSON', e)
+          {!isLector && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const hasAutoBlocks = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
+                  if (hasAutoBlocks) {
+                    setIsConfirmGenerateOpen(true)
+                  } else {
+                    void handleGenerarHorario(false)
                   }
-                })()
-              }
-            }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Eliminar Horario
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              void (async () => {
-                try {
-                  await saveWeeklyScheduleUseCase.execute(selectedTerm, tuplas)
-                  sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
-                  alert('Horario guardado correctamente')
-                } catch (e) {
-                  alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
-                }
-              })()
-            }}
-            className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              <path d="M8 4v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-            </svg>
-            Guardar
-          </button>
+                }}
+                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Generar Horario
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const tieneAsignacionesAuto = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
+                  if (!tieneAsignacionesAuto) {
+                    alert('No hay ningún horario generado automáticamente para eliminar en este semestre.')
+                    return
+                  }
+
+                  if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
+                    const remainingTuplas = tuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
+                    setTuplas(remainingTuplas)
+                    void (async () => {
+                      try {
+                        await saveWeeklyScheduleUseCase.execute(selectedTerm, remainingTuplas)
+                        sessionStorage.setItem(`draft_horario_${selectedTerm}`, JSON.stringify(remainingTuplas))
+                      } catch (e) {
+                        console.error('No se pudo borrar el JSON', e)
+                      }
+                    })()
+                  }
+                }}
+                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Eliminar Horario
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      await saveWeeklyScheduleUseCase.execute(selectedTerm, tuplas)
+                      sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
+                      alert('Horario guardado correctamente')
+                    } catch (e) {
+                      alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
+                    }
+                  })()
+                }}
+                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8 4v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                </svg>
+                Guardar
+              </button>
+            </>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import type { JSX, KeyboardEvent } from 'react'
 import type { DiaSemana, DisponibilidadHoraria } from '../../../core/domain/DisponibilidadHoraria'
+import { useUser } from '../../store/userStore'
 
 interface DisponibilidadCellProps {
   celda: DisponibilidadHoraria
@@ -15,6 +16,9 @@ const ESTILO_POR_NIVEL: Record<number, string> = {
 }
 
 export function DisponibilidadCell ({ celda, isSelected, onClick, onKeyDown }: DisponibilidadCellProps): JSX.Element {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
+
   if (celda.ocupado) {
     return (
       <td className="border border-slate-200 bg-slate-100 px-2 py-2 text-sm text-slate-600">
@@ -23,17 +27,18 @@ export function DisponibilidadCell ({ celda, isSelected, onClick, onKeyDown }: D
     )
   }
 
-  const seleccionado = isSelected ? 'outline outline-2 outline-offset-[-2px] outline-teal-500' : ''
+  const seleccionado = isSelected && !isLector ? 'outline outline-2 outline-offset-[-2px] outline-teal-500' : ''
+  const cursorStyle = isLector ? 'cursor-default' : 'cursor-pointer hover:bg-slate-50'
 
   return (
     <td
       id={`cell-${celda.dia}-${celda.numeroModulo}`}
-      className={`cursor-pointer border border-slate-200 px-2 py-2 text-center text-sm font-mono transition select-none ${ESTILO_POR_NIVEL[celda.disponibilidad]} ${seleccionado}`}
-      onClick={() => { onClick(celda.dia, celda.numeroModulo) }}
-      onKeyDown={(event) => { onKeyDown(event, celda.dia, celda.numeroModulo) }}
+      className={`${cursorStyle} border border-slate-200 px-2 py-2 text-center text-sm font-mono transition select-none ${ESTILO_POR_NIVEL[celda.disponibilidad]} ${seleccionado}`}
+      onClick={() => { if (!isLector) onClick(celda.dia, celda.numeroModulo) }}
+      onKeyDown={(event) => { if (!isLector) onKeyDown(event, celda.dia, celda.numeroModulo) }}
       role="gridcell"
-      tabIndex={isSelected ? 0 : -1}
-      aria-selected={isSelected}
+      tabIndex={!isLector && isSelected ? 0 : -1}
+      aria-selected={!isLector && isSelected}
     >
       {celda.disponibilidad}
     </td>
