@@ -5,6 +5,10 @@ Content-Type: application/json
 
 
 {
-  "nombre": "nombre",
-  "password": "password"
+  "nombre": "lector",
+  "password": "lector123"
 }
+
+### logout de usuario
+
+POST http://localhost:3000/api/auth/logout

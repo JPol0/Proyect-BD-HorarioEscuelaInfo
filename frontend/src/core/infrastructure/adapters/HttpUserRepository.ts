@@ -65,4 +65,21 @@ export class HttpUserRepository implements UserRepository {
       throw new Error(errorMessage)
     }
   }
+
+  async logout (): Promise<void> {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
+      method: 'POST'
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al cerrar sesión'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {}
+      throw new Error(errorMessage)
+    }
+  }
 }

@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
+import { HttpUserRepository } from '../../core/infrastructure/adapters/HttpUserRepository'
+import { LogoutUser } from '../../core/application/useCases/User/LogoutUser'
 import {
   Book,
   GraduationCap,
@@ -42,6 +44,19 @@ const NAV_ITEMS: NavItem[] = [
 export default function Layout () {
   const { activeTerm } = useActiveTerm()
   const { currentUser, clearCurrentUser } = useUser()
+
+  const handleLogout = async (): Promise<void> => {
+    try {
+      const httpRepo = new HttpUserRepository()
+      const useCase = new LogoutUser(httpRepo)
+      await useCase.execute()
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cerrar sesión:', err)
+    } finally {
+      clearCurrentUser()
+    }
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
@@ -110,7 +125,7 @@ export default function Layout () {
             </span>
           </div>
           <button
-            onClick={() => { clearCurrentUser() }}
+            onClick={() => { void handleLogout() }}
             className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
           >
             Cerrar sesión
