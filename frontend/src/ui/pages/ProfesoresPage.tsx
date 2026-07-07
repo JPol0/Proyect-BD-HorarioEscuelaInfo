@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
 import { Input, Modal, Button } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
+import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
 import { CrearProfesorModal } from '../components/ProfesoresScreen/CrearProfesorModal'
 import Title from '../components/TitlePage'
 
 const repository = new HttpProfesorRepository()
+const getProfesoresUseCase = new GetProfesores(repository)
 
 const STATUS_CONFIG = {
   A: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
@@ -22,19 +24,20 @@ export function ProfesoresPage () {
   const [busqueda, setBusqueda] = useState('')
   const navigate = useNavigate()
 
-  const cargar = async () => {
-    try {
-      setError(null)
-      const lista = await repository.getProfesores()
-      setProfesores(lista)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar los profesores')
-    } finally {
-      setCargando(false)
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        setError(null)
+        const lista = await getProfesoresUseCase.execute()
+        setProfesores(lista)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al cargar los profesores')
+      } finally {
+        setCargando(false)
+      }
     }
-  }
-
-  useEffect(() => { void cargar() }, [])
+    void cargar()
+  }, [])
 
   const handleStatusChange = async (cedula: string, status: Profesor['status']) => {
     try {
@@ -57,7 +60,6 @@ export function ProfesoresPage () {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
 
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
           title="Gestión de Profesores"
@@ -77,7 +79,6 @@ export function ProfesoresPage () {
         </div>
       </div>
 
-      {/* Buscador */}
       <div className="w-full md:w-80">
         <div className="relative w-full flex items-center">
           <span className="absolute left-3 z-10 pointer-events-none flex items-center">
@@ -119,20 +120,17 @@ export function ProfesoresPage () {
                     key={profesor.cedula}
                     className="bg-surface rounded-xl border border-border shadow-sm p-5 flex flex-col gap-4"
                   >
-                    {/* Info */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-titlePage font-hanken truncate">{profesor.nombre}</h3>
                         <p className="text-xs text-subtitlePage font-hanken mt-0.5">{profesor.cedula}</p>
                         <p className="text-xs text-text-muted font-hanken">{profesor.correo}</p>
                       </div>
-                      {/* Badge status */}
                       <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>
                         {cfg.label}
                       </span>
                     </div>
 
-                    {/* Selector de status */}
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
                       <select
@@ -146,7 +144,6 @@ export function ProfesoresPage () {
                       </select>
                     </div>
 
-                    {/* Botón */}
                     <button
                       onClick={() => { void navigate(`/profesores/${profesor.cedula}/disponibilidad`) }}
                       disabled={profesor.status === 'R'}

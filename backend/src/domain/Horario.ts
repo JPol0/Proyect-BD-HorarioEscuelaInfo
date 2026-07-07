@@ -1,3 +1,5 @@
+import type { Laboratorio } from './Laboratorio.js'
+
 export type DaysOfWeek = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes' | 'Sabado' | 'Domingo'
 
 export type ScheduleRow = {
@@ -11,5 +13,5 @@ export interface Horario {
   dia: DaysOfWeek
   hora: string // Ej: "07:00"
   semestre: number
-  codLaboratorio?: string
+  laboratorio?: Laboratorio | null
 }

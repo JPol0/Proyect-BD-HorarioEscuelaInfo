@@ -4,25 +4,42 @@ import { type Materia } from '../../../core/domain/Materia'
 import { type Laboratorio } from '../../../core/domain/Laboratorio'
 import { HttpLaboratorioRepository } from '../../../core/infrastructure/adapters/HttpLaboratorioRepository'
 import { GetLaboratorios } from '../../../core/application/useCases/Laboratorios/GetLaboratorios'
+import { useActiveTerm } from '../../store/activeTermStore'
+import { useMateriaLabStore } from '../../store/materiaLabStore'
+
+const convertirARomano = (num: number): string => {
+  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+  let resultado = ''
+  let valorRestante = num
+  for (const key in valoresRomanos) {
+    while (valorRestante >= valoresRomanos[key]) {
+      resultado += key
+      valorRestante -= valoresRomanos[key]
+    }
+  }
+  return resultado
+}
 
 interface MateriaLaboratorioModalProps {
   materia: Materia
-  currentLabId?: string
-  onSaveLab?: (codMateria: string, laboratorioId?: string) => void
 }
 
 const repository = new HttpLaboratorioRepository()
 const getLaboratoriosUseCase = new GetLaboratorios(repository)
 
-export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: MateriaLaboratorioModalProps) {
+export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalProps) {
   const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLabId, setSelectedLabId] = useState<string>(currentLabId ?? 'ninguno')
+  const [currentSection, setCurrentSection] = useState(1)
 
-  useEffect(() => {
-    setSelectedLabId(currentLabId ?? 'ninguno')
-  }, [currentLabId])
+  const { activeTerm } = useActiveTerm()
+  const assignments = useMateriaLabStore(state => state.assignments)
+  const assignLab = useMateriaLabStore(state => state.assignLab)
+
+  const assignedLabId = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] : undefined
+  const selectedLabId = assignedLabId ?? 'ninguno'
+  const maxSections = Math.max(1, materia.nroSecciones)
 
   useEffect(() => {
     const cargarLaboratorios = async () => {
@@ -39,14 +56,15 @@ export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: M
     void cargarLaboratorios()
   }, [])
 
-  const handleGuardar = (close: () => void) => {
-    if (onSaveLab) {
-      onSaveLab(
+  const handleGuardar = (valorId: string) => {
+    if (activeTerm) {
+      assignLab(
+        activeTerm.id,
         materia.codMateria,
-        selectedLabId === 'ninguno' ? undefined : selectedLabId
+        currentSection,
+        valorId === 'ninguno' ? undefined : valorId
       )
     }
-    close()
   }
 
   // Nombre del laboratorio seleccionado para mostrar en el valor del Select
@@ -84,6 +102,37 @@ export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: M
                   </p>
                 </div>
 
+                {maxSections > 0 && (
+                  <div className="mb-2 pt-2 flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-slate-500">Sección a configurar</span>
+                    <Select
+                      variant="primary"
+                      value={String(currentSection)}
+                      onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
+                      className="w-full text-sm"
+                    >
+                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-10">
+                        <Select.Value />
+                        <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
+                      </Select.Trigger>
+                      <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
+                        <ListBox>
+                          {Array.from({ length: maxSections }).map((_, i) => (
+                            <ListBox.Item
+                              key={i + 1}
+                              id={String(i + 1)}
+                              textValue={`Sección ${convertirARomano(i + 1)}`}
+                              className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                            >
+                              Sección {convertirARomano(i + 1)}
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5 pt-2">
                   <span className="text-xs font-semibold text-slate-500">Laboratorio Asignado</span>
                   {cargando
@@ -100,7 +149,7 @@ export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: M
                         variant="primary"
                         value={selectedLabId}
                         onChange={(valor) => {
-                          if (valor) setSelectedLabId(String(valor))
+                          if (valor) handleGuardar(String(valor))
                         }}
                         className="w-full text-xs"
                       >
@@ -134,18 +183,11 @@ export function MateriaLaboratorioModal ({ materia, currentLabId, onSaveLab }: M
               {/* Botones de acción */}
               <Modal.Footer className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-end gap-2">
                 <Button
-                  variant="secondary"
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 h-9 rounded-lg text-xs font-semibold cursor-pointer"
-                  onPress={close}
-                >
-                  Cancelar
-                </Button>
-                <Button
                   variant="primary"
                   className="bg-[#1A5F7A] hover:opacity-90 text-white px-5 h-9 rounded-lg text-xs font-semibold cursor-pointer"
-                  onPress={() => { handleGuardar(close) }}
+                  onPress={close}
                 >
-                  Guardar
+                  Cerrar
                 </Button>
               </Modal.Footer>
             </>

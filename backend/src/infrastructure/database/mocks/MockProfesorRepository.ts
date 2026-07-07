@@ -1,4 +1,4 @@
-import type { Profesor } from '../../../domain/Profesor.js'
+﻿import type { Profesor } from '../../../domain/Profesor.js'
 import type { ProfesorRepository } from '../../../application/ports/ProfesorRepository.js'
 import { profesoresMock } from './mockProfesores.js'
 

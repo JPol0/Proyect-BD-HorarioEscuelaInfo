@@ -10,4 +10,5 @@ export interface Materia {
   semestre: number
   modalidad: MateriaModalidad
   esComun: boolean
+  prerrequisitos?: Materia[]
 }

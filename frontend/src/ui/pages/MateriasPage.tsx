@@ -39,7 +39,7 @@ const convertirARomano = (num: number): string => {
   return resultado
 }
 
-export function MateriasPage() {
+export function MateriasPage () {
   const navigate = useNavigate()
   const { activeTerm } = useActiveTerm()
   const termId = activeTerm?.id ?? '1'
@@ -230,19 +230,19 @@ export function MateriasPage() {
       {loading
         ? (
           <div className="text-center py-12 text-slate-400 font-sans">Cargando catálogo de materias...</div>
-        )
+          )
         : error
           ? (
             <div className="text-center py-8 text-red-500 bg-red-50 border border-red-200 rounded-xl max-w-xl mx-auto p-4 font-sans">
               {error}
             </div>
-          )
+            )
           : materiasFiltradas.length === 0
             ? (
               <div className="text-center py-12 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 font-sans">
                 No se encontraron materias bajo ese filtro.
               </div>
-            )
+              )
             : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {materiasFiltradas.map((materia) => (
@@ -262,7 +262,7 @@ export function MateriasPage() {
                   />
                 ))}
               </div>
-            )}
+              )}
     </div>
   )
 }
