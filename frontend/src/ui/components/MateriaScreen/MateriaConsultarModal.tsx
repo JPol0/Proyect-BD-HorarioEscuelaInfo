@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Modal, Button, Input, Select, ListBox } from '@heroui/react'
 import { type Materia, type MateriaModalidad } from '../../../core/domain/Materia'
+import { useUser } from '../../store/userStore'
 
 interface MateriaConsultarModalProps {
   materia: Materia
@@ -8,6 +9,8 @@ interface MateriaConsultarModalProps {
 }
 
 export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModalProps) {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
   // Estados locales temporales para todos los campos del dominio
   const [nombre, setNombre] = useState(materia.nombre)
   const [semestre, setSemestre] = useState(materia.semestre)
@@ -71,6 +74,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                       type="number"
                       value={semestre.toString()}
                       onChange={(e) => setSemestre(Number(e.target.value))}
+                      disabled={isLector}
                       variant="primary"
                       className="w-full text-sm"
                     />
@@ -84,6 +88,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                     type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
+                    disabled={isLector}
                     variant="primary"
                     className="w-full text-sm font-medium text-slate-800"
                   />
@@ -97,6 +102,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                       type="number"
                       value={horasTeoricas.toString()}
                       onChange={(e) => setHorasTeoricas(Number(e.target.value))}
+                      disabled={isLector}
                       variant="primary"
                       className="w-full text-sm"
                     />
@@ -108,6 +114,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                       type="number"
                       value={horasPrac.toString()}
                       onChange={(e) => setHorasPrac(Number(e.target.value))}
+                      disabled={isLector}
                       variant="primary"
                       className="w-full text-sm"
                     />
@@ -119,6 +126,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                       type="number"
                       value={horasLab.toString()}
                       onChange={(e) => setHorasLab(Number(e.target.value))}
+                      disabled={isLector}
                       variant="primary"
                       className="w-full text-sm"
                     />
@@ -131,53 +139,73 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                   {/* Selector Modalidad */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">Modalidad</span>
-                    <Select
-                      variant="primary"
-                      value={modalidad}
-                      onChange={(valor) => { if (valor) setModalidad(valor as MateriaModalidad) }}
-                      className="w-full text-xs"
-                    >
-                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 text-sm text-slate-700 h-9">
-                        <Select.Value />
-                        <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
-                      </Select.Trigger>
-                      <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
-                        <ListBox>
-                          <ListBox.Item id="PRE" textValue="Presencial" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                            Presencial (PRE)
-                          </ListBox.Item>
-                          <ListBox.Item id="VIT" textValue="Virtual" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                            Virtual (VIT)
-                          </ListBox.Item>
-                        </ListBox>
-                      </Select.Popover>
-                    </Select>
+                    {isLector ? (
+                      <Input
+                        type="text"
+                        value={modalidad === 'PRE' ? 'Presencial (PRE)' : 'Virtual (VIT)'}
+                        disabled={true}
+                        variant="primary"
+                        className="w-full text-sm opacity-70"
+                      />
+                    ) : (
+                      <Select
+                        variant="primary"
+                        value={modalidad}
+                        onChange={(valor) => { if (valor) setModalidad(valor as MateriaModalidad) }}
+                        className="w-full text-xs"
+                      >
+                        <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 text-sm text-slate-700 h-9">
+                          <Select.Value />
+                          <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
+                        </Select.Trigger>
+                        <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
+                          <ListBox>
+                            <ListBox.Item id="PRE" textValue="Presencial" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                              Presencial (PRE)
+                            </ListBox.Item>
+                            <ListBox.Item id="VIT" textValue="Virtual" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                              Virtual (VIT)
+                            </ListBox.Item>
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    )}
                   </div>
 
                   {/* Selector Materia Común */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">¿Es Materia Comun?</span>
-                    <Select
-                      variant="primary"
-                      value={esComun}
-                      onChange={(valor) => { if (valor) setEsComun(String(valor)) }}
-                      className="w-full text-xs"
-                    >
-                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 text-sm text-slate-700 h-9">
-                        <Select.Value />
-                        <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
-                      </Select.Trigger>
-                      <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
-                        <ListBox>
-                          <ListBox.Item id="no" textValue="No" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                            No
-                          </ListBox.Item>
-                          <ListBox.Item id="si" textValue="Sí" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
-                            Sí
-                          </ListBox.Item>
-                        </ListBox>
-                      </Select.Popover>
-                    </Select>
+                    {isLector ? (
+                      <Input
+                        type="text"
+                        value={esComun === 'si' ? 'Sí' : 'No'}
+                        disabled={true}
+                        variant="primary"
+                        className="w-full text-sm opacity-70"
+                      />
+                    ) : (
+                      <Select
+                        variant="primary"
+                        value={esComun}
+                        onChange={(valor) => { if (valor) setEsComun(String(valor)) }}
+                        className="w-full text-xs"
+                      >
+                        <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 text-sm text-slate-700 h-9">
+                          <Select.Value />
+                          <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
+                        </Select.Trigger>
+                        <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
+                          <ListBox>
+                            <ListBox.Item id="no" textValue="No" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                              No
+                            </ListBox.Item>
+                            <ListBox.Item id="si" textValue="Sí" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                              Sí
+                            </ListBox.Item>
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    )}
                   </div>
 
                 </div>
@@ -191,15 +219,17 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                   variant="secondary"
                   className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs h-9 px-4 rounded-lg transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  {isLector ? 'Cerrar' : 'Cancelar'}
                 </Button>
-                <Button
-                  variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
-                  onPress={() => handleGuardar(close)}
-                >
-                  Guardar Cambios
-                </Button>
+                {!isLector && (
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer"
+                    onPress={() => handleGuardar(close)}
+                  >
+                    Guardar Cambios
+                  </Button>
+                )}
               </Modal.Footer>
             </>
           )}
