@@ -4,7 +4,7 @@ import { ObtenerTodasLasAlertas } from '../../core/application/useCases/Alarm/Ge
 import { GuardarEstadoAlerta } from '../../core/application/useCases/Alarm/saveAlarmsState'
 import { type Alerta, type EstadoAlerta } from '../../core/domain/Alarm'
 import { AlertCard } from '../components/AlertScreen/AlertCard'
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 import { Select, ListBox } from '@heroui/react'
 import { Clock, Check, EyeSlash } from '@gravity-ui/icons'
 

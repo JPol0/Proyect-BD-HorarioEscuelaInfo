@@ -12,7 +12,7 @@ import { GetMaterias } from '../../core/application/useCases/Materias/GetMateria
 import { useActiveTerm } from '../store/activeTermStore'
 import { type Materia } from '../../core/domain/Materia'
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 import { useMateriaLabStore } from '../store/materiaLabStore'
 import { useSeccionProfesorStore } from '../store/seccionProfesorStore'
 import { DetalleHorarioModal } from '../components/MateriaScreen/DetalleHorarioModal'

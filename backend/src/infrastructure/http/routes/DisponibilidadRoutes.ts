@@ -8,6 +8,7 @@ import { GetProfesores } from '../../../application/useCases/Profesores/GetProfe
 import { CrearProfesor } from '../../../application/useCases/Profesores/CrearProfesor.js'
 import { ActualizarStatusProfesor } from '../../../application/useCases/Profesores/ActualizarStatusProfesor.js'
 import { DisponibilidadController } from '../controllers/DisponibilidadController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createDisponibilidadRouter (
   disponibilidadRepository: DisponibilidadRepository,
@@ -35,7 +36,7 @@ export default function createDisponibilidadRouter (
   router.post('/', controller.crear)
   router.patch('/:cedula/status', controller.actualizarStatus)
   router.get('/:cedula/disponibilidad', controller.obtener)
-  router.put('/:cedula/disponibilidad', controller.guardar)
+  router.put('/:cedula/disponibilidad', requireAdmin, controller.guardar)
 
   return router
 }

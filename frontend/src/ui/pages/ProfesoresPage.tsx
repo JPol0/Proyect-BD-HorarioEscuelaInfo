@@ -6,7 +6,7 @@ import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
 import { CrearProfesorModal } from '../components/ProfesoresScreen/CrearProfesorModal'
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 
 const repository = new HttpProfesorRepository()
 const getProfesoresUseCase = new GetProfesores(repository)

@@ -5,4 +5,5 @@ export interface UserRepository {
   getAll: () => Promise<User[]>
   save: (user: User) => Promise<void>
   logout: () => Promise<void>
+  delete: (id: number) => Promise<void>
 }
