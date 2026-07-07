@@ -23,7 +23,8 @@ export class AuthController {
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
+        path: '/',
         maxAge: 24 * 60 * 60 * 1000 // 1 día
       })
       res.json({
@@ -35,5 +36,15 @@ export class AuthController {
       const mensaje = error instanceof Error ? error.message : 'Error interno'
       res.status(401).json({ error: mensaje })
     }
+  }
+
+  logout = async (_req: Request, res: Response): Promise<void> => {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      path: '/'
+    })
+    res.json({ ok: true })
   }
 }

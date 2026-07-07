@@ -94,7 +94,7 @@ export function ProfesoresPage () {
                     onClick={() => { void navigate(`/profesores/${profesor.cedula}/disponibilidad`) }}
                     className="mt-auto w-full py-2 text-xs font-bold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken tracking-widest uppercase"
                   >
-                    Cargar Horario
+                    Disponibilidad
                   </button>
                 </div>
               ))}

@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
+import { HttpUserRepository } from '../../core/infrastructure/adapters/HttpUserRepository'
+import { LogoutUser } from '../../core/application/useCases/User/LogoutUser'
 import {
   Book,
   GraduationCap,
@@ -34,14 +36,27 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'materias', label: 'Materias', Icon: Book, disponible: true, path: '/materias' },
   { id: 'profesores', label: 'Profesores', Icon: GraduationCap, disponible: true, path: '/profesores' },
   { id: 'laboratorios', label: 'Laboratorios', Icon: Flask, disponible: true, path: '/laboratorios' },
-  { id: 'horarios', label: 'Generar Horario', Icon: Calendar, disponible: true, path: '/horarios' },
-  { id: 'peligros', label: 'Peligros', Icon: TriangleExclamation, disponible: true, path: '/peligros' },
+  { id: 'horarios', label: 'Horario', Icon: Calendar, disponible: true, path: '/horarios' },
+  { id: 'peligros', label: 'Alertas', Icon: TriangleExclamation, disponible: true, path: '/peligros' },
   { id: 'terms', label: 'Seleccionar Term', Icon: LayoutHeaderSideContent, disponible: true, path: '/terms' }
 ]
 
 export default function Layout () {
   const { activeTerm } = useActiveTerm()
   const { currentUser, clearCurrentUser } = useUser()
+
+  const handleLogout = async (): Promise<void> => {
+    try {
+      const httpRepo = new HttpUserRepository()
+      const useCase = new LogoutUser(httpRepo)
+      await useCase.execute()
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error al cerrar sesión:', err)
+    } finally {
+      clearCurrentUser()
+    }
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
@@ -63,7 +78,7 @@ export default function Layout () {
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector')).map((item) => {
             const Icon = item.Icon
             if (!item.disponible) {
               return (
@@ -110,7 +125,7 @@ export default function Layout () {
             </span>
           </div>
           <button
-            onClick={() => { clearCurrentUser() }}
+            onClick={() => { void handleLogout() }}
             className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
           >
             Cerrar sesión
