@@ -12,4 +12,30 @@ export class HttpProfesorRepository implements ProfesorRepository {
     }
     return await response.json() as Profesor[]
   }
+
+  async crearProfesor (datos: Profesor): Promise<Profesor> {
+    const response = await fetch(this.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
+    })
+    if (!response.ok) {
+      const err = await response.json() as { message?: string }
+      throw new Error(err.message ?? 'Error al crear el profesor')
+    }
+    return await response.json() as Profesor
+  }
+
+  async actualizarStatus (cedula: string, status: Profesor['status']): Promise<Profesor> {
+    const response = await fetch(`${this.apiUrl}/${cedula}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    })
+    if (!response.ok) {
+      const err = await response.json() as { message?: string }
+      throw new Error(err.message ?? 'Error al actualizar el status')
+    }
+    return await response.json() as Profesor
+  }
 }

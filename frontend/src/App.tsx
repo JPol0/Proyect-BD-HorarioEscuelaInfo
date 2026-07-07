@@ -6,9 +6,9 @@ import HorariosPage from './ui/pages/HorariosPage'
 import { MateriasPage } from './ui/pages/MateriasPage'
 import LaboratoriosPage from './ui/pages/LaboratoriosPage'
 import LoginPage from './ui/pages/LoginPage'
-import { useUser } from './ui/store/userStore'
 import { ProfesoresPage } from './ui/pages/ProfesoresPage'
 import { DisponibilidadProfesorPage } from './ui/pages/DisponibilidadProfesorPage'
+import { useUser } from './ui/store/userStore'
 import { UsuariosPage } from './ui/pages/UsuariosPage'
 
 function App () {
@@ -16,13 +16,11 @@ function App () {
 
   return (
     <Routes>
-      {/* Ruta de Login: Si ya está autenticado, redirige a terms */}
       <Route
         path="/login"
         element={currentUser !== null ? <Navigate to="/terms" replace /> : <LoginPage />}
       />
 
-      {/* Rutas protegidas: Si no está autenticado, redirige a login */}
       <Route element={currentUser === null ? <Navigate to="/login" replace /> : <Layout />}>
         <Route index element={<Navigate to="/terms" replace />} />
         <Route path="/terms" element={<TermsPage />} />
@@ -38,7 +36,6 @@ function App () {
         />
       </Route>
 
-      {/* Fallback general */}
       <Route path="*" element={<Navigate to="/terms" replace />} />
     </Routes>
   )

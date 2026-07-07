@@ -3,13 +3,17 @@ import type { ObtenerDisponibilidadHoraria } from '../../../application/useCases
 import type { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
 import type { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
 import type { GetProfesores } from '../../../application/useCases/Profesores/GetProfesores.js'
+import type { CrearProfesor } from '../../../application/useCases/Profesores/CrearProfesor.js'
+import type { ActualizarStatusProfesor } from '../../../application/useCases/Profesores/ActualizarStatusProfesor.js'
 
 export class DisponibilidadController {
   constructor (
     private readonly obtenerDisponibilidadHorariaUseCase: ObtenerDisponibilidadHoraria,
     private readonly guardarDisponibilidadHorariaUseCase: GuardarDisponibilidadHoraria,
     private readonly obtenerProfesorActivoUseCase: ObtenerProfesorActivo,
-    private readonly getProfesoresUseCase: GetProfesores
+    private readonly getProfesoresUseCase: GetProfesores,
+    private readonly crearProfesorUseCase: CrearProfesor,
+    private readonly actualizarStatusUseCase: ActualizarStatusProfesor
   ) {}
 
   getAll = async (req: Request, res: Response): Promise<void> => {
@@ -32,6 +36,28 @@ export class DisponibilidadController {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
       res.status(404).json({ message })
+    }
+  }
+
+  crear = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const profesor = await this.crearProfesorUseCase.execute(req.body)
+      res.status(201).json(profesor)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado'
+      res.status(400).json({ message })
+    }
+  }
+
+  actualizarStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { cedula } = req.params as { cedula: string }
+      const { status } = req.body as { status: string }
+      const profesor = await this.actualizarStatusUseCase.execute(cedula, status as 'A' | 'P' | 'R')
+      res.json(profesor)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado'
+      res.status(400).json({ message })
     }
   }
 
