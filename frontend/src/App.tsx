@@ -9,6 +9,7 @@ import LoginPage from './ui/pages/LoginPage'
 import { useUser } from './ui/store/userStore'
 import { ProfesoresPage } from './ui/pages/ProfesoresPage'
 import { DisponibilidadProfesorPage } from './ui/pages/DisponibilidadProfesorPage'
+import { UsuariosPage } from './ui/pages/UsuariosPage'
 
 function App () {
   const { currentUser } = useUser()
@@ -31,6 +32,10 @@ function App () {
         <Route path="/laboratorios" element={<LaboratoriosPage />} />
         <Route path="/profesores" element={<ProfesoresPage />} />
         <Route path="/profesores/:cedula/disponibilidad" element={<DisponibilidadProfesorPage />} />
+        <Route
+          path="/usuarios"
+          element={currentUser?.rol === 'administrador' ? <UsuariosPage /> : <Navigate to="/terms" replace />}
+        />
       </Route>
 
       {/* Fallback general */}

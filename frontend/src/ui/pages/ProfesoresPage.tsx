@@ -5,7 +5,7 @@ import { Input } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 
 const repository = new HttpProfesorRepository()
 const getProfesoresUseCase = new GetProfesores(repository)
