@@ -1,4 +1,4 @@
-export type DiaSemana = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes'
+﻿export type DiaSemana = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes'
 
 export type NivelDisponibilidad = 0 | 1 | 2
 
@@ -37,5 +37,7 @@ export const MODULOS_HORARIO: ModuloHorario[] = [
   { numeroModulo: 9, horaInicio: '15:00' },
   { numeroModulo: 10, horaInicio: '16:00' },
   { numeroModulo: 11, horaInicio: '17:00' },
-  { numeroModulo: 12, horaInicio: '18:00' }
+  { numeroModulo: 12, horaInicio: '18:00' },
+  { numeroModulo: 13, horaInicio: '19:00' },
+  { numeroModulo: 14, horaInicio: '20:00' }
 ]
