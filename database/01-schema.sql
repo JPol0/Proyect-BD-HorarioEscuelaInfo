@@ -2,45 +2,49 @@
 -- Estructura inicial de la Base de Datos
 
 -- Creamos los Dominios necesarios
+CREATE DOMAIN dom_rol_user as VARCHAR(20)
+    DEFAULT 'lector'
+    CHECK (VALUE IN ('administrador', 'lector'));
 
---Dominios para tabla Terms
 CREATE DOMAIN dom_semestre AS SMALLINT
-CHECK (VALUE BETWEEN 1 AND 12);
+    CHECK (VALUE BETWEEN 1 AND 12);
 
---Dominios para tabla Plan de Estudio
 CREATE DOMAIN dom_modalidad AS VARCHAR(3)
-CHECK (VALUE IN ('PRE', 'VIT'));
+    CHECK (VALUE IN ('PRE', 'VIT'));
 
 CREATE DOMAIN dom_status_term AS VARCHAR(1)
-CHECK (VALUE IN ('A', 'D'));
+    CHECK (VALUE IN ('A', 'D'));
 
 CREATE DOMAIN dom_horas AS SMALLINT
-CHECK (VALUE >= 0);
+    CHECK (VALUE >= 0);
 
 CREATE DOMAIN dom_num_secciones AS SMALLINT
-CHECK (VALUE BETWEEN 1 AND 20);
+    CHECK (VALUE BETWEEN 1 AND 20);
 
 --Dominios para tabla Profesores
 CREATE DOMAIN dom_status_profesor AS VARCHAR(1)
-CHECK (VALUE IN ('A', 'P', 'R'));
+    CHECK (VALUE IN ('A', 'P', 'R'));
 
 --Dominios para tabla Warnings
 CREATE DOMAIN dom_estado_warning AS VARCHAR(1)
-CHECK (VALUE IN ('I', 'P', 'R'));
+    CHECK (VALUE IN ('I', 'P', 'R'));
 
 --Dominios para tabla Horarios
 CREATE DOMAIN dom_dia_horario AS VARCHAR(10)
-CHECK (VALUE IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'));
+    CHECK (VALUE IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'));
 
 CREATE DOMAIN dom_hora_horario AS VARCHAR(2)
-CHECK (VALUE IN ('7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'));
+    CHECK (VALUE IN ('7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22'));
+
+CREATE DOMAIN dom_prioridad_lab AS SMALLINT
+    CHECK (VALUE IN (1, 2));
 
 --Creación de Tabla Usuarios
 CREATE TABLE IF NOT EXISTS Usuarios (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    rol VARCHAR(20) NOT NULL DEFAULT 'lector' CHECK (rol IN ('administrador', 'lector'))
+    rol dom_rol_user NOT NULL
 );
 
 -- Creación de Tabla Terms
@@ -174,7 +178,7 @@ CREATE TABLE IF NOT EXISTS Son_ejercidos(
     CodLab SERIAL not null,
     CodAsig varchar(40) not null, 
     CodTerm varchar(30) not null,
-    prioridad SMALLINT check (prioridad =1 or prioridad =2) not null,
+    prioridad dom_prioridad_lab not null,
     primary key (CodLab,CodAsig,CodTerm),
     FOREIGN key(CodLab) references Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
     foreign key (CodAsig,CodTerm) references Plan_de_Estudio(CodAsig,CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
