@@ -21,10 +21,65 @@ export class HttpUserRepository implements UserRepository {
         if (errorData && typeof errorData.error === 'string') {
           errorMessage = errorData.error
         }
-      } catch {}
+      } catch { }
       throw new Error(errorMessage)
     }
 
     return await response.json() as User
+  }
+
+  async getAll (): Promise<User[]> {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/users`)
+
+    if (!response.ok) {
+      let errorMessage = 'Error al obtener usuarios'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {}
+      throw new Error(errorMessage)
+    }
+
+    return await response.json() as User[]
+  }
+
+  async save (user: User): Promise<void> {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user)
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al guardar usuario'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {}
+      throw new Error(errorMessage)
+    }
+  }
+
+  async logout (): Promise<void> {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
+      method: 'POST'
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al cerrar sesión'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {}
+      throw new Error(errorMessage)
+    }
   }
 }

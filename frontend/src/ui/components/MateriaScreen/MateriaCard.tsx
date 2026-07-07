@@ -1,12 +1,11 @@
 ﻿import { Card, Button, Modal } from '@heroui/react'
-import { Minus, Plus, Magnifier, PersonPlus, Clock, Microscope } from '@gravity-ui/icons'
+import { Minus, Plus, Magnifier, Gear } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
-import { MateriaLaboratorioModal } from './MateriaLaboratorioModal'
-import { MateriaHoraModal } from './MateriaHoraModal'
-import { MateriaProfesorModal } from './MateriaProfesorModal'
+import { MateriaConfiguracionModal } from './MateriaConfiguracionModal'
 import { type DaysOfWeek } from '../../../core/domain/Horario'
 import { MateriaDeleteButton } from './MateriaDeleteButton'
+import { useUser } from '../../store/userStore'
 
 interface MateriaCardProps {
   materia: Materia
@@ -21,13 +20,16 @@ export function MateriaCard ({
   onDelete,
   onAssignHours
 }: MateriaCardProps) {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
+
   return (
     <Card className="w-full bg-white border border-slate-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-md transition-all duration-200 rounded-xl h-full flex flex-col">
 
       <Card.Header className="px-1 pt-0.5 pb-0 flex flex-col items-start gap-1">
         <div className="flex items-center justify-between w-full gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
           Semestre {materia.semestre}
-          {onDelete && (
+          {onDelete && !isLector && (
             <MateriaDeleteButton materia={materia} onDelete={onDelete} />
           )}
         </div>
@@ -44,7 +46,7 @@ export function MateriaCard ({
           <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden h-9 bg-slate-50/60 w-fit">
             <button
               type="button"
-              disabled={materia.nroSecciones <= 0}
+              disabled={materia.nroSecciones <= 0 || isLector}
               onClick={() => {
                 const nuevoNro = Math.max(0, materia.nroSecciones - 1)
                 onSave({ ...materia, nroSecciones: nuevoNro })
@@ -58,10 +60,11 @@ export function MateriaCard ({
             </span>
             <button
               type="button"
+              disabled={isLector}
               onClick={() => {
                 onSave({ ...materia, nroSecciones: materia.nroSecciones + 1 })
               }}
-              className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
+              className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -70,7 +73,7 @@ export function MateriaCard ({
       </Card.Content>
 
       <Card.Footer className="px-1 pb-1 flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-2 w-full">
+        <div className={`grid ${isLector ? 'grid-cols-1' : 'grid-cols-2'} gap-2 w-full`}>
 
           <Modal>
             <Button
@@ -78,7 +81,7 @@ export function MateriaCard ({
               className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
             >
               <Magnifier className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Consultar
+              Información
             </Button>
             <MateriaConsultarModal
               materia={materia}
@@ -86,43 +89,21 @@ export function MateriaCard ({
             />
           </Modal>
 
-          <Modal>
-            <Button
-              variant="secondary"
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
-            >
-              <PersonPlus className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Profesores
-            </Button>
-            <MateriaProfesorModal materia={materia} />
-          </Modal>
-
-          {materia.horasLab > 0 && (
+          {!isLector && (
             <Modal>
               <Button
                 variant="secondary"
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2"
               >
-                <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                Laboratorio
+                <Gear className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                Configuración
               </Button>
-              <MateriaLaboratorioModal materia={materia} />
+              <MateriaConfiguracionModal
+                materia={materia}
+                onAssignHours={onAssignHours}
+              />
             </Modal>
           )}
-
-          <Modal>
-            <Button
-              variant="secondary"
-              className={`bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 ${materia.horasLab === 0 ? 'col-span-2' : ''}`}
-            >
-              <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              Asignar Horas
-            </Button>
-            <MateriaHoraModal
-              materia={materia}
-              onSave={(manualHours) => onAssignHours?.(materia, manualHours)}
-            />
-          </Modal>
 
         </div>
       </Card.Footer>

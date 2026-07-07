@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Alert, Select, ListBox } from '@heroui/react'
+import { Alert, Select, ListBox, Modal, Button } from '@heroui/react'
 import type { Horario, ScheduleRow, DaysOfWeek } from '../../core/domain/Horario'
 import { ObtenerHorario } from '../../core/application/useCases/Horarios/ObtenerHorario'
-import { AutoAsignarMateria } from '../../core/application/useCases/Horarios/AutoAsignarMateria'
+import { GenerarHorarioSemestre } from '../../core/application/useCases/Horarios/GenerarHorarioSemestre'
 import { GuardarHorario } from '../../core/application/useCases/Horarios/GuardarHorario'
 import { ApiHorarioRepository } from '../../core/infrastructure/adapters/ApiHorarioRepository'
 import { HttpMateriaRepository } from '../../core/infrastructure/adapters/HttpMateriaRepository'
@@ -15,21 +15,26 @@ import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServic
 import Title from '../components/TitlePage'
 import { useMateriaLabStore } from '../store/materiaLabStore'
 import { useSeccionProfesorStore } from '../store/seccionProfesorStore'
+import { DetalleHorarioModal } from '../components/MateriaScreen/DetalleHorarioModal'
+import { useUser } from '../store/userStore'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
 const disponibilidadRepository = new HttpDisponibilidadRepository()
 const getWeeklyScheduleUseCase = new ObtenerHorario(repository)
 const getMateriasUseCase = new GetMaterias(materiaRepository)
-const autoAssignUseCase = new AutoAsignarMateria(disponibilidadRepository)
+const generarHorarioUseCase = new GenerarHorarioSemestre(disponibilidadRepository)
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
 
 export default function HorariosPage () {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
   const profesorAssignments = useSeccionProfesorStore((state) => state.assignments)
-  const getProfesorForSeccion = useSeccionProfesorStore((state) => state.getProfesorForSeccion)
+  const profesorLabAssignments = useSeccionProfesorStore((state) => state.assignmentsLab)
+  const laboratorioAssignments = useMateriaLabStore((state) => state.assignments)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +52,15 @@ export default function HorariosPage () {
   const [selectedTerm] = useState<string | null>(activeTerm?.id ?? null)
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
+  const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
+  const [selectedBlockModal, setSelectedBlockModal] = useState<{
+    materia: Materia,
+    seccion: number,
+    dia: DaysOfWeek,
+    horaStr: string,
+    cedulaProfesor?: string,
+    laboratorioId?: string
+  } | null>(null)
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
   const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
@@ -63,6 +77,48 @@ export default function HorariosPage () {
       }
     }
     return resultado
+  }
+
+  const handleGenerarHorario = async (overwrite: boolean = false) => {
+    if (!activeTerm) {
+      alert('Selecciona un Term primero.')
+      return
+    }
+
+    let newTuplas = [...tuplas]
+
+    if (overwrite) {
+      newTuplas = newTuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
+    }
+
+    setAssignmentErrors([])
+    setAssignmentWarnings([])
+    setLoading(true)
+
+    try {
+      const response = await generarHorarioUseCase.execute({
+        materias,
+        horarioActual: newTuplas,
+        termId: activeTerm.id,
+        selectedSemester,
+        profesorAssignments: profesorAssignments[activeTerm.id] || {},
+        profesorLabAssignments: profesorLabAssignments?.[activeTerm.id] || {},
+        laboratorioAssignments: laboratorioAssignments[activeTerm.id] || {}
+      })
+
+      setTuplas(response.horarioActualizado)
+
+      if (response.errores.length > 0) {
+        setAssignmentErrors(response.errores)
+      }
+      if (response.advertencias.length > 0) {
+        setAssignmentWarnings(response.advertencias)
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Ocurrió un error al generar el horario.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -126,7 +182,8 @@ export default function HorariosPage () {
                   semestre: materiaFromState.semestre,
                   laboratorio: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)
                     ? { id: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)!, name: 'Laboratorio' }
-                    : null
+                    : null,
+                  isManual: true
                 })
               }
             }
@@ -160,7 +217,7 @@ export default function HorariosPage () {
     const baseHours = [
       '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
       '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
-      '19:00', '20:00', '21:00', '22:00'
+      '19:00', '20:00', '21:00'
     ]
     const days: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
@@ -180,14 +237,11 @@ export default function HorariosPage () {
             const materia = materias.find(m => m.codMateria === codAsig)
             if (materia) {
               const hasLab = asigs.some(a => a.codAsig === codAsig && a.laboratorio)
-              let resultStr = materia.nombre
-              if (materia.nroSecciones > 1) {
-                const uniqueSections = Array.from(new Set(sections))
-                const romans = uniqueSections.sort((a, b) => a - b).map(s => convertirARomano(s)).join('/')
-                resultStr = `${materia.nombre} (Sección ${romans})`
-              }
+              const uniqueSections = Array.from(new Set(sections))
+              const romans = uniqueSections.sort((a, b) => a - b).map(s => convertirARomano(s)).join('/')
+              let resultStr = `${materia.nombre} (Sección ${romans})`
               if (hasLab) {
-                resultStr += ' (horas laboratorio)'
+                resultStr += ' LAB'
               }
               return resultStr
             }
@@ -201,6 +255,29 @@ export default function HorariosPage () {
       return row as ScheduleRow
     })
   }, [tuplas, selectedSemester, materias])
+
+  const handleCellClick = (day: DaysOfWeek, hour: string) => {
+    const asigs = tuplas.filter(t => t.dia === day && t.hora === hour && t.semestre === selectedSemester)
+    if (asigs.length === 0) return
+    const asig = asigs[0]
+    const materia = materias.find(m => m.codMateria === asig.codAsig)
+    if (!materia) return
+    
+    const h = parseInt(hour.split(':')[0], 10)
+    const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
+    const cedulaProfesor = hasLab 
+      ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+      : profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+    
+    setSelectedBlockModal({
+      materia,
+      seccion: asig.nroSeccion,
+      dia: day,
+      horaStr: `${h}:00 - ${h}:50`,
+      cedulaProfesor,
+      laboratorioId: asig.laboratorio ? asig.laboratorio.id || (asig as any).codLaboratorio : undefined
+    })
+  }
 
   return (
     <div className="px-10 py-9 max-w-[1200px]">
@@ -287,124 +364,79 @@ export default function HorariosPage () {
             </Select>
           </div>
 
-          <button
-            type="button"
-            onClick={async () => {
-              if (!activeTerm) {
-                alert('Selecciona un Term primero.')
-                return
-              }
-              let newTuplas = [...tuplas]
-              const newErrors: string[] = []
-              const newWarnings: string[] = []
-              setAssignmentErrors([])
-              setAssignmentWarnings([])
+          {!isLector && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  const hasAutoBlocks = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
+                  if (hasAutoBlocks) {
+                    setIsConfirmGenerateOpen(true)
+                  } else {
+                    void handleGenerarHorario(false)
+                  }
+                }}
+                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Generar Horario
+              </button>
 
-              // Validación: las materias comunes (esComun === true) DEL SEMESTRE ACTUAL
-              // DEBEN estar asignadas manualmente antes de poder crear el horario automático.
-              const materiasComunesSinAsignar = materias.filter(
-                m => m.esComun && m.semestre === selectedSemester && !newTuplas.some(t => t.codAsig === m.codMateria)
-              )
+              <button
+                type="button"
+                onClick={() => {
+                  const tieneAsignacionesAuto = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
+                  if (!tieneAsignacionesAuto) {
+                    alert('No hay ningún horario generado automáticamente para eliminar en este semestre.')
+                    return
+                  }
 
-              if (materiasComunesSinAsignar.length > 0) {
-                const nombres = materiasComunesSinAsignar.map(m => m.nombre).join(', ')
-                alert(`Debes asignar manualmente el horario para las materias comunes del semestre ${selectedSemester} antes de autogenerar:\n\n${nombres}`)
-                return
-              }
-
-              for (const materia of materias) {
-                // Solo autoasignar las materias del semestre que estamos viendo actualmente
-                if (materia.semestre !== selectedSemester) continue
-
-                const nroSecciones = Math.max(1, materia.nroSecciones)
-
-                for (let sec = 1; sec <= nroSecciones; sec++) {
-                  const isAssigned = newTuplas.some(t => t.codAsig === materia.codMateria && t.nroSeccion === sec)
-                  if (!isAssigned) {
-                    try {
-                      const labId = useMateriaLabStore.getState().getLabForSeccion(selectedTerm, materia.codMateria, sec)
-                      const cedulaProf = getProfesorForSeccion(selectedTerm, materia.codMateria, sec)
-
-                      if (!cedulaProf) {
-                        newWarnings.push(`La sección ${convertirARomano(sec)} de ${materia.nombre} se está auto-asignando sin ningún profesor relacionado.`)
+                  if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
+                    const remainingTuplas = tuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
+                    setTuplas(remainingTuplas)
+                    void (async () => {
+                      try {
+                        await saveWeeklyScheduleUseCase.execute(selectedTerm, remainingTuplas)
+                        sessionStorage.setItem(`draft_horario_${selectedTerm}`, JSON.stringify(remainingTuplas))
+                      } catch (e) {
+                        console.error('No se pudo borrar el JSON', e)
                       }
-
-                      const termProfAssignments = profesorAssignments[selectedTerm] || {}
-                      newTuplas = await autoAssignUseCase.execute(materia, newTuplas, selectedTerm, sec, labId, cedulaProf, termProfAssignments)
+                    })()
+                  }
+                }}
+                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Eliminar Horario
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      await saveWeeklyScheduleUseCase.execute(selectedTerm, tuplas)
+                      sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
+                      alert('Horario guardado correctamente')
                     } catch (e) {
-                      console.warn(`No se pudo asignar completamente ${materia.nombre} Sección ${sec}`)
-                      newErrors.push(e instanceof Error ? e.message : `No se pudo asignar ${materia.nombre} (Sección ${sec})`)
+                      alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
                     }
-                  }
-                }
-              }
-              setTuplas(newTuplas)
-              if (newErrors.length > 0) {
-                setAssignmentErrors(newErrors)
-              }
-              if (newWarnings.length > 0) {
-                setAssignmentWarnings(newWarnings)
-              }
-            }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Generar Horario
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              const tieneAsignaciones = tuplas.some(t => t.semestre === selectedSemester)
-              if (!tieneAsignaciones) {
-                alert('No hay ningún horario asignado para eliminar en este semestre.')
-                return
-              }
-
-              if (window.confirm(`¿Estás seguro de que deseas eliminar todas las asignaciones del semestre ${selectedSemester}?`)) {
-                const remainingTuplas = tuplas.filter(t => t.semestre !== selectedSemester)
-                setTuplas(remainingTuplas)
-                void (async () => {
-                  try {
-                    await saveWeeklyScheduleUseCase.execute(selectedTerm, remainingTuplas)
-                    sessionStorage.setItem(`draft_horario_${selectedTerm}`, JSON.stringify(remainingTuplas))
-                  } catch (e) {
-                    console.error('No se pudo borrar el JSON', e)
-                  }
-                })()
-              }
-            }}
-            className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Eliminar Horario
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              void (async () => {
-                try {
-                  await saveWeeklyScheduleUseCase.execute(selectedTerm, tuplas)
-                  sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
-                  alert('Horario guardado correctamente')
-                } catch (e) {
-                  alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
-                }
-              })()
-            }}
-            className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-              <path d="M8 4v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-            </svg>
-            Guardar
-          </button>
+                  })()
+                }}
+                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  <path d="M8 4v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                </svg>
+                Guardar
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -443,29 +475,23 @@ export default function HorariosPage () {
                       className="hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-4 py-4 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center">
-                        {row.hour}
+                        {parseInt(row.hour.split(':')[0], 10)}:00 - {parseInt(row.hour.split(':')[0], 10)}:50
                       </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Lunes === '-' ? <span className="text-slate-300">—</span> : row.Lunes}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Martes === '-' ? <span className="text-slate-300">—</span> : row.Martes}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Miercoles === '-' ? <span className="text-slate-300">—</span> : row.Miercoles}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Jueves === '-' ? <span className="text-slate-300">—</span> : row.Jueves}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Viernes === '-' ? <span className="text-slate-300">—</span> : row.Viernes}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Sabado === '-' || !row.Sabado ? <span className="text-slate-300">—</span> : row.Sabado}
-                      </td>
-                      <td className="px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100">
-                        {row.Domingo === '-' || !row.Domingo ? <span className="text-slate-300">—</span> : row.Domingo}
-                      </td>
+                      {['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'].map((dayStr) => {
+                        const day = dayStr as DaysOfWeek
+                        const content = row[day]
+                        const isEmpty = content === '-' || !content
+
+                        return (
+                          <td 
+                            key={day} 
+                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 transition-colors' : ''}`}
+                            onClick={() => !isEmpty && handleCellClick(day, row.hour)}
+                          >
+                            {isEmpty ? <span className="text-slate-300">—</span> : content}
+                          </td>
+                        )
+                      })}
                     </tr>
                   ))}
                 </tbody>
@@ -473,6 +499,54 @@ export default function HorariosPage () {
             </div>
             )}
       </div>
+
+      {isConfirmGenerateOpen && (
+        <Modal isOpen={isConfirmGenerateOpen} onOpenChange={setIsConfirmGenerateOpen}>
+          <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+            <Modal.Container className="flex items-center justify-center p-4">
+              <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-sans border border-slate-100 p-6 text-center">
+                <Modal.Heading className="text-lg font-bold text-slate-800 mb-3">
+                  Confirmación de Generación
+                </Modal.Heading>
+                <Modal.Body className="text-sm text-slate-600 mb-6">
+                  Al hacer clic en generar horario se van a sobreescribir los bloques previamente asignados. Solo se eliminarán y reasignarán los horarios generados automáticamente. Los horarios manuales se mantendrán. <strong>¿Desea continuar?</strong>
+                </Modal.Body>
+                <Modal.Footer className="flex justify-center gap-3">
+                  <Button
+                    variant="secondary"
+                    className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs px-5 h-9 cursor-pointer border border-slate-200"
+                    onPress={() => { setIsConfirmGenerateOpen(false) }}
+                  >
+                    No
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-medium text-xs px-5 h-9 cursor-pointer"
+                    onPress={() => {
+                      setIsConfirmGenerateOpen(false)
+                      void handleGenerarHorario(true)
+                    }}
+                  >
+                    Sí
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+      )}
+      {selectedBlockModal && (
+        <DetalleHorarioModal 
+          isOpen={true} 
+          onClose={() => setSelectedBlockModal(null)} 
+          materia={selectedBlockModal.materia}
+          seccion={selectedBlockModal.seccion}
+          dia={selectedBlockModal.dia}
+          horaStr={selectedBlockModal.horaStr}
+          cedulaProfesor={selectedBlockModal.cedulaProfesor}
+          laboratorioId={selectedBlockModal.laboratorioId}
+        />
+      )}
     </div>
   )
 }

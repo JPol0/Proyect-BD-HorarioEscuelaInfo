@@ -7,6 +7,7 @@ import { type CreateTermInput } from '../../core/application/ports/TermRepositor
 import Title from '../components/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
 import { useActiveTerm } from '../store/activeTermStore'
+import { useUser } from '../store/userStore'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
@@ -36,6 +37,8 @@ function formatPeriodo (startDate: string, endDate: string): string {
 
 export default function TermsPage () {
   const { activeTerm, setActiveTerm } = useActiveTerm()
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
 
   const [terms, setTerms] = useState<Term[]>([])
   const [cargando, setCargando] = useState(true)
@@ -76,15 +79,17 @@ export default function TermsPage () {
           title="Terms Academicos"
           subtitle="Selecciona un term para trabajar sobre él, o crea un nuevo term para configurar su horario."
         />
-        <div className="flex items-center gap-3 shrink-0 mt-1">
-          {/* Botón New Term */}
-          <button
-            onClick={() => { setShowModal(true) }}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm"
-          >
-            + New Term
-          </button>
-        </div>
+        {!isLector && (
+          <div className="flex items-center gap-3 shrink-0 mt-1">
+            {/* Botón New Term */}
+            <button
+              onClick={() => { setShowModal(true) }}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm"
+            >
+              + Nuevo Term
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Banner de error */}

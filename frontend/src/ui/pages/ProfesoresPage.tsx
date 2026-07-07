@@ -39,13 +39,10 @@ export function ProfesoresPage () {
     void cargar()
   }, [])
 
-  const handleStatusChange = async (cedula: string, status: Profesor['status']) => {
-    try {
-      const actualizado = await repository.actualizarStatus(cedula, status)
-      setProfesores((prev) => prev.map((p) => p.cedula === cedula ? actualizado : p))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar el status')
-    }
+  const handleStatusChange = (cedula: string, status: Profesor['status']) => {
+    setProfesores((prev) => prev.map((p) =>
+      p.cedula === cedula ? { ...p, status } : p
+    ))
   }
 
   const handleCreado = (nuevo: Profesor) => {
@@ -135,7 +132,7 @@ export function ProfesoresPage () {
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
                       <select
                         value={profesor.status}
-                        onChange={(e) => { void handleStatusChange(profesor.cedula, e.target.value as Profesor['status']) }}
+                        onChange={(e) => { handleStatusChange(profesor.cedula, e.target.value as Profesor['status']) }}
                         className="text-xs border border-border rounded-lg px-3 py-1.5 bg-surface-alt text-text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-button-primary transition-colors"
                       >
                         <option value="A">Activo</option>
@@ -149,7 +146,7 @@ export function ProfesoresPage () {
                       disabled={profesor.status === 'R'}
                       className="mt-auto w-full py-2 text-xs font-bold text-white bg-button-primary hover:bg-button-primary-hover disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition font-hanken tracking-widest uppercase"
                     >
-                      Cargar Horario
+                      Cargar Disponibilidad
                     </button>
                   </div>
                 )

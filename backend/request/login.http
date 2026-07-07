@@ -1,0 +1,14 @@
+### Request para login de usuario
+
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+
+{
+  "nombre": "lector",
+  "password": "lector123"
+}
+
+### logout de usuario
+
+POST http://localhost:3000/api/auth/logout

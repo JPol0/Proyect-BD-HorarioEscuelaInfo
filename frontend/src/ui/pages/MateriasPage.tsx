@@ -18,6 +18,7 @@ import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
 import { MateriaCrearModal } from '../components/MateriaScreen/MateriaCrearModal'
 import Title from '../components/TitlePage'
 import { useActiveTerm } from '../store/activeTermStore'
+import { useUser } from '../store/userStore'
 
 const repository = new HttpMateriaRepository()
 const getMateriasUseCase = new GetMaterias(repository)
@@ -42,6 +43,7 @@ const convertirARomano = (num: number): string => {
 export function MateriasPage () {
   const navigate = useNavigate()
   const { activeTerm } = useActiveTerm()
+  const { currentUser } = useUser()
   const termId = activeTerm?.id ?? '1'
 
   const [materias, setMaterias] = useState<Materia[]>([])
@@ -150,21 +152,23 @@ export function MateriasPage () {
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
 
           {/* Botón Crear Materia */}
-          <div className="w-full sm:w-auto flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
-            <Modal>
-              <Button
-                variant="primary"
-                className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-              >
-                <Plus className="w-4 h-4 shrink-0" />
-                Crear Materia
-              </Button>
-              <MateriaCrearModal
-                onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
-              />
-            </Modal>
-          </div>
+          {currentUser?.rol !== 'lector' && (
+            <div className="w-full sm:w-auto flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+              <Modal>
+                <Button
+                  variant="primary"
+                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4 shrink-0" />
+                  Crear Materia
+                </Button>
+                <MateriaCrearModal
+                  onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
+                />
+              </Modal>
+            </div>
+          )}
 
           {/* Selector de Semestre */}
           <div className="w-full sm:w-48 flex flex-col gap-1.5">

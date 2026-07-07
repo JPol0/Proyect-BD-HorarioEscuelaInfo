@@ -14,4 +14,5 @@ export interface Horario {
   hora: string // Ej: "07:00"
   semestre: number
   laboratorio?: Laboratorio | null
+  isManual?: boolean
 }

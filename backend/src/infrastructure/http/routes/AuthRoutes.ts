@@ -11,6 +11,7 @@ export default function createAuthRouter (repository: UserRepository): Router {
 
   // POST /api/auth/login
   router.post('/login', controller.login)
+  router.post('/logout', controller.logout)
 
   return router
 }

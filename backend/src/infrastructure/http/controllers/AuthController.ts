@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express'
 import { type Login } from '../../../application/useCases/User/Login.js'
+import { generateToken } from '../../security/tokenService.js'
 
 export class AuthController {
   private readonly loginUseCase: Login
@@ -18,10 +19,32 @@ export class AuthController {
       }
 
       const user = await this.loginUseCase.execute(nombre.trim(), password)
-      res.json(user)
+      const token = generateToken(user.nombre, user.rol)
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000 // 1 día
+      })
+      res.json({
+        id: user.id,
+        nombre: user.nombre,
+        rol: user.rol
+      })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'
       res.status(401).json({ error: mensaje })
     }
+  }
+
+  logout = async (_req: Request, res: Response): Promise<void> => {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',
+      path: '/'
+    })
+    res.json({ ok: true })
   }
 }

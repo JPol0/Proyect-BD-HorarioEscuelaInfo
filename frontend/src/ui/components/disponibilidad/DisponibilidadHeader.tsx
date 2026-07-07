@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import type { Profesor } from '../../../core/domain/Profesor'
+import { useUser } from '../../store/userStore'
 
 interface DisponibilidadHeaderProps {
   profesor: Profesor | null
@@ -9,6 +10,9 @@ interface DisponibilidadHeaderProps {
 }
 
 export function DisponibilidadHeader ({ profesor, codTerm, guardando, onGuardar }: DisponibilidadHeaderProps): JSX.Element {
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
+
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-center lg:justify-between">
       <div>
@@ -16,15 +20,17 @@ export function DisponibilidadHeader ({ profesor, codTerm, guardando, onGuardar 
         <h1 className="text-3xl font-semibold text-slate-900">{profesor?.nombre ?? 'Profesor'}</h1>
         <p className="mt-1 text-sm text-slate-600">Carga de Disponibilidad Horaria - Semestre {codTerm}</p>
       </div>
-      <button
-        type="button"
-        onClick={onGuardar}
-        disabled={guardando}
-        className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2 font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <span className="mr-2">💾</span>
-        {guardando ? 'Guardando...' : 'Guardar Disponibilidad'}
-      </button>
+      {!isLector && (
+        <button
+          type="button"
+          onClick={onGuardar}
+          disabled={guardando}
+          className="inline-flex items-center justify-center rounded-lg bg-teal-600 px-4 py-2 font-medium text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <span className="mr-2">💾</span>
+          {guardando ? 'Guardando...' : 'Guardar Disponibilidad'}
+        </button>
+      )}
     </div>
   )
 }

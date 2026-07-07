@@ -21,4 +21,12 @@ export class PgUserRepository implements UserRepository {
 
     return user
   }
+
+  async getAll (): Promise<User[]> {
+    throw new Error('Método no implementado en PgUserRepository')
+  }
+
+  async save (user: User): Promise<void> {
+    throw new Error('Método no implementado en PgUserRepository')
+  }
 }

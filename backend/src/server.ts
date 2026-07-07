@@ -1,16 +1,28 @@
 import express from 'express'
 import apiRouter from './infrastructure/http/apiRouter.js'
-import { dbScopeMiddleware } from './infrastructure/http/middlewares/dbScopeMiddleware.js'
 
 const app = express()
 app.disable('x-powered-by') // Por seguridad, no revelamos que usamos Express
 app.use(express.json())
 
 // Middleware de CORS manual (cumpliendo la guía Standard de estilo)
+const ALLOWED_ORIGINS = ['http://localhost:5173']
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = req.headers.origin
+  if (origin !== undefined && origin !== '' && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-role')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Max-Age', 86400)
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204)
+    return
+  }
+
   next()
 })
 
@@ -18,8 +30,8 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true })
 })
 
-// Conectamos todas nuestras rutas bajo la raíz /api aplicando el middleware de contexto BD
-app.use('/api', dbScopeMiddleware, apiRouter)
+// Conectamos todas nuestras rutas bajo la raíz /api
+app.use('/api', apiRouter)
 
 const port = process.env.PORT ?? 3000
 

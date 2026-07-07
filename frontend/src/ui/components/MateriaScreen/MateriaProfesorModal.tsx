@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from 'react'
-import { Modal, Button, Input, Select, ListBox } from '@heroui/react'
+import { Modal, Button, Input } from '@heroui/react'
 import { Magnifier } from '@gravity-ui/icons'
 import type { Materia } from '../../../core/domain/Materia'
 import type { Profesor } from '../../../core/domain/Profesor'
@@ -10,21 +10,9 @@ import { HttpSeccionRepository } from '../../../core/infrastructure/adapters/Htt
 import { useSeccionProfesorStore } from '../../store/seccionProfesorStore'
 import { useActiveTerm } from '../../store/activeTermStore'
 
-const convertirARomano = (num: number): string => {
-  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
-  let resultado = ''
-  let valorRestante = num
-  for (const key in valoresRomanos) {
-    while (valorRestante >= valoresRomanos[key]) {
-      resultado += key
-      valorRestante -= valoresRomanos[key]
-    }
-  }
-  return resultado
-}
-
 interface MateriaProfesorModalProps {
   materia: Materia
+  currentSection: number
 }
 
 const repository = new HttpProfesorRepository()
@@ -32,24 +20,30 @@ const getProfesoresUseCase = new GetProfesores(repository)
 const seccionRepository = new HttpSeccionRepository()
 const saveSeccionUseCase = new SaveSeccion(seccionRepository)
 
-export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
+export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfesorModalProps) {
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
-  const [currentSection, setCurrentSection] = useState(1)
+  const [tipoHoras, setTipoHoras] = useState<'Teoría' | 'Laboratorio'>('Teoría')
   const { activeTerm } = useActiveTerm()
 
   const assignments = useSeccionProfesorStore(state => state.assignments)
-  const assignedCedula = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] : undefined
-  const maxSections = Math.max(1, materia.nroSecciones)
+  const assignmentsLab = useSeccionProfesorStore(state => state.assignmentsLab)
+  const assignProfesor = useSeccionProfesorStore(state => state.assignProfesor)
+  const assignProfesorLab = useSeccionProfesorStore(state => state.assignProfesorLab)
+
+  const assignedCedula = activeTerm
+    ? (tipoHoras === 'Teoría'
+        ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection]
+        : assignmentsLab?.[activeTerm.id]?.[materia.codMateria]?.[currentSection])
+    : undefined
 
   useEffect(() => {
     const cargar = async () => {
       try {
         setError(null)
         const lista = await getProfesoresUseCase.execute()
-        // Solo mostrar profesores activos
         setProfesores(lista.filter((p) => p.status === 'A'))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar profesores')
@@ -84,55 +78,20 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
                   <p className="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">⚠️ {error}</p>
                 )}
 
-                {maxSections > 0 && (
-                  <div className="mb-2 p-4 bg-surface-alt rounded-xl border border-border flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-subtitlePage">Sección a configurar</span>
-                    <div className="flex gap-4 items-center">
-                      <Select
-                        variant="primary"
-                        value={String(currentSection)}
-                        onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
-                        className="w-full sm:w-64 text-sm"
-                      >
-                        <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface hover:bg-surface-alt transition-colors text-sm text-text-primary h-10">
-                          <Select.Value />
-                          <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
-                        </Select.Trigger>
-                        <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 min-w-45 z-50">
-                          <ListBox>
-                            {Array.from({ length: maxSections }).map((_, i) => (
-                              <ListBox.Item
-                                key={i + 1}
-                                id={String(i + 1)}
-                                textValue={`Sección ${convertirARomano(i + 1)}`}
-                                className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block"
-                              >
-                                Sección {convertirARomano(i + 1)}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                      {assignedCedula && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 h-10"
-                          onPress={() => {
-                            if (activeTerm) {
-                              void saveSeccionUseCase.execute({
-                                codTerm: activeTerm.id,
-                                codMateria: materia.codMateria,
-                                nroSeccion: currentSection,
-                                profesorAsignado: null
-                              })
-                            }
-                          }}
-                        >
-                          Eliminar profesor
-                        </Button>
-                      )}
-                    </div>
+                {materia.horasLab > 0 && (
+                  <div className="flex gap-2 p-1 bg-surface-alt rounded-lg">
+                    <button
+                      onClick={() => { setTipoHoras('Teoría') }}
+                      className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-colors ${tipoHoras === 'Teoría' ? 'bg-surface shadow-sm text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                    >
+                      Horas Teóricas
+                    </button>
+                    <button
+                      onClick={() => { setTipoHoras('Laboratorio') }}
+                      className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-colors ${tipoHoras === 'Laboratorio' ? 'bg-surface shadow-sm text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                    >
+                      Horas de Laboratorio
+                    </button>
                   </div>
                 )}
 
@@ -163,9 +122,31 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
                             </div>
                             {assignedCedula === profesor.cedula
                               ? (
-                                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                                  Asignado
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                                    Asignado
+                                  </span>
+                                  <button
+                                    className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition-colors cursor-pointer"
+                                    onClick={() => {
+                                      if (activeTerm) {
+                                        if (tipoHoras === 'Teoría') {
+                                          assignProfesor(activeTerm.id, materia.codMateria, currentSection, undefined)
+                                        } else {
+                                          assignProfesorLab(activeTerm.id, materia.codMateria, currentSection, undefined)
+                                        }
+                                        void saveSeccionUseCase.execute({
+                                          codTerm: activeTerm.id,
+                                          codMateria: materia.codMateria,
+                                          nroSeccion: currentSection,
+                                          profesorAsignado: null
+                                        })
+                                      }
+                                    }}
+                                  >
+                                    Eliminar
+                                  </button>
+                                </div>
                               )
                               : (
                                 <Button
@@ -174,6 +155,11 @@ export function MateriaProfesorModal ({ materia }: MateriaProfesorModalProps) {
                                   isDisabled={!!assignedCedula}
                                   onPress={() => {
                                     if (activeTerm) {
+                                      if (tipoHoras === 'Teoría') {
+                                        assignProfesor(activeTerm.id, materia.codMateria, currentSection, profesor.cedula)
+                                      } else {
+                                        assignProfesorLab(activeTerm.id, materia.codMateria, currentSection, profesor.cedula)
+                                      }
                                       void saveSeccionUseCase.execute({
                                         codTerm: activeTerm.id,
                                         codMateria: materia.codMateria,
