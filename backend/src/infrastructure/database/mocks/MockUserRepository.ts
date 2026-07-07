@@ -44,4 +44,12 @@ export class MockUserRepository implements UserRepository {
       })
     }
   }
+
+  async delete (id: number): Promise<void> {
+    const index = MOCK_USERS.findIndex((u) => u.id === id)
+    if (index === -1) {
+      throw new Error('Usuario no encontrado')
+    }
+    MOCK_USERS.splice(index, 1)
+  }
 }

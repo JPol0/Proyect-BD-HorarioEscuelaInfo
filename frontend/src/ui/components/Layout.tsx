@@ -9,11 +9,12 @@ import {
   Flask,
   Calendar,
   TriangleExclamation,
-  LayoutHeaderSideContent
+  LayoutHeaderSideContent,
+  Persons
 } from '@gravity-ui/icons'
 import type { SVGProps, ComponentType } from 'react'
 
-type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios'
+type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
 
 interface NavItemBase {
   id: Pantalla
@@ -38,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'laboratorios', label: 'Laboratorios', Icon: Flask, disponible: true, path: '/laboratorios' },
   { id: 'horarios', label: 'Horario', Icon: Calendar, disponible: true, path: '/horarios' },
   { id: 'peligros', label: 'Alertas', Icon: TriangleExclamation, disponible: true, path: '/peligros' },
+  { id: 'usuarios', label: 'Usuarios', Icon: Persons, disponible: true, path: '/usuarios' },
   { id: 'terms', label: 'Seleccionar Term', Icon: LayoutHeaderSideContent, disponible: true, path: '/terms' }
 ]
 
@@ -78,10 +80,13 @@ export default function Layout () {
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
-          {NAV_ITEMS.filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector')).map((item) => {
-            const Icon = item.Icon
-            if (!item.disponible) {
-              return (
+          {NAV_ITEMS
+            .filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector'))
+            .filter(item => !(item.id === 'usuarios' && currentUser?.rol !== 'administrador'))
+            .map((item) => {
+              const Icon = item.Icon
+              if (!item.disponible) {
+                return (
                 <button
                   key={item.id}
                   disabled
@@ -91,10 +96,10 @@ export default function Layout () {
                   <Icon className="h-5 w-5 shrink-0" />
                   <span>{item.label}</span>
                 </button>
-              )
-            }
+                )
+              }
 
-            return (
+              return (
               <NavLink
                 key={item.id}
                 to={item.path}
@@ -110,8 +115,8 @@ export default function Layout () {
                 <Icon className="h-5 w-5 shrink-0" />
                 <span>{item.label}</span>
               </NavLink>
-            )
-          })}
+              )
+            })}
         </nav>
 
         {/* Sección de Usuario en la parte inferior */}

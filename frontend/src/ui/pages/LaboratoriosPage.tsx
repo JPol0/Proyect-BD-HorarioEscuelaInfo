@@ -9,7 +9,7 @@ import { TrashBin, Magnifier } from '@gravity-ui/icons'
 import { useUser } from '../store/userStore'
 
 // Sub-componentes reutilizables/relacionados
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 import LaboratorioModal from '../components/LaboratorioScreen/LaboratorioModal'
 import { LaboratorioDisponibilidadModal } from '../components/LaboratorioScreen/LaboratorioDisponibilidadModal'
 const repository = new HttpLaboratorioRepository()

@@ -16,7 +16,7 @@ import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServic
 // Sub-componentes reutilizables
 import { MateriaCard } from '../components/MateriaScreen/MateriaCard'
 import { MateriaCrearModal } from '../components/MateriaScreen/MateriaCrearModal'
-import Title from '../components/TitlePage'
+import Title from '../components/common/TitlePage'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
 
