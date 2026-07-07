@@ -4,6 +4,7 @@ import { GetTerms } from '../../../application/useCases/Terms/GetTerms.js'
 import { CreateTerm } from '../../../application/useCases/Terms/CreateTerm.js'
 import { ToggleTermArchive } from '../../../application/useCases/Terms/ToggleTermArchive.js'
 import { TermController } from '../controllers/TermController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createTermRouter (repository: TermRepository): Router {
   const router = Router()
@@ -14,8 +15,8 @@ export default function createTermRouter (repository: TermRepository): Router {
   const controller = new TermController(getUseCase, createUseCase, toggleUseCase)
 
   router.get('/', controller.getAll)
-  router.post('/', controller.create)
-  router.patch('/:id/archive', controller.toggleArchive)
+  router.post('/', requireAdmin, controller.create)
+  router.patch('/:id/archive', requireAdmin, controller.toggleArchive)
 
   return router
 }

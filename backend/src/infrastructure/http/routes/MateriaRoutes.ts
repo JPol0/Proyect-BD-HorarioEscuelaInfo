@@ -4,6 +4,7 @@ import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.j
 import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
 import { MateriaController } from '../controllers/MateriaController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createMateriaRouter (repository: MateriaRepository): Router {
   const router = Router()
@@ -17,10 +18,10 @@ export default function createMateriaRouter (repository: MateriaRepository): Rou
   router.get('/', controller.getAll)
 
   // POST /api/materias - Procesa el guardado (creación/actualización por código)
-  router.post('/', controller.save)
+  router.post('/', requireAdmin, controller.save)
 
   // DELETE /api/materias/:codMateria - Elimina una materia
-  router.delete('/:codMateria', controller.delete)
+  router.delete('/:codMateria', requireAdmin, controller.delete)
 
   return router
 }
