@@ -6,6 +6,7 @@ import { GuardarDisponibilidadHoraria } from '../../../application/useCases/Disp
 import { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
 import { GetProfesores } from '../../../application/useCases/Profesores/GetProfesores.js'
 import { DisponibilidadController } from '../controllers/DisponibilidadController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createDisponibilidadRouter (
   disponibilidadRepository: DisponibilidadRepository,
@@ -21,7 +22,7 @@ export default function createDisponibilidadRouter (
 
   router.get('/', controller.getAll)
   router.get('/:cedula/disponibilidad', controller.obtener)
-  router.put('/:cedula/disponibilidad', controller.guardar)
+  router.put('/:cedula/disponibilidad', requireAdmin, controller.guardar)
 
   return router
 }
