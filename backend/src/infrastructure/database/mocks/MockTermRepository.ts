@@ -1,5 +1,8 @@
 import { type TermRepository } from '../../../application/ports/TermRepository.js'
 import { type Term } from '../../../domain/Term.js'
+import { type MockMateriaRepository } from './MockMateriaRepository.js'
+import { type MockDisponibilidadRepository } from './MockDisponibilidadRepository.js'
+import { type JsonHorarioRepository } from './JsonHorarioRepository.js'
 
 // Datos de mock en memoria — reemplazar por adaptador de BD cuando se implemente
 const MOCK_TERMS: Term[] = [
@@ -41,6 +44,20 @@ const MOCK_TERMS: Term[] = [
 ]
 
 export class MockTermRepository implements TermRepository {
+  private readonly disponibilidadRepository?: MockDisponibilidadRepository
+  private readonly materiaRepository?: MockMateriaRepository
+  private readonly horarioRepository?: JsonHorarioRepository
+
+  constructor (
+    disponibilidadRepository?: MockDisponibilidadRepository,
+    materiaRepository?: MockMateriaRepository,
+    horarioRepository?: JsonHorarioRepository
+  ) {
+    this.disponibilidadRepository = disponibilidadRepository
+    this.materiaRepository = materiaRepository
+    this.horarioRepository = horarioRepository
+  }
+
   async getTerms (): Promise<Term[]> {
     return [...MOCK_TERMS]
   }
@@ -55,5 +72,25 @@ export class MockTermRepository implements TermRepository {
       throw new Error('El término solicitado no existe')
     }
     MOCK_TERMS[index].archived = archived
+  }
+
+  async deleteTerm (id: string): Promise<void> {
+    const index = MOCK_TERMS.findIndex((t) => t.id === id)
+    if (index === -1) {
+      throw new Error('El término solicitado no existe')
+    }
+
+    // Borrado en cascada en los repositorios de mock asociados
+    if (this.disponibilidadRepository !== undefined) {
+      this.disponibilidadRepository.clearTerm(id)
+    }
+    if (this.materiaRepository !== undefined) {
+      this.materiaRepository.clearTerm(id)
+    }
+    if (this.horarioRepository !== undefined) {
+      await this.horarioRepository.clearTerm(id)
+    }
+
+    MOCK_TERMS.splice(index, 1)
   }
 }

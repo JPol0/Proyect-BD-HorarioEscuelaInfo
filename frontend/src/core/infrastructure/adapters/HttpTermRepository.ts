@@ -6,7 +6,7 @@ export class HttpTermRepository implements TermRepository {
   private readonly apiUrl = `${API_CONFIG.BASE_URL}/terms`
 
   async getTerms (): Promise<Term[]> {
-    const response = await fetch(this.apiUrl)
+    const response = await fetch(this.apiUrl, { credentials: 'include' })
     if (!response.ok) {
       throw new Error('Error al conectar con el servidor de horarios')
     }
@@ -16,6 +16,7 @@ export class HttpTermRepository implements TermRepository {
   async createTerm (input: CreateTermInput): Promise<Term> {
     const response = await fetch(this.apiUrl, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -33,6 +34,7 @@ export class HttpTermRepository implements TermRepository {
   async toggleArchive (id: string, archived: boolean): Promise<void> {
     const response = await fetch(`${this.apiUrl}/${id}/archive`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -44,4 +46,23 @@ export class HttpTermRepository implements TermRepository {
       throw new Error(errorData.error ?? 'Error al procesar la solicitud en el servidor')
     }
   }
+
+  async deleteTerm (id: string): Promise<void> {
+    const response = await fetch(`${this.apiUrl}/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al eliminar el término'
+      try {
+        const errorData = await response.json() as { error?: string }
+        if (errorData.error !== undefined && errorData.error !== '') {
+          errorMessage = errorData.error
+        }
+      } catch { }
+      throw new Error(errorMessage)
+    }
+  }
 }
+

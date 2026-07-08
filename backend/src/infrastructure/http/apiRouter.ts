@@ -24,12 +24,16 @@ const apiRouter = Router()
 
 // Instantiate repositories
 const alertRepository = new MockAlertRepository()
-const termRepository = new MockTermRepository()
 const disponibilidadRepository = new MockDisponibilidadRepository()
 const profesorRepository = new MockProfesorRepository()
 const materiaRepository = new MockMateriaRepository()
 const laboratorioRepository = new MockLaboratorioRepository()
 const horarioRepository = new JsonHorarioRepository()
+const termRepository = new MockTermRepository(
+  disponibilidadRepository,
+  materiaRepository,
+  horarioRepository
+)
 const userRepository = new MockUserRepository()
 
 // Wire routes
