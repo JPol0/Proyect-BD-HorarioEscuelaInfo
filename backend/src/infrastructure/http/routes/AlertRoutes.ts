@@ -13,7 +13,7 @@ export default function createAlertRouter (repository: AlertRepository): Router 
   const controller = new AlertController(getUseCase, saveUseCase)
 
   router.get('/', controller.getAll)
-  router.patch('/:id/estado', requireAdmin, controller.updateState)
+  router.post('/', requireAdmin, controller.save)
 
   return router
 }

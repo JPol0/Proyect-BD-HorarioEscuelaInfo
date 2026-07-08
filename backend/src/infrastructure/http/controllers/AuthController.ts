@@ -17,13 +17,14 @@ export class AuthController {
         res.status(400).json({ error: 'El nombre de usuario y contraseña son obligatorios' })
         return
       }
+      const isProd = process.env.NODE_ENV === 'production'
 
       const user = await this.loginUseCase.execute(nombre.trim(), password)
       const token = generateToken(user.nombre, user.rol)
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
         path: '/',
         maxAge: 24 * 60 * 60 * 1000 // 1 día
       })
@@ -39,10 +40,12 @@ export class AuthController {
   }
 
   logout = async (_req: Request, res: Response): Promise<void> => {
+    const isProd = process.env.NODE_ENV === 'production'
+
     res.clearCookie('token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       path: '/'
     })
     res.json({ ok: true })

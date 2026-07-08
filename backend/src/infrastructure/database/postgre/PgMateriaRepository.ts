@@ -6,7 +6,7 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Obtiene todas las materias de la base de datos relacional.
    */
-  async getAll(term: string): Promise<Materia[]> {
+  async getAll (term: string): Promise<Materia[]> {
     const queryPlanEstudios =
       `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE,
       NroSeccionesPE
@@ -42,14 +42,13 @@ export class PgMateriaRepository implements MateriaRepository {
       }
 
       return materia
-
     })
   }
 
   /**
    * Guarda una materia mediante un Upsert (inserta o actualiza si ya existe).
    */
-  async save(term: string, materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia): Promise<void> {
     if (materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
@@ -84,7 +83,7 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Elimina una materia por su clave primaria.
    */
-  async delete(term: string, codMateria: string): Promise<void> {
+  async delete (term: string, codMateria: string): Promise<void> {
     const query = 'DELETE FROM Plan_de_Estudio WHERE CodAsig = $1 AND CodTerm = $2'
     try {
       const result = await getPool().query(query, [codMateria, term])

@@ -11,7 +11,7 @@ import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
 // Import repository implementations (mocks for now)
-import { MockAlertRepository } from '../database/mocks/MockAlertRepository.js'
+import { PgAlertRepository } from '../database/postgre/PgAlertRepository.js'
 import { MockTermRepository } from '../database/mocks/MockTermRepository.js'
 import { MockDisponibilidadRepository } from '../database/mocks/MockDisponibilidadRepository.js'
 import { MockProfesorRepository } from '../database/mocks/MockProfesorRepository.js'
@@ -23,7 +23,7 @@ import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 const apiRouter = Router()
 
 // Instantiate repositories
-const alertRepository = new MockAlertRepository()
+const alertRepository = new PgAlertRepository()
 const termRepository = new MockTermRepository()
 const disponibilidadRepository = new MockDisponibilidadRepository()
 const profesorRepository = new MockProfesorRepository()

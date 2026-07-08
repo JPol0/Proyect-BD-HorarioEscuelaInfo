@@ -9,7 +9,7 @@ export class MateriaController {
   private readonly saveUseCase: SaveMateria
   private readonly deleteUseCase: DeleteMateria
 
-  constructor(
+  constructor (
     getUseCase: GetMaterias,
     saveUseCase: SaveMateria,
     deleteUseCase: DeleteMateria

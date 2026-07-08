@@ -7,6 +7,7 @@ import { AlertCard } from '../components/AlertScreen/AlertCard'
 import Title from '../components/common/TitlePage'
 import { Select, ListBox } from '@heroui/react'
 import { Clock, Check, EyeSlash } from '@gravity-ui/icons'
+import { useActiveTerm } from '../store/activeTermStore'
 
 // Instanciación manual de dependencias
 const alertaRepository = new HttpAlertRepository()
@@ -16,13 +17,16 @@ const guardarUseCase = new GuardarEstadoAlerta(alertaRepository)
 type TipoFiltro = EstadoAlerta | 'TODAS'
 
 export default function AlarmCenter () {
+  const { activeTerm } = useActiveTerm()
+  const termId = activeTerm?.id ?? '1'
+
   const [todasAlertas, setTodasAlertas] = useState<Alerta[]>([])
   const [filtro, setFiltro] = useState<TipoFiltro>('PENDIENTE')
   const [cargando, setCargando] = useState(true)
 
   const cargarAlertas = async () => {
     try {
-      const lista = await obtenerUseCase.execute()
+      const lista = await obtenerUseCase.execute(termId)
       setTodasAlertas(lista)
     } catch (error) {
       console.error('Error al recuperar las alertas:', error)
@@ -33,10 +37,17 @@ export default function AlarmCenter () {
 
   useEffect(() => {
     void cargarAlertas()
-  }, [])
+  }, [termId])
 
-  const manejarGuardarEstado = async (id: string, nuevoEstado: EstadoAlerta, motivo?: string) => {
-    await guardarUseCase.execute(id, nuevoEstado, motivo)
+  const manejarGuardarEstado = async (id: number | null, nuevoEstado: EstadoAlerta, motivo?: string) => {
+    const existingAlert = todasAlertas.find(a => a.id === id)
+    if (!existingAlert) return
+
+    await guardarUseCase.execute(termId, {
+      ...existingAlert,
+      estado: nuevoEstado,
+      motivoCambio: motivo
+    })
     // Al procesar la alerta, recargamos.
     await cargarAlertas()
   }
@@ -89,7 +100,7 @@ export default function AlarmCenter () {
             </Select.Trigger>
 
             {/* Popover y ListBox */}
-            <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[200px] z-50">
+            <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-50 z-50">
               <ListBox>
                 <ListBox.Item
                   id="PENDIENTE"
@@ -133,27 +144,27 @@ export default function AlarmCenter () {
 
       {cargando
         ? (
-        <p className="text-slate-500 italic animate-pulse font-hanken">Cargando conflictos...</p>
+          <p className="text-slate-500 italic animate-pulse font-hanken">Cargando conflictos...</p>
           )
         : alertasFiltradas.length === 0
           ? (
-        <div className="p-8 bg-emerald-50/60 border border-emerald-100 text-emerald-800 rounded-xl text-center font-medium font-hanken shadow-sm">
-          {filtro === 'PENDIENTE' && '🎉 ¡Excelente! No se registran alertas ni conflictos pendientes en este ciclo.'}
-          {filtro === 'RESUELTA' && 'No se registran alertas resueltas.'}
-          {filtro === 'IGNORADA' && 'No se registran alertas ignoradas.'}
-          {filtro === 'TODAS' && 'No se registran alertas en este ciclo.'}
-        </div>
+            <div className="p-8 bg-emerald-50/60 border border-emerald-100 text-emerald-800 rounded-xl text-center font-medium font-hanken shadow-sm">
+              {filtro === 'PENDIENTE' && '🎉 ¡Excelente! No se registran alertas ni conflictos pendientes en este ciclo.'}
+              {filtro === 'RESUELTA' && 'No se registran alertas resueltas.'}
+              {filtro === 'IGNORADA' && 'No se registran alertas ignoradas.'}
+              {filtro === 'TODAS' && 'No se registran alertas en este ciclo.'}
+            </div>
             )
           : (
-        <div className="flex flex-col">
-          {alertasFiltradas.map((alerta) => (
-            <AlertCard
-              key={alerta.id}
-              alerta={alerta}
-              onGuardar={manejarGuardarEstado}
-            />
-          ))}
-        </div>
+            <div className="flex flex-col">
+              {alertasFiltradas.map((alerta) => (
+                <AlertCard
+                  key={alerta.id}
+                  alerta={alerta}
+                  onGuardar={manejarGuardarEstado}
+                />
+              ))}
+            </div>
             )}
     </div>
   )
