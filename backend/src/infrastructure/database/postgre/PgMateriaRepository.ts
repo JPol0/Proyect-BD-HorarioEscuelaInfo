@@ -6,17 +6,15 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Obtiene todas las materias de la base de datos relacional.
    */
-  async getAll (term: string): Promise<Materia[]> {
-    const queryMaterias =
-      `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE 
-      FROM Materias;`
+  async getAll(term: string): Promise<Materia[]> {
+    const queryPlanEstudios =
+      `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE,
+      NroSeccionesPE
+      FROM Plan_de_Estudio
+      WHERE CodTerm = $1
+      ;`
 
-    const queryPlan =
-      `SELECT CodAsig, NroSeccionesPE 
-      FROM Plan_de_Estudio 
-      WHERE CodTerm = $1;`
-
-    interface MateriaRow {
+    interface PlanEstudioRow {
       codasig: string
       nombrepe: string
       horapractica: number
@@ -25,30 +23,16 @@ export class PgMateriaRepository implements MateriaRepository {
       semestrepe: number
       escomunpe: boolean
       modalidadpe: string
-    }
-
-    interface PlanRow {
-      codasig: string
       nroseccionespe: number
     }
 
-    const [materiasResult, planResult] = await Promise.all([
-      getPool().query<MateriaRow>(queryMaterias),
-      getPool().query<PlanRow>(queryPlan, [term])
-    ])
+    const planEstudioResult = await getPool().query<PlanEstudioRow>(queryPlanEstudios, [term])
 
-    const planMap = new Map<string, number>()
-    planResult.rows.forEach(row => {
-      planMap.set(row.codasig, Number(row.nroseccionespe))
-    })
-
-    return materiasResult.rows.map(row => {
-      const codMateria = row.codasig
-      const nroSecciones = planMap.get(codMateria) ?? 1
+    return planEstudioResult.rows.map(row => {
       const materia: Materia = {
-        codMateria,
+        codMateria: row.codasig,
         nombre: row.nombrepe,
-        nroSecciones,
+        nroSecciones: Number(row.nroseccionespe),
         horasPrac: Number(row.horapractica),
         horasTeo: Number(row.horateorica),
         horasLab: Number(row.horalaboratorio),
@@ -58,58 +42,36 @@ export class PgMateriaRepository implements MateriaRepository {
       }
 
       return materia
+
     })
   }
 
   /**
    * Guarda una materia mediante un Upsert (inserta o actualiza si ya existe).
    */
-  async save (term: string, materia: Materia): Promise<void> {
+  async save(term: string, materia: Materia): Promise<void> {
     if (materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
 
     const client = await getPool().connect()
     try {
-      await client.query('BEGIN')
-
-      // 1. Upsert en Plan_de_Estudio
-      const planQuery = `
-        INSERT INTO Plan_de_Estudio (CodAsig, CodTerm, NroSeccionesPE)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (CodAsig, CodTerm) 
-        DO UPDATE SET NroSeccionesPE = EXCLUDED.NroSeccionesPE;
+      const query = `
+        CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       `
-      await client.query(planQuery, [materia.codMateria, term, materia.nroSecciones])
-
-      // 2. Upsert en Materias
-      const materiaQuery = `
-        INSERT INTO Materias (CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ON CONFLICT (CodAsig) 
-        DO UPDATE SET 
-          NombrePE = EXCLUDED.NombrePE,
-          HoraPractica = EXCLUDED.HoraPractica,
-          HoraTeorica = EXCLUDED.HoraTeorica,
-          HoraLaboratorio = EXCLUDED.HoraLaboratorio,
-          SemestrePE = EXCLUDED.SemestrePE,
-          EsComunPE = EXCLUDED.EsComunPE,
-          ModalidadPE = EXCLUDED.ModalidadPE;
-      `
-      await client.query(materiaQuery, [
+      await client.query(query, [
         materia.codMateria,
+        term,
         materia.nombre,
+        materia.esComun,
+        materia.semestre,
         materia.horasPrac,
         materia.horasTeo,
         materia.horasLab,
-        materia.semestre,
         materia.modalidad,
-        materia.esComun
+        materia.nroSecciones
       ])
-
-      await client.query('COMMIT')
     } catch (error: any) {
-      await client.query('ROLLBACK')
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
       }
@@ -122,7 +84,7 @@ export class PgMateriaRepository implements MateriaRepository {
   /**
    * Elimina una materia por su clave primaria.
    */
-  async delete (term: string, codMateria: string): Promise<void> {
+  async delete(term: string, codMateria: string): Promise<void> {
     const query = 'DELETE FROM Plan_de_Estudio WHERE CodAsig = $1 AND CodTerm = $2'
     try {
       const result = await getPool().query(query, [codMateria, term])
