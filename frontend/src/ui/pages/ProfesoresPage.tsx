@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
-import { Input, Modal, Button } from '@heroui/react'
+import { Input, Modal, Button, Select, ListBox } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -16,6 +16,12 @@ const STATUS_CONFIG = {
   P: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700' },
   R: { label: 'Retirado', color: 'bg-red-100 text-red-600' }
 }
+
+const STATUS_OPTIONS: Array<{ id: Profesor['status'], label: string }> = [
+  { id: 'A', label: 'Activo' },
+  { id: 'P', label: 'Pendiente' },
+  { id: 'R', label: 'Retirado' }
+]
 
 export function ProfesoresPage () {
   const [profesores, setProfesores] = useState<Profesor[]>([])
@@ -130,15 +136,31 @@ export function ProfesoresPage () {
 
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
-                      <select
+                      <Select
+                        variant="primary"
                         value={profesor.status}
-                        onChange={(e) => { handleStatusChange(profesor.cedula, e.target.value as Profesor['status']) }}
-                        className="text-xs border border-border rounded-lg px-3 py-1.5 bg-surface-alt text-text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-button-primary transition-colors"
+                        onChange={(valor) => { if (valor) handleStatusChange(profesor.cedula, valor as Profesor['status']) }}
+                        className="w-full text-sm"
                       >
-                        <option value="A">Activo</option>
-                        <option value="P">Pendiente</option>
-                        <option value="R">Retirado</option>
-                      </select>
+                        <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt hover:bg-surface transition-colors text-xs text-text-primary h-9">
+                          <Select.Value />
+                          <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
+                        </Select.Trigger>
+                        <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 z-50">
+                          <ListBox>
+                            {STATUS_OPTIONS.map((opt) => (
+                              <ListBox.Item
+                                key={opt.id}
+                                id={opt.id}
+                                textValue={opt.label}
+                                className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block"
+                              >
+                                {opt.label}
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
                     </div>
 
                     <button
@@ -146,7 +168,7 @@ export function ProfesoresPage () {
                       disabled={profesor.status === 'R'}
                       className="mt-auto w-full py-2 text-xs font-bold text-white bg-button-primary hover:bg-button-primary-hover disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition font-hanken tracking-widest uppercase"
                     >
-                      Cargar Disponibilidad
+                      Disponibilidad
                     </button>
                   </div>
                 )
