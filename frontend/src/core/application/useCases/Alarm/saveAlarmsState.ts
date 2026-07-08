@@ -1,4 +1,4 @@
-import { type EstadoAlerta } from '../../../domain/Alarm'
+import { type Alerta } from '../../../domain/Alarm'
 import { type AlertRepository } from '../../ports/AlertRepository'
 
 export class GuardarEstadoAlerta {
@@ -8,7 +8,7 @@ export class GuardarEstadoAlerta {
     this.repository = repository
   }
 
-  async execute (id: string, estado: EstadoAlerta, motivo?: string): Promise<void> {
-    await this.repository.saveEstate(id, estado, motivo)
+  async execute (term: string, alert: Alerta): Promise<void> {
+    await this.repository.save(term, alert)
   }
 }

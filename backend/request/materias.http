@@ -1,3 +1,24 @@
 ### recuperar todas las materias
 
-GET http://localhost:3000/api/materias?term=1
+GET http://localhost:3000/api/materias?term=2
+
+### crear / actualizar una materia
+
+POST http://localhost:3000/api/materias?term=2
+Content-Type: application/json
+
+{
+    "codMateria": "",
+    "nombre": "",
+    "nroSecciones": 2,
+    "horasPrac": 0,
+    "horasTeo": 4,
+    "horasLab": 0,
+    "semestre": 1,
+    "modalidad": "PRE",
+    "esComun": false
+}
+
+### eliminar una materia
+
+DELETE http://localhost:3000/api/materias/EDO-1121%20pruebaEndpoint?term=2

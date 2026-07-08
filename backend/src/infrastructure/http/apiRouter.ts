@@ -11,22 +11,21 @@ import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
 // Import repository implementations (mocks for now)
-import { MockAlertRepository } from '../database/mocks/MockAlertRepository.js'
+import { PgAlertRepository } from '../database/postgre/PgAlertRepository.js'
 import { MockTermRepository } from '../database/mocks/MockTermRepository.js'
 import { MockDisponibilidadRepository } from '../database/mocks/MockDisponibilidadRepository.js'
 import { MockProfesorRepository } from '../database/mocks/MockProfesorRepository.js'
-import { MockMateriaRepository } from '../database/mocks/MockMateriaRepository.js'
+import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
 import { MockLaboratorioRepository } from '../database/mocks/MockLaboratorioRepository.js'
 import { JsonHorarioRepository } from '../database/mocks/JsonHorarioRepository.js'
-import { MockUserRepository } from '../database/mocks/MockUserRepository.js'
+import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 
 const apiRouter = Router()
 
-// Instantiate repositories
-const alertRepository = new MockAlertRepository()
+const alertRepository = new PgAlertRepository()
 const disponibilidadRepository = new MockDisponibilidadRepository()
 const profesorRepository = new MockProfesorRepository()
-const materiaRepository = new MockMateriaRepository()
+const materiaRepository = new PgMateriaRepository()
 const laboratorioRepository = new MockLaboratorioRepository()
 const horarioRepository = new JsonHorarioRepository()
 const termRepository = new MockTermRepository(
@@ -34,7 +33,7 @@ const termRepository = new MockTermRepository(
   materiaRepository,
   horarioRepository
 )
-const userRepository = new MockUserRepository()
+const userRepository = new PgUserRepository()
 
 // Wire routes
 apiRouter.use('/auth', dbScopeMiddleware, createAuthRouter(userRepository))

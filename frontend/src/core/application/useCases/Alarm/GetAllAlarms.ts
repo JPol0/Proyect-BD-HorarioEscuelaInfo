@@ -8,7 +8,7 @@ export class ObtenerTodasLasAlertas {
     this.repository = repository
   }
 
-  async execute (): Promise<Alerta[]> {
-    return await this.repository.getAllAlarms()
+  async execute (term: string): Promise<Alerta[]> {
+    return await this.repository.getAllAlarms(term)
   }
 }

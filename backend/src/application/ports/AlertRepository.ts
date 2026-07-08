@@ -1,6 +1,6 @@
-import { type Alert, type AlertState } from '../../domain/Alert.js'
+import { type Alert } from '../../domain/Alert.js'
 
 export interface AlertRepository {
-  getAllAlerts: () => Promise<Alert[]>
-  saveState: (id: string, estado: AlertState, motivo?: string) => Promise<void>
+  getAllAlerts: (term: string) => Promise<Alert[]>
+  save: (term: string, alert: Alert) => Promise<void>
 }
