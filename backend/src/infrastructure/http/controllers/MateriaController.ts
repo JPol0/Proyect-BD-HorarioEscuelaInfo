@@ -40,7 +40,7 @@ export class MateriaController {
    */
   save = async (req: Request, res: Response): Promise<void> => {
     try {
-      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      const term = typeof req.query.term === 'string' ? req.query.term : null
       const materiaData = req.body as Materia
 
       // Validación: El nombre es obligatorio. El código se generará en el repositorio si no se provee.
@@ -48,7 +48,10 @@ export class MateriaController {
         res.status(400).json({ error: 'El nombre de la materia es obligatorio' })
         return
       }
-
+      if (term === null) {
+        res.status(400).json({ error: 'El term es obligatorio' })
+        return
+      }
       await this.saveUseCase.execute(term, materiaData)
       res.json({ ok: true, message: 'Materia guardada correctamente' })
     } catch (error) {
@@ -68,7 +71,11 @@ export class MateriaController {
         res.status(400).json({ error: 'El código de la materia es obligatorio para eliminar' })
         return
       }
-      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      const term = typeof req.query.term === 'string' ? req.query.term : null
+      if (term === null) {
+        res.status(400).json({ error: 'El term es obligatorio' })
+        return
+      }
       await this.deleteUseCase.execute(term, codMateria)
       res.json({ ok: true, message: 'Materia eliminada correctamente' })
     } catch (error) {

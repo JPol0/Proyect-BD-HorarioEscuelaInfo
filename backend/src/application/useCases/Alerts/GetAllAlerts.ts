@@ -8,7 +8,7 @@ export class GetAllAlerts {
     this.repository = repository
   }
 
-  async execute (): Promise<Alert[]> {
-    return await this.repository.getAllAlerts()
+  async execute (term: string): Promise<Alert[]> {
+    return await this.repository.getAllAlerts(term)
   }
 }

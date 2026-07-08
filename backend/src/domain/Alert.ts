@@ -1,9 +1,9 @@
 export type AlertState = 'PENDIENTE' | 'RESUELTA' | 'IGNORADA'
 
 export interface Alert {
-  id: string
+  id: number | null
   titulo: string
   estado: AlertState
-  descripcion?: string
+  fecha: string | null
   motivoCambio?: string
 }

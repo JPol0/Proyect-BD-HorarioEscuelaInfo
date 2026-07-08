@@ -5,7 +5,7 @@ import { type Alerta, type EstadoAlerta } from '../../../core/domain/Alarm'
 
 interface AlertCardProps {
   alerta: Alerta
-  onGuardar: (id: string, nuevoEstado: EstadoAlerta, motivo?: string) => Promise<void>
+  onGuardar: (id: number | null, nuevoEstado: EstadoAlerta, motivo?: string) => Promise<void>
 }
 
 export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
@@ -43,19 +43,19 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
               {alerta.estado}
             </span>
           </div>
+          <div className="text-[11px] text-slate-400 font-semibold font-hanken mb-1">
+            {alerta.fecha ? new Date(alerta.fecha).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' }) : 'Sin fecha'}
+          </div>
           <h3 className="text-base font-bold text-slate-800 font-hanken mb-1">
             {alerta.titulo}
           </h3>
-          <p className="text-slate-500 text-xs leading-normal font-hanken">
-            {alerta.descripcion}
-          </p>
         </div>
 
         {/* Separador Vertical Decorativo */}
         <div className="hidden md:block w-px bg-slate-100 self-stretch"></div>
 
         {/* Lado Derecho: Controles de Gestión */}
-        <div className="w-full md:w-[460px] flex flex-col gap-2 shrink-0 justify-between">
+        <div className="w-full md:w-115 flex flex-col gap-2 shrink-0 justify-between">
           <div className="flex items-center gap-2.5 w-full">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Gestión</span>
 
@@ -89,7 +89,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
                 </Select.Trigger>
 
                 {/* Popover y ListBox */}
-                <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[150px] z-50">
+                <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-37.5 z-50">
                   <ListBox>
                     <ListBox.Item
                       id="PENDIENTE"

@@ -101,13 +101,13 @@ export function ProfesoresPage () {
       {cargando
         ? (
           <p className="text-subtitlePage italic animate-pulse font-hanken">Cargando profesores...</p>
-        )
+          )
         : profesoresFiltrados.length === 0
           ? (
             <div className="text-center py-12 text-text-muted bg-surface-alt rounded-xl border border-dashed border-border font-hanken">
               No se encontraron profesores con ese criterio.
             </div>
-          )
+            )
           : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {profesoresFiltrados.map((profesor) => {
@@ -146,13 +146,13 @@ export function ProfesoresPage () {
                       disabled={profesor.status === 'R'}
                       className="mt-auto w-full py-2 text-xs font-bold text-white bg-button-primary hover:bg-button-primary-hover disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition font-hanken tracking-widest uppercase"
                     >
-                      Cargar Disponibilidad
+                      Disponibilidad
                     </button>
                   </div>
                 )
               })}
             </div>
-          )}
+            )}
     </div>
   )
 }

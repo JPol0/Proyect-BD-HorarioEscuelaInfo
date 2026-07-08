@@ -33,8 +33,8 @@ export default function createDisponibilidadRouter (
   )
 
   router.get('/', controller.getAll)
-  router.post('/', controller.crear)
-  router.patch('/:cedula/status', controller.actualizarStatus)
+  router.post('/', requireAdmin, controller.crear)
+  router.patch('/:cedula/status', requireAdmin, controller.actualizarStatus)
   router.get('/:cedula/disponibilidad', controller.obtener)
   router.put('/:cedula/disponibilidad', requireAdmin, controller.guardar)
 
