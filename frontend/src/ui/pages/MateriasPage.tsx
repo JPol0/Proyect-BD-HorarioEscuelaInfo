@@ -44,7 +44,7 @@ export function MateriasPage () {
   const navigate = useNavigate()
   const { activeTerm } = useActiveTerm()
   const { currentUser } = useUser()
-  const termId = activeTerm?.id ?? '1'
+  const termId = activeTerm?.id ?? ''
 
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -54,6 +54,11 @@ export function MateriasPage () {
   const [selectedSemestre, setSelectedSemestre] = useState<string>('todos')
 
   const cargarMaterias = async () => {
+    if (termId === '') {
+      setMaterias([])
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       const data = await getMateriasUseCase.execute(termId)
