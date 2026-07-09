@@ -26,18 +26,6 @@ const HORAS_INICIO = [
   '19:00', '20:00', '21:00'
 ]
 
-const convertirARomano = (num: number): string => {
-  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
-  let resultado = ''
-  let valorRestante = num
-  for (const key in valoresRomanos) {
-    while (valorRestante >= valoresRomanos[key]) {
-      resultado += key
-      valorRestante -= valoresRomanos[key]
-    }
-  }
-  return resultado
-}
 
 // Algoritmo para agrupar horas individuales (ej. 07:00 y 08:00) en un bloque (ej. 07:00, cantidad: 2)
 function agruparTuplasEnBloques (tuplas: Horario[]): ManualBlock[] {
