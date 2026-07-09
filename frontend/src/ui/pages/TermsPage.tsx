@@ -2,17 +2,21 @@ import { useEffect, useState } from 'react'
 import { HttpTermRepository } from '../../core/infrastructure/adapters/HttpTermRepository'
 import { GetTerms } from '../../core/application/useCases/Term/GetTerms'
 import { CreateTerm } from '../../core/application/useCases/Term/CreateTerm'
+import { DeleteTerm } from '../../core/application/useCases/Term/DeleteTerm'
 import { type Term } from '../../core/domain/Term'
 import { type CreateTermInput } from '../../core/application/ports/TermRepository'
 import Title from '../components/common/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
+import DeleteTermModal from '../components/TermScreen/DeleteTermModal'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
+import { TrashBin } from '@gravity-ui/icons'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
 const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
+const deleteTermUseCase = new DeleteTerm(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
 function formatPeriodo (startDate: string, endDate: string): string {
@@ -36,7 +40,7 @@ function formatPeriodo (startDate: string, endDate: string): string {
 }
 
 export default function TermsPage () {
-  const { activeTerm, setActiveTerm } = useActiveTerm()
+  const { activeTerm, setActiveTerm, clearActiveTerm } = useActiveTerm()
   const { currentUser } = useUser()
   const isLector = currentUser?.rol === 'lector'
 
@@ -44,6 +48,7 @@ export default function TermsPage () {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [termToDelete, setTermToDelete] = useState<Term | null>(null)
 
   const cargarTerms = async () => {
     try {
@@ -63,6 +68,19 @@ export default function TermsPage () {
 
   const handleCrear = async (input: CreateTermInput) => {
     await createTermUseCase.execute(input)
+    await cargarTerms()
+  }
+
+  const handleDeleteClick = (term: Term, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setTermToDelete(term)
+  }
+
+  const handleConfirmDelete = async (term: Term) => {
+    await deleteTermUseCase.execute(term.id)
+    if (activeTerm?.id === term.id) {
+      clearActiveTerm()
+    }
     await cargarTerms()
   }
 
@@ -118,6 +136,8 @@ export default function TermsPage () {
                 terms={terms}
                 activeTermId={activeTerm?.id ?? null}
                 onSelect={handleSelectTerm}
+                onDelete={!isLector ? handleDeleteClick : undefined}
+                isLector={isLector}
               />
                 )}
           </section>
@@ -130,6 +150,15 @@ export default function TermsPage () {
           onCrear={handleCrear}
         />
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      {termToDelete !== null && (
+        <DeleteTermModal
+          term={termToDelete}
+          onClose={() => { setTermToDelete(null) }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   )
 }
@@ -139,15 +168,25 @@ interface TermsTableProps {
   terms: Term[]
   activeTermId: string | null
   onSelect: (term: Term) => void
+  onDelete?: (term: Term, e: React.MouseEvent) => void
+  isLector?: boolean
 }
 
-function TermsTable ({ terms, activeTermId, onSelect }: TermsTableProps) {
+function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
+  const showActions = !isLector && onDelete !== undefined
+  const gridColsClass = showActions ? 'grid-cols-[1fr_200px_60px]' : 'grid-cols-[1fr_200px]'
+
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}
-      <div className="grid grid-cols-[1fr_200px] px-6 py-3 bg-white border-b border-slate-100">
+      <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100`}>
         <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Term</span>
         <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
+        {showActions && (
+          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">
+            Acción
+          </span>
+        )}
       </div>
 
       {/* Filas */}
@@ -158,7 +197,7 @@ function TermsTable ({ terms, activeTermId, onSelect }: TermsTableProps) {
             key={term.id}
             onClick={() => { onSelect(term) }}
             className={[
-              'grid grid-cols-[1fr_200px] px-6 py-4 items-center transition-colors cursor-pointer',
+              `grid ${gridColsClass} px-6 py-4 items-center transition-colors cursor-pointer`,
               index !== 0 ? 'border-t border-slate-50' : '',
               isActive
                 ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
@@ -179,9 +218,24 @@ function TermsTable ({ terms, activeTermId, onSelect }: TermsTableProps) {
             <span className="text-sm text-slate-400 font-hanken tracking-wide">
               {formatPeriodo(term.startDate, term.endDate)}
             </span>
+
+            {/* Botón de eliminar */}
+            {showActions && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={(e) => { onDelete(term, e) }}
+                  title="Eliminar período"
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  <TrashBin className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )
       })}
     </div>
   )
 }
+

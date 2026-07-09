@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS Usuarios (
 
 -- Creación de Tabla Terms
 CREATE TABLE IF NOT EXISTS Terms(
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     DescripcionT VARCHAR(150) NOT NULL,
     StatusT dom_status_term NOT NULL,
     
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Terms(
 -- Creación de Tabla Plan de Estudio
 CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     CodAsig VARCHAR(40) NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     NombrePE VARCHAR(100) NOT NULL,
     EsComunPE BOOLEAN NOT NULL,
     SemestrePE dom_semestre NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS Profesores(
 -- Creación de Tabla Warnings
 CREATE TABLE IF NOT EXISTS Warnings(
     CodWarning SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     FechaW TIMESTAMP NOT NULL, 
     EstadoW dom_estado_warning NOT NULL, -- Ignorado, Pendiente, Resuelto
     DescripcionW VARCHAR(250) NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS Laboratorios(
 
 CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
     CodLab SERIAL NOT NULL,
-    Codterm Varchar(30) NOT NULL,
+    Codterm Varchar(80) NOT NULL,
     Dia dom_dia_horario NOT NULL, 
     Hora dom_hora_horario NOT NULL,
     OcupadoD boolean NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
 -- Creación de Tabla Secciones
 CREATE TABLE IF NOT EXISTS Secciones(
     NroSeccion SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion),
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS Secciones(
 -- Creación de Tabla Horarios
 CREATE TABLE IF NOT EXISTS Horarios(
     NroSeccion SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     DiaH dom_dia_horario NOT NULL,
     HoraH dom_hora_horario NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS Horarios(
 
 -- Creación de Tabla Disponibilidad_Horaria
 CREATE TABLE IF NOT EXISTS Disponibilidad_Horaria(
-    Codterm varchar(30) not null,
+    Codterm varchar(80) not null,
     CedulaP varchar(10) not null,
     Dia dom_dia_horario not null, 
     Hora dom_hora_horario not null,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS Disponibilidad_Horaria(
 CREATE TABLE IF NOT EXISTS Imparten(
     cedulaP Varchar(10) NOT NULL,
     CodAsig Varchar(40) NOT NULL,
-    CodTerm Varchar(30) NOT NULL,
+    CodTerm Varchar(80) NOT NULL,
     NroSeccion SERIAL NOT NUlL,
 
     HorasLab dom_horas NOT NULL,
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS Imparten(
 CREATE TABLE IF NOT EXISTS Son_ejercidos(
     CodLab SERIAL not null,
     CodAsig varchar(40) not null, 
-    CodTerm varchar(30) not null,
+    CodTerm varchar(80) not null,
     prioridad dom_prioridad_lab not null,
     primary key (CodTerm,CodAsig,CodLab),
     CONSTRAINT fk_son_ejercidos_laboratorios FOREIGN key(CodLab) references Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -194,9 +194,9 @@ CREATE TABLE IF NOT EXISTS Son_ejercidos(
 -- Creación de Tabla Prerrequisitos
 CREATE TABLE IF NOT EXISTS Prerequitos(
     CodAsig varchar(40) not null,
-    CodTerm varchar(30) not null,
+    CodTerm varchar(80) not null,
     CodAsigPreq varchar(40) not null,
-    CodTermPreq varchar(30) not null,
+    CodTermPreq varchar(80) not null,
     primary key (CodAsig,CodTerm,CodAsigPreq,CodTermPreq),
     CONSTRAINT fk_prerequitos_plan_de_estudio FOREIGN key (CodTerm,CodAsig) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_prerequitos_plan_de_estudio_preq FOREIGN key (CodTermPreq,CodAsigPreq) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE
