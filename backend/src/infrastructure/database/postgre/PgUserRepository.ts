@@ -29,4 +29,8 @@ export class PgUserRepository implements UserRepository {
   async save (user: User): Promise<void> {
     throw new Error('Método no implementado en PgUserRepository')
   }
+
+  async delete (id: number): Promise<void> {
+    throw new Error('Método no implementado en PgUserRepository')
+  }
 }

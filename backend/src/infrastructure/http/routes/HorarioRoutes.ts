@@ -3,6 +3,7 @@ import { type HorarioRepository } from '../../../application/ports/HorarioReposi
 import { HorarioController } from '../controllers/HorarioController.js'
 import { ObtenerHorario } from '../../../application/useCases/Horarios/ObtenerHorario.js'
 import { GuardarHorario } from '../../../application/useCases/Horarios/GuardarHorario.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createHorarioRouter (repository: HorarioRepository): Router {
   const router = Router()
@@ -12,7 +13,7 @@ export default function createHorarioRouter (repository: HorarioRepository): Rou
   const controller = new HorarioController(obtenerHorario, guardarHorario)
 
   router.get('/', async (req, res) => { await controller.getSchedule(req, res) })
-  router.post('/', async (req, res) => { await controller.saveSchedule(req, res) })
+  router.post('/', requireAdmin, async (req, res) => { await controller.saveSchedule(req, res) })
 
   return router
 }

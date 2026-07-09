@@ -3,6 +3,7 @@ import { type AlertRepository } from '../../../application/ports/AlertRepository
 import { GetAllAlerts } from '../../../application/useCases/Alerts/GetAllAlerts.js'
 import { SaveAlertState } from '../../../application/useCases/Alerts/SaveAlertState.js'
 import { AlertController } from '../controllers/AlertController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createAlertRouter (repository: AlertRepository): Router {
   const router = Router()
@@ -12,7 +13,7 @@ export default function createAlertRouter (repository: AlertRepository): Router 
   const controller = new AlertController(getUseCase, saveUseCase)
 
   router.get('/', controller.getAll)
-  router.patch('/:id/estado', controller.updateState)
+  router.post('/', requireAdmin, controller.save)
 
   return router
 }

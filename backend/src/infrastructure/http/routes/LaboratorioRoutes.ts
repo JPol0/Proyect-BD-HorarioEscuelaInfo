@@ -4,6 +4,7 @@ import { GetLaboratorios } from '../../../application/useCases/Laboratorio/GetLa
 import { SaveLaboratorio } from '../../../application/useCases/Laboratorio/SaveLaboratorio.js'
 import { DeleteLaboratorio } from '../../../application/useCases/Laboratorio/DeleteLaboratorio.js'
 import { LaboratorioController } from '../controllers/LaboratorioController.js'
+import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createLaboratorioRouter (repository: LaboratorioRepository): Router {
   const router = Router()
@@ -17,10 +18,10 @@ export default function createLaboratorioRouter (repository: LaboratorioReposito
   router.get('/', controller.getAll)
 
   // POST /api/laboratorios — crea o actualiza
-  router.post('/', controller.save)
+  router.post('/', requireAdmin, controller.save)
 
   // DELETE /api/laboratorios/:id
-  router.delete('/:id', controller.delete)
+  router.delete('/:id', requireAdmin, controller.delete)
 
   return router
 }
