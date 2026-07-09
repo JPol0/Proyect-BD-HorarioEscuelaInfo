@@ -6,7 +6,8 @@ app.disable('x-powered-by') // Por seguridad, no revelamos que usamos Express
 app.use(express.json())
 
 // Middleware de CORS manual (cumpliendo la guía Standard de estilo)
-const ALLOWED_ORIGINS = ['http://localhost:5173']
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:5173']; // Fallback seguro para desarrollo
 
 app.use((req, res, next) => {
   const origin = req.headers.origin
