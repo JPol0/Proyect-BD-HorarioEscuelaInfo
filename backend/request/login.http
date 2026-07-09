@@ -5,8 +5,8 @@ Content-Type: application/json
 
 
 {
-  "nombre": "Luis Gordillo",
-  "password": "gordillo123"
+  "nombre": "nombre",
+  "password": "password"
 }
 
 ### logout de usuario
