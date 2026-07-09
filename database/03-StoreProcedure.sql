@@ -3,7 +3,7 @@
 
 CREATE OR REPLACE PROCEDURE upsert_materia(
     p_CodAsig VARCHAR(40),
-    p_CodTerm VARCHAR(30),
+    p_CodTerm VARCHAR(80),
     p_NombrePE VARCHAR(100),
     p_EsComunPE BOOLEAN,
     p_SemestrePE dom_semestre,
@@ -63,7 +63,7 @@ GRANT EXECUTE ON PROCEDURE upsert_materia(VARCHAR, VARCHAR, VARCHAR, BOOLEAN, do
 -- Procedimiento almacenado para guardar (upsert) una alerta/warning
 CREATE OR REPLACE PROCEDURE upsert_warning(
     p_CodWarning INT,
-    p_CodTerm VARCHAR(30),
+    p_CodTerm VARCHAR(80),
     p_FechaW TIMESTAMP,
     p_EstadoW dom_estado_warning,
     p_DescripcionW VARCHAR(250),
