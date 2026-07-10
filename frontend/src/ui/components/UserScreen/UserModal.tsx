@@ -128,7 +128,7 @@ export default function UserModal ({ user, onSave }: UserModalProps) {
                 </Button>
                 <Button
                   variant="primary"
-                  disabled={cargando}
+                  isDisabled={cargando}
                   className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-xs h-9 px-5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-50"
                   onPress={() => { void handleGuardar(close) }}
                 >

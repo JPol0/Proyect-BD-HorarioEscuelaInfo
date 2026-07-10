@@ -123,17 +123,22 @@ export default function HorariosPage () {
 
   useEffect(() => {
     const loadSchedule = async () => {
+      if (selectedTerm === null) {
+        setLoading(false)
+        return
+      }
+      const term = selectedTerm
       setLoading(true)
       setError(null)
       try {
         const [payload, materiasPayload] = await Promise.all([
-          getWeeklyScheduleUseCase.execute(selectedTerm),
-          getMateriasUseCase.execute(selectedTerm)
+          getWeeklyScheduleUseCase.execute(term),
+          getMateriasUseCase.execute(term)
         ])
 
         setMaterias(materiasPayload)
 
-        const draftStr = sessionStorage.getItem(`draft_horario_${selectedTerm}`)
+        const draftStr = sessionStorage.getItem(`draft_horario_${term}`)
         let currentTuplas = draftStr ? JSON.parse(draftStr) as Horario[] : (payload ?? [])
 
         const materiaFromState = location.state?.materia as Materia | undefined
@@ -146,7 +151,7 @@ export default function HorariosPage () {
 
             // Limpiamos las horas previas SOLO para esa sección
             currentTuplas = currentTuplas.filter(
-              (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === selectedTerm && t.nroSeccion === secToOverwrite)
+              (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === term && t.nroSeccion === secToOverwrite)
             )
 
             const horasDisponiblesBase = [
@@ -175,13 +180,13 @@ export default function HorariosPage () {
 
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
-                  codTerm: selectedTerm,
+                  codTerm: term,
                   nroSeccion: block.nroSeccion,
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
-                  laboratorio: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)
-                    ? { id: useMateriaLabStore.getState().getLabForSeccion(selectedTerm!, materiaFromState.codMateria, block.nroSeccion)!, name: 'Laboratorio' }
+                  laboratorio: useMateriaLabStore.getState().getLabForSeccion(term, materiaFromState.codMateria, block.nroSeccion)
+                    ? { id: useMateriaLabStore.getState().getLabForSeccion(term, materiaFromState.codMateria, block.nroSeccion)!, name: 'Laboratorio' }
                     : null,
                   isManual: true
                 })
@@ -192,8 +197,8 @@ export default function HorariosPage () {
             setSelectedSemester(materiaFromState.semestre)
 
             // Guardamos automáticamente en la base de datos para no perderlo
-            await saveWeeklyScheduleUseCase.execute(selectedTerm, currentTuplas)
-            sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
+            await saveWeeklyScheduleUseCase.execute(term, currentTuplas)
+            sessionStorage.removeItem(`draft_horario_${term}`)
 
             // Limpiamos el state para que si recarga no se vuelva a autogenerar
             window.history.replaceState({}, document.title)
@@ -387,6 +392,8 @@ export default function HorariosPage () {
               <button
                 type="button"
                 onClick={() => {
+                  if (selectedTerm === null) return
+                  const term = selectedTerm
                   const tieneAsignacionesAuto = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
                   if (!tieneAsignacionesAuto) {
                     alert('No hay ningún horario generado automáticamente para eliminar en este semestre.')
@@ -398,8 +405,8 @@ export default function HorariosPage () {
                     setTuplas(remainingTuplas)
                     void (async () => {
                       try {
-                        await saveWeeklyScheduleUseCase.execute(selectedTerm, remainingTuplas)
-                        sessionStorage.setItem(`draft_horario_${selectedTerm}`, JSON.stringify(remainingTuplas))
+                        await saveWeeklyScheduleUseCase.execute(term, remainingTuplas)
+                        sessionStorage.setItem(`draft_horario_${term}`, JSON.stringify(remainingTuplas))
                       } catch (e) {
                         console.error('No se pudo borrar el JSON', e)
                       }
@@ -416,10 +423,12 @@ export default function HorariosPage () {
               <button
                 type="button"
                 onClick={() => {
+                  if (selectedTerm === null) return
+                  const term = selectedTerm
                   void (async () => {
                     try {
-                      await saveWeeklyScheduleUseCase.execute(selectedTerm, tuplas)
-                      sessionStorage.removeItem(`draft_horario_${selectedTerm}`)
+                      await saveWeeklyScheduleUseCase.execute(term, tuplas)
+                      sessionStorage.removeItem(`draft_horario_${term}`)
                       alert('Horario guardado correctamente')
                     } catch (e) {
                       alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))

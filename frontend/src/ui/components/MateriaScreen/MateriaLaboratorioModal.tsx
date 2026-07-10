@@ -7,19 +7,6 @@ import { GetLaboratorios } from '../../../core/application/useCases/Laboratorios
 import { useActiveTerm } from '../../store/activeTermStore'
 import { useMateriaLabStore } from '../../store/materiaLabStore'
 
-const convertirARomano = (num: number): string => {
-  const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
-  let resultado = ''
-  let valorRestante = num
-  for (const key in valoresRomanos) {
-    while (valorRestante >= valoresRomanos[key]) {
-      resultado += key
-      valorRestante -= valoresRomanos[key]
-    }
-  }
-  return resultado
-}
-
 interface MateriaLaboratorioModalProps {
   materia: Materia
   currentSection: number
@@ -39,7 +26,6 @@ export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLab
 
   const assignedLabId = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] : undefined
   const selectedLabId = assignedLabId ?? 'ninguno'
-  const maxSections = Math.max(1, materia.nroSecciones)
 
   useEffect(() => {
     const cargarLaboratorios = async () => {
