@@ -18,13 +18,18 @@ type TipoFiltro = EstadoAlerta | 'TODAS'
 
 export default function AlarmCenter () {
   const { activeTerm } = useActiveTerm()
-  const termId = activeTerm?.id ?? '1'
+  const termId = activeTerm?.id ?? ''
 
   const [todasAlertas, setTodasAlertas] = useState<Alerta[]>([])
   const [filtro, setFiltro] = useState<TipoFiltro>('PENDIENTE')
   const [cargando, setCargando] = useState(true)
 
   const cargarAlertas = async () => {
+    if (termId === '') {
+      setTodasAlertas([])
+      setCargando(false)
+      return
+    }
     try {
       const lista = await obtenerUseCase.execute(termId)
       setTodasAlertas(lista)

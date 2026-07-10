@@ -12,3 +12,9 @@ GRANT USAGE, CREATE ON SCHEMA public TO rol_administrador;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO rol_administrador;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO rol_administrador;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO rol_administrador;
+
+--momentaneo para correr
+CREATE USER backend_admin WITH PASSWORD 'ucabproyect_admin_202615';
+GRANT rol_administrador TO backend_admin;
+CREATE USER backend_lector WITH PASSWORD 'ucabproyect_lector_202615';
+GRANT rol_lector TO backend_lector;

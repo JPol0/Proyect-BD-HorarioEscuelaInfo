@@ -22,4 +22,15 @@ export class MockDisponibilidadRepository implements DisponibilidadRepository {
     const clave = `${cedulaProfesor}|${codTerm}`
     this.almacen.set(clave, disponibilidad)
   }
+
+  /**
+   * Elimina todas las disponibilidades asociadas a un término (borrado en cascada).
+   */
+  clearTerm (term: string): void {
+    for (const key of this.almacen.keys()) {
+      if (key.endsWith(`|${term}`)) {
+        this.almacen.delete(key)
+      }
+    }
+  }
 }

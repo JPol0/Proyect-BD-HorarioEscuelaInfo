@@ -39,4 +39,25 @@ export class JsonHorarioRepository implements HorarioRepository {
       throw new Error('No se pudo guardar el horario')
     }
   }
+
+  /**
+   * Elimina todas las asignaciones horarias asociadas a un término (borrado en cascada).
+   */
+  async clearTerm (term: string): Promise<void> {
+    try {
+      let data: Record<string, Horario[]> = {}
+      try {
+        const raw = await readFile(DATA_PATH, 'utf-8')
+        data = JSON.parse(raw)
+      } catch {
+        // Archivo no existe o es inválido, nada que borrar
+        return
+      }
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete data[term]
+      await writeFile(DATA_PATH, JSON.stringify(data, null, 2), 'utf-8')
+    } catch (error) {
+      throw new Error('No se pudo limpiar el horario del término')
+    }
+  }
 }
