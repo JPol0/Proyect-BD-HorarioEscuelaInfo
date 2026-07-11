@@ -178,6 +178,34 @@ export default function HorariosPage () {
                   throw new Error(`Choque de horarios: El ${block.dia} a las ${horaAsignar} ya está reservado para la Sección ${block.nroSeccion}.`)
                 }
 
+                const labObj = useMateriaLabStore.getState().getLabForMateria(term, materiaFromState.codMateria)
+                let labIdAsignar: string | undefined = undefined
+
+                if (labObj && labObj.principal) {
+                  const choquePrincipal = currentTuplas.some(t => 
+                    t.dia === block.dia && 
+                    t.hora === horaAsignar && 
+                    (t.laboratorio?.id === labObj.principal || (t as any).codLaboratorio === labObj.principal)
+                  )
+                  
+                  if (!choquePrincipal) {
+                    labIdAsignar = labObj.principal
+                  } else if (labObj.secundario) {
+                    const choqueSecundario = currentTuplas.some(t => 
+                      t.dia === block.dia && 
+                      t.hora === horaAsignar && 
+                      (t.laboratorio?.id === labObj.secundario || (t as any).codLaboratorio === labObj.secundario)
+                    )
+                    if (!choqueSecundario) {
+                      labIdAsignar = labObj.secundario
+                    } else {
+                      throw new Error(`Choque de laboratorios: Ambos laboratorios asignados están ocupados el ${block.dia} a las ${horaAsignar}.`)
+                    }
+                  } else {
+                    throw new Error(`Choque de laboratorios: El laboratorio principal está ocupado el ${block.dia} a las ${horaAsignar} y no hay secundario asignado.`)
+                  }
+                }
+
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
                   codTerm: term,
@@ -185,9 +213,7 @@ export default function HorariosPage () {
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
-                  laboratorio: useMateriaLabStore.getState().getLabForSeccion(term, materiaFromState.codMateria, block.nroSeccion)
-                    ? { id: useMateriaLabStore.getState().getLabForSeccion(term, materiaFromState.codMateria, block.nroSeccion)!, name: 'Laboratorio' }
-                    : null,
+                  laboratorio: labIdAsignar ? { id: labIdAsignar, name: 'Laboratorio' } : null,
                   isManual: true
                 })
               }
