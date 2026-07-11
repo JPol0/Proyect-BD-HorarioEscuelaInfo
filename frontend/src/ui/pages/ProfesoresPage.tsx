@@ -127,7 +127,6 @@ export function ProfesoresPage () {
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-titlePage font-hanken truncate">{profesor.nombre}</h3>
                         <p className="text-xs text-subtitlePage font-hanken mt-0.5">{profesor.cedula}</p>
-                        <p className="text-xs text-text-muted font-hanken">{profesor.correo}</p>
                       </div>
                       <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>
                         {cfg.label}
