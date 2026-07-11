@@ -1,50 +1,49 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+export interface LabAssignment {
+  principal: string
+  secundario?: string
+}
+
 interface MateriaLabState {
-  assignments: Record<string, Record<string, Record<number, string>>> // codTerm -> codMateria -> nroSeccion -> laboratorioId
-  assignLab: (codTerm: string, codMateria: string, nroSeccion: number, laboratorioId?: string) => void
-  getLabForSeccion: (codTerm: string, codMateria: string, nroSeccion: number) => string | undefined
+  assignments: Record<string, Record<string, LabAssignment>> // codTerm -> codMateria -> LabAssignment
+  assignLab: (codTerm: string, codMateria: string, asignacion?: LabAssignment) => void
+  getLabForMateria: (codTerm: string, codMateria: string) => LabAssignment | undefined
 }
 
 export const useMateriaLabStore = create<MateriaLabState>()(
   persist(
     (set, get) => ({
       assignments: {},
-      assignLab: (codTerm, codMateria, nroSeccion, laboratorioId) => {
+      assignLab: (codTerm, codMateria, asignacion) => {
         set((state) => {
           const newAssignments = { ...state.assignments }
 
           if (!newAssignments[codTerm]) {
             newAssignments[codTerm] = {}
           }
-          if (!newAssignments[codTerm][codMateria]) {
-            newAssignments[codTerm][codMateria] = {}
-          }
 
-          if (laboratorioId === undefined || laboratorioId === 'ninguno') {
-            const materiaSections = newAssignments[codTerm][codMateria]
-            if (materiaSections) {
-              const newMateriaSections = { ...materiaSections }
-              delete newMateriaSections[nroSeccion]
-              newAssignments[codTerm][codMateria] = newMateriaSections
-            }
+          if (!asignacion || !asignacion.principal || asignacion.principal === 'ninguno') {
+            const newTermAssignments = { ...newAssignments[codTerm] }
+            delete newTermAssignments[codMateria]
+            newAssignments[codTerm] = newTermAssignments
           } else {
-            newAssignments[codTerm][codMateria] = {
-              ...newAssignments[codTerm][codMateria],
-              [nroSeccion]: laboratorioId
+            newAssignments[codTerm] = {
+              ...newAssignments[codTerm],
+              [codMateria]: asignacion
             }
           }
 
           return { assignments: newAssignments }
         })
       },
-      getLabForSeccion: (codTerm, codMateria, nroSeccion) => {
-        return get().assignments[codTerm]?.[codMateria]?.[nroSeccion]
+      getLabForMateria: (codTerm, codMateria) => {
+        return get().assignments[codTerm]?.[codMateria]
       }
     }),
     {
-      name: 'materia-laboratorio-assignments-v2'
+      name: 'materia-laboratorio-assignments-v4'
     }
   )
 )
