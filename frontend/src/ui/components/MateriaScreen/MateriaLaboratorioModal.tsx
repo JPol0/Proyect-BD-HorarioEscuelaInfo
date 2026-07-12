@@ -5,17 +5,16 @@ import { type Laboratorio } from '../../../core/domain/Laboratorio'
 import { HttpLaboratorioRepository } from '../../../core/infrastructure/adapters/HttpLaboratorioRepository'
 import { GetLaboratorios } from '../../../core/application/useCases/Laboratorios/GetLaboratorios'
 import { useActiveTerm } from '../../store/activeTermStore'
-import { useMateriaLabStore } from '../../store/materiaLabStore'
+import { useMateriaLabStore, type LabAssignment } from '../../store/materiaLabStore'
 
 interface MateriaLaboratorioModalProps {
   materia: Materia
-  currentSection: number
 }
 
 const repository = new HttpLaboratorioRepository()
 const getLaboratoriosUseCase = new GetLaboratorios(repository)
 
-export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLaboratorioModalProps) {
+export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalProps) {
   const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -24,8 +23,9 @@ export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLab
   const assignments = useMateriaLabStore(state => state.assignments)
   const assignLab = useMateriaLabStore(state => state.assignLab)
 
-  const assignedLabId = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria]?.[currentSection] : undefined
-  const selectedLabId = assignedLabId ?? 'ninguno'
+  const assignedLab = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria] : undefined
+  const selectedPrincipalId = assignedLab?.principal ?? 'ninguno'
+  const selectedSecundarioId = assignedLab?.secundario ?? 'ninguno'
 
   useEffect(() => {
     const cargarLaboratorios = async () => {
@@ -42,21 +42,81 @@ export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLab
     void cargarLaboratorios()
   }, [])
 
-  const handleGuardar = (valorId: string) => {
+  const handleGuardarPrincipal = (valorId: string) => {
     if (activeTerm) {
-      assignLab(
-        activeTerm.id,
-        materia.codMateria,
-        currentSection,
-        valorId === 'ninguno' ? undefined : valorId
-      )
+      const isNinguno = valorId === 'ninguno'
+      const nuevaAsignacion: LabAssignment | undefined = isNinguno 
+        ? undefined 
+        : { principal: valorId, secundario: selectedSecundarioId !== 'ninguno' ? selectedSecundarioId : undefined }
+      
+      assignLab(activeTerm.id, materia.codMateria, nuevaAsignacion)
     }
   }
 
-  // Nombre del laboratorio seleccionado para mostrar en el valor del Select
-  const nombreSeleccionado = selectedLabId === 'ninguno'
-    ? 'Ninguno (Sin asignar)'
-    : (laboratorios.find(l => l.id === selectedLabId)?.name ?? 'Seleccionar laboratorio')
+  const handleGuardarSecundario = (valorId: string) => {
+    if (activeTerm) {
+      if (selectedPrincipalId === 'ninguno') return 
+      const isNinguno = valorId === 'ninguno'
+      const nuevaAsignacion: LabAssignment = {
+        principal: selectedPrincipalId,
+        secundario: isNinguno ? undefined : valorId
+      }
+      assignLab(activeTerm.id, materia.codMateria, nuevaAsignacion)
+    }
+  }
+
+  const renderSelect = (
+    label: string, 
+    selectedValue: string, 
+    onChange: (val: string) => void, 
+    disabledValue?: string,
+    isDisabled: boolean = false
+  ) => {
+    const nombreSeleccionado = selectedValue === 'ninguno'
+      ? 'Ninguno (Sin asignar)'
+      : (laboratorios.find(l => l.id === selectedValue)?.name ?? 'Seleccionar laboratorio')
+
+    return (
+      <div className="flex flex-col gap-1.5 w-full">
+        <label className="text-xs font-semibold text-slate-500">{label}</label>
+        <Select
+          aria-label={label}
+          variant="primary"
+          value={selectedValue}
+          onChange={(valor) => { if (valor) onChange(String(valor)) }}
+          className="w-full text-sm"
+          isDisabled={isDisabled}
+        >
+          <Select.Trigger className={`flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-10 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            <span>{nombreSeleccionado}</span>
+            <span className="text-slate-400 text-[10px] ml-2">▼</span>
+          </Select.Trigger>
+          <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[260px] z-50">
+            <ListBox>
+              <ListBox.Item id="ninguno" textValue="Ninguno" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                Ninguno (Sin asignar)
+              </ListBox.Item>
+              {laboratorios.map((lab) => (
+                <ListBox.Item
+                  key={lab.id}
+                  id={lab.id}
+                  textValue={lab.name}
+                  isDisabled={lab.id === disabledValue}
+                  className={`px-3 py-1.5 text-xs rounded-md block ${
+                    lab.id === disabledValue 
+                      ? 'text-slate-300 cursor-not-allowed' 
+                      : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
+                  }`}
+                >
+                  {lab.name}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+      </div>
+    )
+  }
 
   return (
     <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
@@ -64,7 +124,6 @@ export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLab
         <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-sans border border-slate-100">
           {({ close }) => (
             <>
-              {/* Botón X de cierre */}
               <Modal.CloseTrigger className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-sm" />
 
               {/* Encabezado */}
@@ -88,52 +147,24 @@ export function MateriaLaboratorioModal ({ materia, currentSection }: MateriaLab
                   </p>
                 </div>
 
-                {/* Se eliminó el selector de secciones */}
-
-                <div className="flex flex-col gap-1.5 pt-2">
-                  <span className="text-xs font-semibold text-slate-500">Laboratorio Asignado</span>
-                  {cargando
-                    ? (
+                <div className="flex flex-col gap-4 pt-2">
+                  {cargando ? (
                     <p className="text-xs text-slate-400 italic animate-pulse">Cargando salas disponibles...</p>
-                      )
-                    : error !== null
-                      ? (
-                      <p className="text-xs text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">⚠️ {error}</p>
-                        )
-                      : (
-                      <Select
-                        aria-label="Seleccionar laboratorio"
-                        variant="primary"
-                        value={selectedLabId}
-                        onChange={(valor) => {
-                          if (valor) handleGuardar(String(valor))
-                        }}
-                        className="w-full text-xs"
-                      >
-                        <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-10">
-                          <span>{nombreSeleccionado}</span>
-                          <span className="text-slate-400 text-[10px]">▼</span>
-                        </Select.Trigger>
-
-                        <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[260px] z-50">
-                          <ListBox>
-                            <ListBox.Item id="ninguno" textValue="Ninguno" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block font-semibold text-slate-500">
-                              Ninguno (Sin asignar)
-                            </ListBox.Item>
-                            {laboratorios.map((lab) => (
-                              <ListBox.Item
-                                key={lab.id}
-                                id={lab.id}
-                                textValue={lab.name}
-                                className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
-                              >
-                                {lab.name}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                        )}
+                  ) : error !== null ? (
+                    <p className="text-xs text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">⚠️ {error}</p>
+                  ) : (
+                    <>
+                      {renderSelect('Laboratorio Principal', selectedPrincipalId, handleGuardarPrincipal, selectedSecundarioId)}
+                      
+                      {renderSelect(
+                        'Laboratorio Secundario (Opcional)', 
+                        selectedSecundarioId, 
+                        handleGuardarSecundario, 
+                        selectedPrincipalId,
+                        selectedPrincipalId === 'ninguno'
+                      )}
+                    </>
+                  )}
                 </div>
               </Modal.Body>
 

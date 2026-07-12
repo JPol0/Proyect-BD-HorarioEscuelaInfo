@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS Horarios(
     CodAsig VARCHAR(40) NOT NULL,
     DiaH dom_dia_horario NOT NULL,
     HoraH dom_hora_horario NOT NULL,
-    CodLab SERIAL,
+    CodLab INT,
 
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
