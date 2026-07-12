@@ -98,4 +98,81 @@ export class PgMateriaRepository implements MateriaRepository {
       throw error
     }
   }
+
+  /**
+   * Guarda un lote de materias (upsert) y sus prerrequisitos de forma global para todos los términos de la BD.
+   * prereqs es un array de { codMateria, prereqNombres: string[] } con códigos de asignatura ya resueltos.
+   */
+  async saveBatchGlobal (
+    materias: Materia[],
+    prereqs: Array<{ codMateria: string, prereqNombres: string[] }>
+  ): Promise<void> {
+    const client = await getPool().connect()
+    try {
+      await client.query('BEGIN')
+
+      // Obtener todos los términos registrados
+      const termsRes = await client.query('SELECT CodTerm FROM Terms')
+      const termIds = termsRes.rows.map(row => row.codterm as string)
+
+      if (termIds.length > 0) {
+        const upsertQuery = `
+          CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+        `
+        const insertedCodes = new Set(materias.map(m => m.codMateria))
+
+        for (const termId of termIds) {
+          // 1. Upsert de cada materia para este término
+          for (const materia of materias) {
+            await client.query(upsertQuery, [
+              materia.codMateria,
+              termId,
+              materia.nombre,
+              materia.esComun,
+              materia.semestre,
+              materia.horasPrac,
+              materia.horasTeo,
+              materia.horasLab,
+              materia.modalidad,
+              materia.nroSecciones
+            ])
+          }
+
+          // 2. Cargar prerrequisitos de cada materia para este término
+          for (const { codMateria, prereqNombres } of prereqs) {
+            if (prereqNombres.length === 0) continue
+
+            // Borrar prerrequisitos actuales de esta materia en este término
+            await client.query(
+              'DELETE FROM Prerequitos WHERE CodAsig = $1 AND CodTerm = $2',
+              [codMateria, termId]
+            )
+
+            // Insertar nuevos prerrequisitos
+            for (const prereqCode of prereqNombres) {
+              if (!insertedCodes.has(prereqCode)) continue
+              await client.query(
+                `INSERT INTO Prerequitos (CodAsig, CodTerm, CodAsigPreq, CodTermPreq)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT DO NOTHING`,
+                [codMateria, termId, prereqCode, termId]
+              )
+            }
+          }
+        }
+      }
+
+      await client.query('COMMIT')
+    } catch (error: any) {
+      await client.query('ROLLBACK')
+      if (error.code === '42501') {
+        throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
+      }
+      throw error
+    } finally {
+      client.release()
+    }
+  }
 }
+
+

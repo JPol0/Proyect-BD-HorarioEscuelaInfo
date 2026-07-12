@@ -2,21 +2,25 @@ import { type Request, type Response } from 'express'
 import { type GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
 import { type SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { type DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
+import { type UploadPlanEstudio } from '../../../application/useCases/Materia/UploadPlanEstudio.js'
 import { type Materia } from '../../../domain/Materia.js'
 
 export class MateriaController {
   private readonly getUseCase: GetMaterias
   private readonly saveUseCase: SaveMateria
   private readonly deleteUseCase: DeleteMateria
+  private readonly uploadUseCase: UploadPlanEstudio
 
   constructor (
     getUseCase: GetMaterias,
     saveUseCase: SaveMateria,
-    deleteUseCase: DeleteMateria
+    deleteUseCase: DeleteMateria,
+    uploadUseCase: UploadPlanEstudio
   ) {
     this.getUseCase = getUseCase
     this.saveUseCase = saveUseCase
     this.deleteUseCase = deleteUseCase
+    this.uploadUseCase = uploadUseCase
   }
 
   /**
@@ -80,6 +84,26 @@ export class MateriaController {
       res.json({ ok: true, message: 'Materia eliminada correctamente' })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'
+      res.status(400).json({ error: mensaje })
+    }
+  }
+
+  /**
+   * POST /api/materias/upload-excel
+   * Procesa la carga masiva del Plan de Estudio desde un archivo Excel de forma global.
+   */
+  uploadExcel = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const file = (req as any).file as Express.Multer.File | undefined
+      if (file === undefined) {
+        res.status(400).json({ error: 'No se recibió ningún archivo Excel' })
+        return
+      }
+
+      const result = await this.uploadUseCase.execute(file.buffer)
+      res.json({ ok: true, count: result.count, skipped: result.skipped })
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : 'Error interno al procesar el Excel'
       res.status(400).json({ error: mensaje })
     }
   }

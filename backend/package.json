@@ -18,11 +18,14 @@
   "dependencies": {
     "cors": "2.8.5",
     "express": "5.2.1",
-    "pg": "8.22.0"
+    "multer": "2.2.0",
+    "pg": "8.22.0",
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "@types/cors": "2.8.5",
     "@types/express": "5.0.6",
+    "@types/multer": "2.2.0",
     "@types/node": "^24.12.4",
     "@types/pg": "8.20.0",
     "@typescript-eslint/eslint-plugin": "6.21.0",

@@ -101,4 +101,16 @@ export class MockMateriaRepository implements MateriaRepository {
   clearTerm (term: string): void {
     this.almacen.delete(term)
   }
+
+  /**
+   * Stub: guarda un lote de materias de forma global en memoria para todos los términos del mock.
+   */
+  async saveBatchGlobal (materias: Materia[], _prereqs: Array<{ codMateria: string, prereqNombres: string[] }>): Promise<void> {
+    const terms = Array.from(this.almacen.keys())
+    for (const term of terms) {
+      for (const materia of materias) {
+        await this.save(term, materia)
+      }
+    }
+  }
 }

@@ -8,6 +8,7 @@ import { type CreateTermInput } from '../../core/application/ports/TermRepositor
 import Title from '../components/common/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
 import DeleteTermModal from '../components/TermScreen/DeleteTermModal'
+import UploadPlanModal from '../components/Materias/UploadPlanModal'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
 import { TrashBin } from '@gravity-ui/icons'
@@ -48,6 +49,7 @@ export default function TermsPage () {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const [termToDelete, setTermToDelete] = useState<Term | null>(null)
 
   const cargarTerms = async () => {
@@ -99,6 +101,13 @@ export default function TermsPage () {
         />
         {!isLector && (
           <div className="flex items-center gap-3 shrink-0 mt-1">
+            {/* Botón Cargar Plan de Estudio */}
+            <button
+              onClick={() => { setShowUploadModal(true) }}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm"
+            >
+              📥 Cargar Plan de Estudio
+            </button>
             {/* Botón New Term */}
             <button
               onClick={() => { setShowModal(true) }}
@@ -159,6 +168,12 @@ export default function TermsPage () {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* Modal de carga del Plan de Estudio */}
+      <UploadPlanModal
+        isOpen={showUploadModal}
+        onClose={() => { setShowUploadModal(false) }}
+      />
     </div>
   )
 }
