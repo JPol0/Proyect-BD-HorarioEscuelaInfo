@@ -62,6 +62,7 @@ export async function asignarSeccionesDeMateria(params: AsignarSeccionesParams):
 
       const ctxBase = {
         materia,
+        nroSeccion: sec,
         termId,
         cedulaProfesor,
         laboratorioPrincipal: tipo === 'Laboratorio' ? laboratorioPrincipal : undefined,

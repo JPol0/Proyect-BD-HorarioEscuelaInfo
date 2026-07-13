@@ -6,6 +6,7 @@ export interface ContextoChoques {
   dia: DaysOfWeek
   hora: string
   materia: Materia
+  nroSeccion: number
   termId: string
   cedulaProfesor?: string
   laboratorioPrincipal?: string
@@ -26,8 +27,8 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
   let estaOcupado = false
   let labAAsignar: string | undefined = undefined
 
-  // 1. Choque del Mismo Semestre
-  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre)
+  // 1. Choque del Mismo Semestre (sólo si es la misma sección)
+  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre && t.nroSeccion === ctx.nroSeccion)
 
   // 2. Choque de Profesor
   if (!estaOcupado && ctx.cedulaProfesor) {
@@ -46,6 +47,7 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
     estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
       if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
       if (t.semestre === undefined) return false
+      if (t.nroSeccion !== ctx.nroSeccion) return false // Solo evita choques de semestres si son para la misma cohorte (sección)
 
       const esAdyacente = Math.abs(t.semestre - ctx.materia.semestre) === 1
       if (esAdyacente) {
