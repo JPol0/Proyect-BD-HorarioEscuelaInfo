@@ -64,6 +64,19 @@ function isMateriaRow (row: unknown[]): boolean {
   return /^\d{5}$/.test(col1)
 }
 
+/**
+ * Regla de negocio: detecta materias no permitidas en el Plan de Estudio.
+ * Normaliza el nombre eliminando diacríticos para ser tolerante a variaciones
+ * ortográficas del Excel (ej. "Pasantías", "Pasantía Profesional", "Pasantias").
+ */
+function isExcludedMateria (nombre: string): boolean {
+  const normalizado = nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+  return normalizado.includes('pasantia')
+}
+
 export interface ParsedMateria extends Materia {
   /** Nombres de prerrequisitos tal como aparecen en la columna Pre-Req. (ya separados por +) */
   prereqNombres: string[]
@@ -117,6 +130,13 @@ export function parseExcelPlanEstudio (buffer: Buffer): ExcelParseResult {
 
     const codMateria = String(row[1]).trim()
     const nombre = String(row[2]).trim()
+
+    // Regla de negocio: omitir materias excluidas (ej. Pasantías)
+    if (isExcludedMateria(nombre)) {
+      skipped++
+      continue
+    }
+
     const horasTeo = Number(row[3]) || 0
     const horasPrac = Number(row[4]) || 0
     const horasLab = Number(row[5]) || 0
