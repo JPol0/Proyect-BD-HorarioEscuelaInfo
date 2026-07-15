@@ -7,6 +7,7 @@ import createLaboratorioRouter from './routes/LaboratorioRoutes.js'
 import createHorarioRouter from './routes/HorarioRoutes.js'
 import createAuthRouter from './routes/AuthRoutes.js'
 import createUserRouter from './routes/UserRoutes.js'
+import createImparteRouter from './routes/ImparteRoutes.js'
 import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
@@ -19,6 +20,7 @@ import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
 import { PgLaboratorioRepository } from '../database/postgre/PgLaboratorioRepository.js'
 import { JsonHorarioRepository } from '../database/mocks/JsonHorarioRepository.js'
 import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
+import { PgRImparteRepository } from '../database/postgre/PgRImparteRepository.js'
 
 const apiRouter = Router()
 
@@ -30,6 +32,7 @@ const laboratorioRepository = new PgLaboratorioRepository()
 const horarioRepository = new JsonHorarioRepository()
 const termRepository = new PgTermRepository()
 const userRepository = new PgUserRepository()
+const imparteRepository = new PgRImparteRepository()
 
 // Wire routes
 apiRouter.use('/auth', dbScopeMiddleware, createAuthRouter(userRepository))
@@ -44,5 +47,6 @@ apiRouter.use('/profesores', createDisponibilidadRouter(disponibilidadRepository
 apiRouter.use('/materias', createMateriaRouter(materiaRepository))
 apiRouter.use('/laboratorios', createLaboratorioRouter(laboratorioRepository))
 apiRouter.use('/users', createUserRouter(userRepository))
+apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))
 
 export default apiRouter
