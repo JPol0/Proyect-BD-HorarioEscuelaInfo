@@ -10,7 +10,7 @@ export interface AsignarSeccionesParams {
   termId: string
   profesorAssignments: Record<string, Record<number, string>>
   profesorLabAssignments?: Record<string, Record<number, string>>
-  laboratorioAssignments: Record<string, { principal: string, secundario?: string }>
+  laboratorioAssignments: Record<string, { principal: number, secundario?: number }>
   cacheDisponibilidad: Record<string, DisponibilidadHoraria[]>
   disponibilidadRepo: { obtenerPorProfesorYTerm: (cedula: string, termId: string) => Promise<DisponibilidadHoraria[]> }
 }

@@ -68,7 +68,7 @@ export default function LaboratoriosPage () {
     await saveLaboratorioUseCase.execute(laboratorio)
   }
 
-  const handleEliminar = async (id: string) => {
+  const handleEliminar = async (id: number) => {
     const estadoPrevio = [...laboratorios]
     // Actualización optimista
     setLaboratorios((prev) => prev.filter((l) => l.id !== id))

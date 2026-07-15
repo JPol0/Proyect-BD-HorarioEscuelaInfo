@@ -9,8 +9,8 @@ export interface ContextoChoques {
   nroSeccion: number
   termId: string
   cedulaProfesor?: string
-  laboratorioPrincipal?: string
-  laboratorioSecundario?: string
+  laboratorioPrincipal?: number
+  laboratorioSecundario?: number
   tuplasActualesYTemporales: Horario[]
   profesorAssignments: Record<string, Record<number, string>>
   profesorLabAssignments?: Record<string, Record<number, string>>
@@ -20,12 +20,12 @@ export interface ContextoChoques {
 
 export interface ResultadoChoque {
   estaOcupado: boolean
-  labAAsignar?: string
+  labAAsignar?: number
 }
 
 export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): ResultadoChoque {
   let estaOcupado = false
-  let labAAsignar: string | undefined = undefined
+  let labAAsignar: number | undefined = undefined
 
   // 1. Choque del Mismo Semestre (sólo si es la misma sección)
   estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre && t.nroSeccion === ctx.nroSeccion)
@@ -67,7 +67,7 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
     const choquePrincipal = ctx.tuplasActualesYTemporales.some((t) =>
       t.dia === ctx.dia &&
       t.hora === ctx.hora &&
-      (t.laboratorio?.id === ctx.laboratorioPrincipal || (t as any).codLaboratorio === ctx.laboratorioPrincipal)
+      t.laboratorio?.id === ctx.laboratorioPrincipal
     )
 
     if (!choquePrincipal) {
@@ -76,7 +76,7 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
       const choqueSecundario = ctx.tuplasActualesYTemporales.some((t) =>
         t.dia === ctx.dia &&
         t.hora === ctx.hora &&
-        (t.laboratorio?.id === ctx.laboratorioSecundario || (t as any).codLaboratorio === ctx.laboratorioSecundario)
+        t.laboratorio?.id === ctx.laboratorioSecundario
       )
       if (!choqueSecundario) {
         labAAsignar = ctx.laboratorioSecundario

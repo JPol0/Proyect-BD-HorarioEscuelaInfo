@@ -35,7 +35,7 @@ export interface DetalleHorarioModalProps {
   dia: DaysOfWeek
   horaStr: string // Ej: '07:00 - 07:50'
   cedulaProfesor?: string
-  laboratorioId?: string
+  laboratorioId?: number
 }
 
 export function DetalleHorarioModal ({
@@ -64,15 +64,15 @@ export function DetalleHorarioModal ({
           setProfesorNombre('Sin asignar')
         }
 
-        if (laboratorioId && laboratorioId !== 'undefined') {
+        if (laboratorioId !== undefined) {
           const labs = await getLaboratoriosUseCase.execute()
           const l = labs.find(x => x.id === laboratorioId)
-          setLaboratorioNombre(l ? l.name : laboratorioId)
+          setLaboratorioNombre(l ? l.name : String(laboratorioId))
         }
       } catch (err) {
         console.error(err)
         setProfesorNombre(cedulaProfesor || 'Error')
-        setLaboratorioNombre(laboratorioId || 'Error')
+        setLaboratorioNombre(laboratorioId !== undefined ? String(laboratorioId) : 'Error')
       }
     }
 

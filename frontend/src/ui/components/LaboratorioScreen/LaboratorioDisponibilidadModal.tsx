@@ -9,12 +9,12 @@ import { Clock } from '@gravity-ui/icons'
 
 interface LaboratorioDisponibilidadModalProps {
   laboratorios: Laboratorio[]
-  initialLabId: string
+  initialLabId: number
 }
 
-function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: string }) {
+function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: number }) {
   const { activeTerm } = useActiveTerm()
-  const [selectedLabId, setSelectedLabId] = useState(initialLabId)
+  const [selectedLabId, setSelectedLabId] = useState<number>(initialLabId)
   const [tuplas, setTuplas] = useState<Horario[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -62,7 +62,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
     ]
     const days: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
-    const labTuplas = tuplas.filter(t => t.laboratorio?.id === selectedLabId || (t as any).codLaboratorio === selectedLabId)
+    const labTuplas = tuplas.filter(t => t.laboratorio?.id === selectedLabId)
 
     return baseHours.map(hour => {
       const row: Record<string, string> = { hour }
@@ -97,7 +97,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
           <Select
             variant="primary"
             value={selectedLabId}
-            onChange={(valor) => { if (valor) setSelectedLabId(String(valor)) }}
+            onChange={(valor) => { if (valor) setSelectedLabId(Number(valor)) }}
             className="w-full text-sm"
           >
             <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10">

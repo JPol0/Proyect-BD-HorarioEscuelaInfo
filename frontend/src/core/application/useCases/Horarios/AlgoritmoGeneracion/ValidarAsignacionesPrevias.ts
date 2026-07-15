@@ -26,7 +26,7 @@ export function validarAsignacionesPrevias(
   tuplasEnProceso: Horario[],
   profesorAssignments: Record<string, Record<number, string>>,
   profesorLabAssignments: Record<string, Record<number, string>> | undefined,
-  laboratorioAssignments: Record<string, { principal: string, secundario?: string }>
+  laboratorioAssignments: Record<string, { principal: number, secundario?: number }>
 ): void {
   const missingProfessors: string[] = []
   const missingLabs: string[] = []

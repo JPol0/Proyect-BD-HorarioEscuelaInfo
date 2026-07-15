@@ -7,7 +7,7 @@ export const autoAsignarMateria = (
   horarioActual: Horario[],
   termId: string,
   seccion: number = 1,
-  laboratorioId?: string,
+  laboratorioId?: number,
   cedulaProfesor?: string,
   disponibilidad?: DisponibilidadHoraria[],
   profesoresAsignados?: Record<string, Record<number, string>>
@@ -67,7 +67,7 @@ export const autoAsignarMateria = (
           estaOcupado = horarioSinEstaMateria.some((t) =>
             t.dia === dia &&
             t.hora === hora &&
-            (t.laboratorio?.id === laboratorioId || (t as any).codLaboratorio === laboratorioId)
+            t.laboratorio?.id === laboratorioId
           )
         }
 

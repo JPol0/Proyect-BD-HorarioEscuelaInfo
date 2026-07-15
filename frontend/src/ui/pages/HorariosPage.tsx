@@ -59,7 +59,7 @@ export default function HorariosPage () {
     dia: DaysOfWeek,
     horaStr: string,
     cedulaProfesor?: string,
-    laboratorioId?: string
+    laboratorioId?: number
   } | null>(null)
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
@@ -179,13 +179,13 @@ export default function HorariosPage () {
                 }
 
                 const labObj = useMateriaLabStore.getState().getLabForMateria(term, materiaFromState.codMateria)
-                let labIdAsignar: string | undefined = undefined
+                let labIdAsignar: number | undefined = undefined
 
                 if (labObj && labObj.principal) {
                   const choquePrincipal = currentTuplas.some(t => 
                     t.dia === block.dia && 
                     t.hora === horaAsignar && 
-                    (t.laboratorio?.id === labObj.principal || (t as any).codLaboratorio === labObj.principal)
+                    t.laboratorio?.id === labObj.principal
                   )
                   
                   if (!choquePrincipal) {
@@ -194,7 +194,7 @@ export default function HorariosPage () {
                     const choqueSecundario = currentTuplas.some(t => 
                       t.dia === block.dia && 
                       t.hora === horaAsignar && 
-                      (t.laboratorio?.id === labObj.secundario || (t as any).codLaboratorio === labObj.secundario)
+                      t.laboratorio?.id === labObj.secundario
                     )
                     if (!choqueSecundario) {
                       labIdAsignar = labObj.secundario
@@ -213,7 +213,7 @@ export default function HorariosPage () {
                   dia: block.dia,
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
-                  laboratorio: labIdAsignar ? { id: labIdAsignar, name: 'Laboratorio' } : null,
+                  laboratorio: labIdAsignar !== undefined ? { id: labIdAsignar, name: 'Laboratorio' } : null,
                   isManual: true
                 })
               }
@@ -306,7 +306,7 @@ export default function HorariosPage () {
       dia: day,
       horaStr: `${h}:00 - ${h}:50`,
       cedulaProfesor,
-      laboratorioId: asig.laboratorio ? asig.laboratorio.id || (asig as any).codLaboratorio : undefined
+      laboratorioId: asig.laboratorio?.id
     })
   }
 

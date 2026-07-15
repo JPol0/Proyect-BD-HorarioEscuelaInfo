@@ -23,8 +23,8 @@ export function intentarAsignarBloque(
     if (tieneHorasHoy) continue
 
     const maxPosiblesHoy = Math.min(horasRestantes, maxHorasPorDia)
-    let bloqueActual: Array<{hora: string, labId?: string}> = []
-    const bloquesLibres: Array<Array<{hora: string, labId?: string}>> = []
+    let bloqueActual: Array<{hora: string, labId?: number}> = []
+    const bloquesLibres: Array<Array<{hora: string, labId?: number}>> = []
 
     for (const hora of HORAS_DISPONIBLES_BASE) {
       const ctx: ContextoChoques = {
