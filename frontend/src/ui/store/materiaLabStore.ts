@@ -2,8 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface LabAssignment {
-  principal: string
-  secundario?: string
+  principal: number
+  secundario?: number
 }
 
 interface MateriaLabState {
@@ -24,7 +24,7 @@ export const useMateriaLabStore = create<MateriaLabState>()(
             newAssignments[codTerm] = {}
           }
 
-          if (!asignacion || !asignacion.principal || asignacion.principal === 'ninguno') {
+          if (!asignacion || !asignacion.principal || asignacion.principal === 0) {
             const newTermAssignments = { ...newAssignments[codTerm] }
             delete newTermAssignments[codMateria]
             newAssignments[codTerm] = newTermAssignments
@@ -43,7 +43,7 @@ export const useMateriaLabStore = create<MateriaLabState>()(
       }
     }),
     {
-      name: 'materia-laboratorio-assignments-v4'
+      name: 'materia-laboratorio-assignments-v5'
     }
   )
 )

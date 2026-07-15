@@ -15,7 +15,7 @@ export interface GenerarHorarioRequest {
   selectedSemester: number
   profesorAssignments: Record<string, Record<number, string>> // codMateria -> seccion -> cedulaProf
   profesorLabAssignments?: Record<string, Record<number, string>> // codMateria -> seccion -> cedulaProf
-  laboratorioAssignments: Record<string, { principal: string, secundario?: string }> // codMateria -> asignacion
+  laboratorioAssignments: Record<string, { principal: number, secundario?: number }> // codMateria -> asignacion
 }
 
 export interface GenerarHorarioResponse {

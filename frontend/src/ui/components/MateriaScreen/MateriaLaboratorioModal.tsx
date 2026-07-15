@@ -24,8 +24,10 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
   const assignLab = useMateriaLabStore(state => state.assignLab)
 
   const assignedLab = activeTerm ? assignments[activeTerm.id]?.[materia.codMateria] : undefined
-  const selectedPrincipalId = assignedLab?.principal ?? 'ninguno'
-  const selectedSecundarioId = assignedLab?.secundario ?? 'ninguno'
+  // Usamos strings internamente en el Select (heroui requiere id como string)
+  // Se convierte a number al llamar a assignLab
+  const selectedPrincipalId = assignedLab?.principal !== undefined ? String(assignedLab.principal) : 'ninguno'
+  const selectedSecundarioId = assignedLab?.secundario !== undefined ? String(assignedLab.secundario) : 'ninguno'
 
   useEffect(() => {
     const cargarLaboratorios = async () => {
@@ -47,7 +49,10 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
       const isNinguno = valorId === 'ninguno'
       const nuevaAsignacion: LabAssignment | undefined = isNinguno 
         ? undefined 
-        : { principal: valorId, secundario: selectedSecundarioId !== 'ninguno' ? selectedSecundarioId : undefined }
+        : { 
+            principal: Number(valorId), 
+            secundario: selectedSecundarioId !== 'ninguno' ? Number(selectedSecundarioId) : undefined 
+          }
       
       assignLab(activeTerm.id, materia.codMateria, nuevaAsignacion)
     }
@@ -58,8 +63,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
       if (selectedPrincipalId === 'ninguno') return 
       const isNinguno = valorId === 'ninguno'
       const nuevaAsignacion: LabAssignment = {
-        principal: selectedPrincipalId,
-        secundario: isNinguno ? undefined : valorId
+        principal: Number(selectedPrincipalId),
+        secundario: isNinguno ? undefined : Number(valorId)
       }
       assignLab(activeTerm.id, materia.codMateria, nuevaAsignacion)
     }
@@ -74,7 +79,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
   ) => {
     const nombreSeleccionado = selectedValue === 'ninguno'
       ? 'Ninguno (Sin asignar)'
-      : (laboratorios.find(l => l.id === selectedValue)?.name ?? 'Seleccionar laboratorio')
+      : (laboratorios.find(l => String(l.id) === selectedValue)?.name ?? 'Seleccionar laboratorio')
 
     return (
       <div className="flex flex-col gap-1.5 w-full">
@@ -99,11 +104,11 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
               {laboratorios.map((lab) => (
                 <ListBox.Item
                   key={lab.id}
-                  id={lab.id}
+                  id={String(lab.id)}
                   textValue={lab.name}
-                  isDisabled={lab.id === disabledValue}
+                  isDisabled={String(lab.id) === disabledValue}
                   className={`px-3 py-1.5 text-xs rounded-md block ${
-                    lab.id === disabledValue 
+                    String(lab.id) === disabledValue 
                       ? 'text-slate-300 cursor-not-allowed' 
                       : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
                   }`}

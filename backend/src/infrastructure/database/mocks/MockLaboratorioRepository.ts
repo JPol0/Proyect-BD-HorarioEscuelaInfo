@@ -3,9 +3,9 @@ import { type Laboratorio } from '../../../domain/Laboratorio.js'
 
 // Datos de mock en memoria — reemplazar por adaptador de BD cuando se implemente
 const MOCK_LABORATORIOS: Laboratorio[] = [
-  { id: '1', name: 'Lab de Computación A' },
-  { id: '2', name: 'Laboratorio de Modelado 3D' },
-  { id: '3', name: 'Sala de Redes y Telecom' }
+  { id: 1, name: 'Lab de Computación A' },
+  { id: 2, name: 'Laboratorio de Modelado 3D' },
+  { id: 3, name: 'Sala de Redes y Telecom' }
 ]
 
 export class MockLaboratorioRepository implements LaboratorioRepository {
@@ -22,7 +22,7 @@ export class MockLaboratorioRepository implements LaboratorioRepository {
     }
   }
 
-  async delete (id: string): Promise<void> {
+  async delete (id: number): Promise<void> {
     const index = MOCK_LABORATORIOS.findIndex((l) => l.id === id)
     if (index === -1) {
       throw new Error('El laboratorio solicitado no existe')

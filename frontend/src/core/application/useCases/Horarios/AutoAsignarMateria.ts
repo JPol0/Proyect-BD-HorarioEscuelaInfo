@@ -19,7 +19,7 @@ export class AutoAsignarMateria {
     horarioActual: Horario[],
     termId: string,
     seccion: number = 1,
-    laboratorioId?: string,
+    laboratorioId?: number,
     cedulaProfesor?: string,
     profesoresAsignados?: Record<string, Record<number, string>>
   ): Promise<Horario[]> {

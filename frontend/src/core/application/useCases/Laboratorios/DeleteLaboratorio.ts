@@ -7,7 +7,7 @@ export class DeleteLaboratorio {
     this.repository = repository
   }
 
-  async execute (id: string): Promise<void> {
+  async execute (id: number): Promise<void> {
     await this.repository.delete(id)
   }
 }

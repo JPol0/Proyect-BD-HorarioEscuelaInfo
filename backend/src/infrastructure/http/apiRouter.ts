@@ -16,7 +16,7 @@ import { PgTermRepository } from '../database/postgre/PgTermRepository.js'
 import { MockDisponibilidadRepository } from '../database/mocks/MockDisponibilidadRepository.js'
 import { MockProfesorRepository } from '../database/mocks/MockProfesorRepository.js'
 import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
-import { MockLaboratorioRepository } from '../database/mocks/MockLaboratorioRepository.js'
+import { PgLaboratorioRepository } from '../database/postgre/PgLaboratorioRepository.js'
 import { JsonHorarioRepository } from '../database/mocks/JsonHorarioRepository.js'
 import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 
@@ -26,7 +26,7 @@ const alertRepository = new PgAlertRepository()
 const disponibilidadRepository = new MockDisponibilidadRepository()
 const profesorRepository = new MockProfesorRepository()
 const materiaRepository = new PgMateriaRepository()
-const laboratorioRepository = new MockLaboratorioRepository()
+const laboratorioRepository = new PgLaboratorioRepository()
 const horarioRepository = new JsonHorarioRepository()
 const termRepository = new PgTermRepository()
 const userRepository = new PgUserRepository()
