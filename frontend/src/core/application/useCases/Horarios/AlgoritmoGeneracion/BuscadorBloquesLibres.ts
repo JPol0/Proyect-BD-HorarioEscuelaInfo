@@ -2,7 +2,7 @@ import { type Horario, type DaysOfWeek } from '../../../../domain/Horario'
 import { verificarChoquesYDisponibilidad, type ContextoChoques } from './VerificadorChoques'
 import { HORAS_DISPONIBLES_BASE } from './ValidarAsignacionesPrevias'
 
-export function intentarAsignarBloque(
+export function intentarAsignarBloque (
   faltantes: number,
   sec: number,
   tipo: 'Laboratorio' | 'Teoría/Práctica',
@@ -23,8 +23,8 @@ export function intentarAsignarBloque(
     if (tieneHorasHoy) continue
 
     const maxPosiblesHoy = Math.min(horasRestantes, maxHorasPorDia)
-    let bloqueActual: Array<{hora: string, labId?: number}> = []
-    const bloquesLibres: Array<Array<{hora: string, labId?: number}>> = []
+    let bloqueActual: Array<{ hora: string, labId?: number }> = []
+    const bloquesLibres: Array<Array<{ hora: string, labId?: number }>> = []
 
     for (const hora of HORAS_DISPONIBLES_BASE) {
       const ctx: ContextoChoques = {

@@ -147,33 +147,13 @@ export function MateriasPage () {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-
-        <Title
-          title="Gestión de Materias"
-          subtitle={obtenerSubtitulo()}
-        />
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
-
-          {/* Botón Crear Materia */}
-          {currentUser?.rol !== 'lector' && (
-            <div className="w-full sm:w-auto flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
-              <Modal>
-                <Button
-                  variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 shrink-0" />
-                  Crear Materia
-                </Button>
-                <MateriaCrearModal
-                  onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
-                />
-              </Modal>
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+        {/* Contenedor Izquierdo: Título y Selector de Semestre */}
+        <div className="flex flex-col gap-4">
+          <Title
+            title="Gestión de Materias"
+            subtitle={obtenerSubtitulo()}
+          />
 
           {/* Selector de Semestre */}
           <div className="w-full sm:w-48 flex flex-col gap-1.5">
@@ -214,25 +194,48 @@ export function MateriasPage () {
               </Select.Popover>
             </Select>
           </div>
+        </div>
 
-          {/* Buscador por Nombre */}
-          <div className="w-full sm:w-80 flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500">Buscar</span>
-            <div className="relative w-full flex items-center">
-              <span className="absolute left-3 z-10 pointer-events-none flex items-center">
-                <Magnifier className="text-slate-400 w-4 h-4" />
-              </span>
-              <Input
-                type="text"
-                placeholder="Buscar por nombre de materia..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                variant="primary" // <-- Corregido a 'primary' según tu documentación
-                className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
-              />
+        {/* Contenedor Derecho: Buscador y Botón Crear Materia */}
+        <div className="flex flex-col gap-4 w-full md:w-auto items-end pb-8">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end justify-end">
+            {/* Buscador por Nombre */}
+            <div className="w-full sm:w-80 flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500">Buscar</span>
+              <div className="relative w-full flex items-center">
+                <span className="absolute left-3 z-10 pointer-events-none flex items-center">
+                  <Magnifier className="text-slate-400 w-4 h-4" />
+                </span>
+                <Input
+                  type="text"
+                  placeholder="Buscar por nombre de materia..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  variant="primary" // <-- Corregido a 'primary' según tu documentación
+                  className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                />
+              </div>
             </div>
-          </div>
 
+            {/* Botón Crear Materia */}
+            {currentUser?.rol !== 'lector' && (
+              <div className="w-full sm:w-auto flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+                <Modal>
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto whitespace-nowrap"
+                  >
+                    <Plus className="w-4 h-4 shrink-0" />
+                    Crear Materia
+                  </Button>
+                  <MateriaCrearModal
+                    onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
+                  />
+                </Modal>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

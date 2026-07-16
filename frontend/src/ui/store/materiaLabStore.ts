@@ -24,7 +24,7 @@ export const useMateriaLabStore = create<MateriaLabState>()(
             newAssignments[codTerm] = {}
           }
 
-          if (!asignacion || !asignacion.principal || asignacion.principal === 0) {
+          if (!asignacion?.principal || asignacion.principal === 0) {
             const newTermAssignments = { ...newAssignments[codTerm] }
             delete newTermAssignments[codMateria]
             newAssignments[codTerm] = newTermAssignments

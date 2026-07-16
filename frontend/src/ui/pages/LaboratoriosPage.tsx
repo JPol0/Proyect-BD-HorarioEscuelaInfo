@@ -98,11 +98,11 @@ export default function LaboratoriosPage () {
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
           {/* Botón Añadir Laboratorio */}
           {!isLector && (
-            <div className="w-full sm:w-auto flex flex-col gap-1.5">
+            <div className="w-full sm:w-auto flex flex-col gap-1.5 shrink-0">
               <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
               <button
                 onClick={() => { setModal({ open: true, laboratorio: null }) }}
-                className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm h-9 cursor-pointer w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm h-9 cursor-pointer w-full sm:w-auto whitespace-nowrap"
               >
                 + Añadir Laboratorio
               </button>
@@ -110,7 +110,7 @@ export default function LaboratoriosPage () {
           )}
 
           {/* Buscador */}
-          <div className="w-full sm:w-80 flex flex-col gap-1.5">
+          <div className="w-full sm:w-60 flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-slate-500">Buscar</span>
             <div className="relative w-full flex items-center">
               <span className="absolute left-3 z-10 pointer-events-none flex items-center">

@@ -23,9 +23,9 @@ export interface ResultadoChoque {
   labAAsignar?: number
 }
 
-export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): ResultadoChoque {
+export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): ResultadoChoque {
   let estaOcupado = false
-  let labAAsignar: number | undefined = undefined
+  let labAAsignar: number | undefined
 
   // 1. Choque del Mismo Semestre (sólo si es la misma sección)
   estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre && t.nroSeccion === ctx.nroSeccion)
@@ -35,7 +35,7 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
     estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
       if (t.dia !== ctx.dia || t.hora !== ctx.hora || t.codTerm !== ctx.termId) return false
       const hasLab = !!t.laboratorio || !!(t as any).codLaboratorio
-      const profeAsignado = hasLab 
+      const profeAsignado = hasLab
         ? ctx.profesorLabAssignments?.[t.codAsig]?.[t.nroSeccion]
         : ctx.profesorAssignments[t.codAsig]?.[t.nroSeccion]
       return profeAsignado === ctx.cedulaProfesor

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
 import { Input, Modal, Button } from '@heroui/react'

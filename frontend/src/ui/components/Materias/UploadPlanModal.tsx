@@ -119,7 +119,8 @@ export default function UploadPlanModal ({ isOpen, onClose }: UploadPlanModalPro
                       className="hidden"
                       onChange={handleFileInput}
                     />
-                    {file != null ? (
+                    {file != null
+                      ? (
                       <div className="flex flex-col items-center gap-2">
                         <span className="text-3xl">✅</span>
                         <p className="text-sm font-semibold text-emerald-700 font-hanken">{file.name}</p>
@@ -127,7 +128,8 @@ export default function UploadPlanModal ({ isOpen, onClose }: UploadPlanModalPro
                           {(file.size / 1024).toFixed(1)} KB · Haz clic para cambiar el archivo
                         </p>
                       </div>
-                    ) : (
+                        )
+                      : (
                       <div className="flex flex-col items-center gap-2.5">
                         <span className="text-4xl">📄</span>
                         <p className="text-sm font-semibold text-slate-600 font-hanken">
@@ -137,7 +139,7 @@ export default function UploadPlanModal ({ isOpen, onClose }: UploadPlanModalPro
                           o haz clic para seleccionar · Solo archivos <span className="font-semibold">.xlsx</span>
                         </p>
                       </div>
-                    )}
+                        )}
                   </div>
                 )}
 
@@ -200,7 +202,7 @@ export default function UploadPlanModal ({ isOpen, onClose }: UploadPlanModalPro
                 )}
               </Modal.Footer>
             </>
-          )}
+            )}
         </Modal.Dialog>
       </Modal.Container>
     </Modal.Backdrop>

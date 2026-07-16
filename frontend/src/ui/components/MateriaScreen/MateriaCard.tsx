@@ -1,4 +1,4 @@
-﻿import { Card, Button, Modal } from '@heroui/react'
+import { Card, Button, Modal } from '@heroui/react'
 import { Minus, Plus, Magnifier, Gear } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'

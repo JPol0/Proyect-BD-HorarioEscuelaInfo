@@ -65,4 +65,3 @@ export class HttpTermRepository implements TermRepository {
     }
   }
 }
-

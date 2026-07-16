@@ -20,7 +20,7 @@ export interface AsignarSeccionesResult {
   advertencias: string[]
 }
 
-export async function asignarSeccionesDeMateria(params: AsignarSeccionesParams): Promise<AsignarSeccionesResult> {
+export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams): Promise<AsignarSeccionesResult> {
   const { materia, termId, profesorAssignments, profesorLabAssignments, laboratorioAssignments, cacheDisponibilidad, disponibilidadRepo } = params
   let tuplasActualizadas = [...params.tuplasEnProceso]
   const advertencias: string[] = []

@@ -82,12 +82,14 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
             disabled={cargando}
             className="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-lg transition font-hanken flex items-center gap-2 shadow-sm"
           >
-            {cargando ? 'Eliminando...' : (
+            {cargando
+              ? 'Eliminando...'
+              : (
               <>
                 <TrashBin className="w-4 h-4" />
                 Eliminar Term
               </>
-            )}
+                )}
           </button>
         </div>
       </div>
