@@ -14,9 +14,11 @@ import { type Materia } from '../../core/domain/Materia'
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 import Title from '../components/common/TitlePage'
 import { useMateriaLabStore } from '../store/materiaLabStore'
-import { useSeccionProfesorStore } from '../store/seccionProfesorStore'
 import { DetalleHorarioModal } from '../components/MateriaScreen/DetalleHorarioModal'
+import { type Imparte } from '../../core/domain/Imparte'
 import { useUser } from '../store/userStore'
+import { HttpRImparteRepository } from '../../core/infrastructure/adapters/HttpRImparteRepository'
+import { GetRelacionesImparte } from '../../core/application/useCases/relacionImparte/GetRelacionesImparte'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -25,6 +27,8 @@ const getWeeklyScheduleUseCase = new ObtenerHorario(repository)
 const getMateriasUseCase = new GetMaterias(materiaRepository)
 const generarHorarioUseCase = new GenerarHorarioSemestre(disponibilidadRepository)
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
+const imparteRepository = new HttpRImparteRepository()
+const getRelacionesImparteUseCase = new GetRelacionesImparte(imparteRepository)
 
 export default function HorariosPage () {
   const { currentUser } = useUser()
@@ -32,9 +36,29 @@ export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
-  const profesorAssignments = useSeccionProfesorStore((state) => state.assignments)
-  const profesorLabAssignments = useSeccionProfesorStore((state) => state.assignmentsLab)
   const laboratorioAssignments = useMateriaLabStore((state) => state.assignments)
+
+  const [relaciones, setRelaciones] = useState<Imparte[]>([])
+
+  const { profesorAssignments, profesorLabAssignments } = useMemo(() => {
+    const assignments: Record<string, Record<string, Record<number, string>>> = {}
+    const assignmentsLab: Record<string, Record<string, Record<number, string>>> = {}
+
+    relaciones.forEach((r) => {
+      if (r.horasTeo > 0) {
+        if (!assignments[r.codTerm]) assignments[r.codTerm] = {}
+        if (!assignments[r.codTerm][r.codAsig]) assignments[r.codTerm][r.codAsig] = {}
+        assignments[r.codTerm][r.codAsig][r.nroSeccion] = r.cedulaP
+      }
+      if (r.horasLab > 0) {
+        if (!assignmentsLab[r.codTerm]) assignmentsLab[r.codTerm] = {}
+        if (!assignmentsLab[r.codTerm][r.codAsig]) assignmentsLab[r.codTerm][r.codAsig] = {}
+        assignmentsLab[r.codTerm][r.codAsig][r.nroSeccion] = r.cedulaP
+      }
+    })
+
+    return { profesorAssignments: assignments, profesorLabAssignments: assignmentsLab }
+  }, [relaciones])
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -131,12 +155,14 @@ export default function HorariosPage () {
       setLoading(true)
       setError(null)
       try {
-        const [payload, materiasPayload] = await Promise.all([
+        const [payload, materiasPayload, relacionesPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(term),
-          getMateriasUseCase.execute(term)
+          getMateriasUseCase.execute(term),
+          getRelacionesImparteUseCase.execute(term)
         ])
 
         setMaterias(materiasPayload)
+        setRelaciones(relacionesPayload)
 
         const draftStr = sessionStorage.getItem(`draft_horario_${term}`)
         let currentTuplas = draftStr ? JSON.parse(draftStr) as Horario[] : (payload ?? [])
