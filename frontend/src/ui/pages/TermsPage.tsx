@@ -253,4 +253,3 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
     </div>
   )
 }
-

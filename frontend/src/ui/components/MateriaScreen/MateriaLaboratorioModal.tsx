@@ -47,20 +47,20 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
   const handleGuardarPrincipal = (valorId: string) => {
     if (activeTerm) {
       const isNinguno = valorId === 'ninguno'
-      const nuevaAsignacion: LabAssignment | undefined = isNinguno 
-        ? undefined 
-        : { 
-            principal: Number(valorId), 
-            secundario: selectedSecundarioId !== 'ninguno' ? Number(selectedSecundarioId) : undefined 
+      const nuevaAsignacion: LabAssignment | undefined = isNinguno
+        ? undefined
+        : {
+            principal: Number(valorId),
+            secundario: selectedSecundarioId !== 'ninguno' ? Number(selectedSecundarioId) : undefined
           }
-      
+
       assignLab(activeTerm.id, materia.codMateria, nuevaAsignacion)
     }
   }
 
   const handleGuardarSecundario = (valorId: string) => {
     if (activeTerm) {
-      if (selectedPrincipalId === 'ninguno') return 
+      if (selectedPrincipalId === 'ninguno') return
       const isNinguno = valorId === 'ninguno'
       const nuevaAsignacion: LabAssignment = {
         principal: Number(selectedPrincipalId),
@@ -71,9 +71,9 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
   }
 
   const renderSelect = (
-    label: string, 
-    selectedValue: string, 
-    onChange: (val: string) => void, 
+    label: string,
+    selectedValue: string,
+    onChange: (val: string) => void,
     disabledValue?: string,
     isDisabled: boolean = false
   ) => {
@@ -108,8 +108,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                   textValue={lab.name}
                   isDisabled={String(lab.id) === disabledValue}
                   className={`px-3 py-1.5 text-xs rounded-md block ${
-                    String(lab.id) === disabledValue 
-                      ? 'text-slate-300 cursor-not-allowed' 
+                    String(lab.id) === disabledValue
+                      ? 'text-slate-300 cursor-not-allowed'
                       : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
                   }`}
                 >
@@ -153,23 +153,27 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                 </div>
 
                 <div className="flex flex-col gap-4 pt-2">
-                  {cargando ? (
+                  {cargando
+                    ? (
                     <p className="text-xs text-slate-400 italic animate-pulse">Cargando salas disponibles...</p>
-                  ) : error !== null ? (
+                      )
+                    : error !== null
+                      ? (
                     <p className="text-xs text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">⚠️ {error}</p>
-                  ) : (
+                        )
+                      : (
                     <>
                       {renderSelect('Laboratorio Principal', selectedPrincipalId, handleGuardarPrincipal, selectedSecundarioId)}
-                      
+
                       {renderSelect(
-                        'Laboratorio Secundario (Opcional)', 
-                        selectedSecundarioId, 
-                        handleGuardarSecundario, 
+                        'Laboratorio Secundario (Opcional)',
+                        selectedSecundarioId,
+                        handleGuardarSecundario,
                         selectedPrincipalId,
                         selectedPrincipalId === 'ninguno'
                       )}
                     </>
-                  )}
+                        )}
                 </div>
               </Modal.Body>
 

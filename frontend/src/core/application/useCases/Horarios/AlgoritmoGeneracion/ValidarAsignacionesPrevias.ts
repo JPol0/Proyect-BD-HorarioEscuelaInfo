@@ -1,7 +1,7 @@
 import { type Materia } from '../../../../domain/Materia'
 import { type Horario } from '../../../../domain/Horario'
 
-export const DIAS_SEMANA_BASE: import('../../../../domain/Horario').DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+export const DIAS_SEMANA_BASE: Array<import('../../../../domain/Horario').DaysOfWeek> = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 export const HORAS_DISPONIBLES_BASE = [
   '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
   '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
@@ -21,7 +21,7 @@ export const convertirARomano = (num: number): string => {
   return resultado
 }
 
-export function validarAsignacionesPrevias(
+export function validarAsignacionesPrevias (
   materiasDelSemestre: Materia[],
   tuplasEnProceso: Horario[],
   profesorAssignments: Record<string, Record<number, string>>,
@@ -42,7 +42,7 @@ export function validarAsignacionesPrevias(
 
       if (materia.horasLab > 0) {
         const labObj = laboratorioAssignments[materia.codMateria]
-        if (!labObj || !labObj.principal) {
+        if (!labObj?.principal) {
           missingLabs.push(`- ${materia.nombre} (Falta Laboratorio Principal)`)
         }
         const cedulaProfLab = profesorLabAssignments?.[materia.codMateria]?.[sec]

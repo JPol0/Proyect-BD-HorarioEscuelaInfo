@@ -132,12 +132,14 @@ export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfes
                                   <p className="text-sm font-semibold text-text-primary">{profesor.nombre}</p>
                                   <p className="text-xs text-text-muted">{profesor.cedula}</p>
                                 </div>
-                                
-                                {isAssignedHere ? (
+
+                                {isAssignedHere
+                                  ? (
                                   <span className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/10 rounded-lg">
                                     Seleccionado
                                   </span>
-                                ) : (
+                                    )
+                                  : (
                                   <Button
                                     size="sm"
                                     variant="outline"
@@ -161,12 +163,12 @@ export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfes
                                   >
                                     Asignar
                                   </Button>
-                                )}
+                                    )}
                               </div>
                             )
                           })}
                         </div>
-                      )}
+                        )}
                 </div>
 
                 {/* --- Columna Derecha: Profesores Asignados --- */}
@@ -179,7 +181,7 @@ export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfes
                       </svg>
                       Profesores Asignados
                     </h3>
-                    
+
                     <div className="space-y-4">
                       {assignedTeoria && (
                         <div className="bg-surface p-4 rounded-xl border border-border shadow-sm relative overflow-hidden group">
@@ -211,7 +213,7 @@ export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfes
                           </button>
                         </div>
                       )}
-                      
+
                       {assignedLab && materia.horasLab > 0 && (
                         <div className="bg-surface p-4 rounded-xl border border-border shadow-sm relative overflow-hidden group">
                           <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
@@ -263,4 +265,3 @@ export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfes
     </Modal.Backdrop>
   )
 }
-

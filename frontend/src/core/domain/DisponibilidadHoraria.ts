@@ -1,4 +1,4 @@
-﻿export type DiaSemana = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes'
+export type DiaSemana = 'Lunes' | 'Martes' | 'Miercoles' | 'Jueves' | 'Viernes'
 
 export type NivelDisponibilidad = 0 | 1 | 2
 

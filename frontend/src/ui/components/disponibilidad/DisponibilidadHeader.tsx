@@ -1,4 +1,4 @@
-﻿import type { JSX } from 'react'
+import type { JSX } from 'react'
 import { FloppyDisk } from '@gravity-ui/icons'
 import type { Profesor } from '../../../core/domain/Profesor'
 import { useUser } from '../../store/userStore'

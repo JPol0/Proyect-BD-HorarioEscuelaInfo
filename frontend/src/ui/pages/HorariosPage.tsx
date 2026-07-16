@@ -54,11 +54,11 @@ export default function HorariosPage () {
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
   const [selectedBlockModal, setSelectedBlockModal] = useState<{
-    materia: Materia,
-    seccion: number,
-    dia: DaysOfWeek,
-    horaStr: string,
-    cedulaProfesor?: string,
+    materia: Materia
+    seccion: number
+    dia: DaysOfWeek
+    horaStr: string
+    cedulaProfesor?: string
     laboratorioId?: number
   } | null>(null)
 
@@ -179,21 +179,21 @@ export default function HorariosPage () {
                 }
 
                 const labObj = useMateriaLabStore.getState().getLabForMateria(term, materiaFromState.codMateria)
-                let labIdAsignar: number | undefined = undefined
+                let labIdAsignar: number | undefined
 
-                if (labObj && labObj.principal) {
-                  const choquePrincipal = currentTuplas.some(t => 
-                    t.dia === block.dia && 
-                    t.hora === horaAsignar && 
+                if (labObj?.principal) {
+                  const choquePrincipal = currentTuplas.some(t =>
+                    t.dia === block.dia &&
+                    t.hora === horaAsignar &&
                     t.laboratorio?.id === labObj.principal
                   )
-                  
+
                   if (!choquePrincipal) {
                     labIdAsignar = labObj.principal
                   } else if (labObj.secundario) {
-                    const choqueSecundario = currentTuplas.some(t => 
-                      t.dia === block.dia && 
-                      t.hora === horaAsignar && 
+                    const choqueSecundario = currentTuplas.some(t =>
+                      t.dia === block.dia &&
+                      t.hora === horaAsignar &&
                       t.laboratorio?.id === labObj.secundario
                     )
                     if (!choqueSecundario) {
@@ -293,13 +293,13 @@ export default function HorariosPage () {
     const asig = asigs[0]
     const materia = materias.find(m => m.codMateria === asig.codAsig)
     if (!materia) return
-    
+
     const h = parseInt(hour.split(':')[0], 10)
     const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
-    const cedulaProfesor = hasLab 
+    const cedulaProfesor = hasLab
       ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
       : profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
-    
+
     setSelectedBlockModal({
       materia,
       seccion: asig.nroSeccion,
@@ -348,15 +348,17 @@ export default function HorariosPage () {
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-6 mb-7">
-        <Title
-          title="Horario Semanal"
-          subtitle="Vista general del horario."
-        />
+      <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-7">
+        {/* Contenedor Izquierdo: Título y Selector de Semestre */}
+        <div className="flex flex-col gap-4">
+          <Title
+            title="Horario Semanal"
+            subtitle="Vista general del horario."
+          />
 
-        <div className="flex items-end gap-3 shrink-0">
-          <div className="min-w-[150px]">
-            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em] mb-2 block">
+          {/* Selector de Semestre */}
+          <div className="w-full sm:w-[150px]">
+            <label className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em] mb-1.5 block text-left">
               Semestre
             </label>
             <Select
@@ -367,12 +369,12 @@ export default function HorariosPage () {
               onChange={(valor) => {
                 if (valor) setSelectedSemester(Number(valor))
               }}
-              className="w-full h-12"
+              className="w-full h-9"
             >
-              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-xl px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors text-sm font-medium text-slate-700 h-12">
+              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors text-xs font-medium text-slate-700 h-9">
                 <Select.Value />
                 <Select.Indicator className="text-slate-400">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Select.Indicator>
@@ -385,7 +387,7 @@ export default function HorariosPage () {
                       key={semestre.toString()}
                       id={semestre.toString()}
                       textValue={`Semestre ${convertirARomano(semestre)}`}
-                      className="px-4 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                      className="px-4 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
                     >
                       Semestre {convertirARomano(semestre)}
                     </ListBox.Item>
@@ -394,9 +396,12 @@ export default function HorariosPage () {
               </Select.Popover>
             </Select>
           </div>
+        </div>
 
+        {/* Contenedor Derecho: Botones de Acción */}
+        <div className="flex items-center shrink-0 w-full md:w-auto mt-2 md:mt-0">
           {!isLector && (
-            <>
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -407,10 +412,10 @@ export default function HorariosPage () {
                     void handleGenerarHorario(false)
                   }
                 }}
-                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
+                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Generar Horario
               </button>
@@ -439,13 +444,14 @@ export default function HorariosPage () {
                     })()
                   }
                 }}
-                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
+                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-red-600 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-red-50 cursor-pointer whitespace-nowrap"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                  <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Eliminar Horario
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -461,16 +467,16 @@ export default function HorariosPage () {
                     }
                   })()
                 }}
-                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
+                className="flex items-center gap-2 h-9 px-4 rounded-lg bg-button-primary text-white text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover cursor-pointer whitespace-nowrap"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                  <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                  <path d="M8 4v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                  <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                  <path d="M8 20v-6h8v6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                  <path d="M8 4v6h6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
                 </svg>
                 Guardar
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -518,8 +524,8 @@ export default function HorariosPage () {
                         const isEmpty = content === '-' || !content
 
                         return (
-                          <td 
-                            key={day} 
+                          <td
+                            key={day}
                             className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 transition-colors' : ''}`}
                             onClick={() => !isEmpty && handleCellClick(day, row.hour)}
                           >
@@ -571,9 +577,9 @@ export default function HorariosPage () {
         </Modal>
       )}
       {selectedBlockModal && (
-        <DetalleHorarioModal 
-          isOpen={true} 
-          onClose={() => setSelectedBlockModal(null)} 
+        <DetalleHorarioModal
+          isOpen={true}
+          onClose={() => setSelectedBlockModal(null)}
           materia={selectedBlockModal.materia}
           seccion={selectedBlockModal.seccion}
           dia={selectedBlockModal.dia}
