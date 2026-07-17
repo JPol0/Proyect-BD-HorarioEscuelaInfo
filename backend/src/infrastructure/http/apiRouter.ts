@@ -9,6 +9,7 @@ import createAuthRouter from './routes/AuthRoutes.js'
 import createUserRouter from './routes/UserRoutes.js'
 import createImparteRouter from './routes/ImparteRoutes.js'
 import createSonEjercidosRouter from './routes/SonEjercidosRoutes.js'
+import createSeccionRouter from './routes/SeccionRoutes.js'
 import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
@@ -19,10 +20,11 @@ import { MockDisponibilidadRepository } from '../database/mocks/MockDisponibilid
 import { MockProfesorRepository } from '../database/mocks/MockProfesorRepository.js'
 import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
 import { PgLaboratorioRepository } from '../database/postgre/PgLaboratorioRepository.js'
-import { JsonHorarioRepository } from '../database/mocks/JsonHorarioRepository.js'
+import { PgHorarioRepository } from '../database/postgre/PgHorarioRepository.js'
 import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 import { PgRImparteRepository } from '../database/postgre/PgRImparteRepository.js'
 import { PgRSonEjercidosRepository } from '../database/postgre/PgRSonEjercidosRepository.js'
+import { PgSeccionRepository } from '../database/postgre/PgSeccionRepository.js'
 
 const apiRouter = Router()
 
@@ -31,11 +33,12 @@ const disponibilidadRepository = new MockDisponibilidadRepository()
 const profesorRepository = new MockProfesorRepository()
 const materiaRepository = new PgMateriaRepository()
 const laboratorioRepository = new PgLaboratorioRepository()
-const horarioRepository = new JsonHorarioRepository()
+const horarioRepository = new PgHorarioRepository()
 const termRepository = new PgTermRepository()
 const userRepository = new PgUserRepository()
 const imparteRepository = new PgRImparteRepository()
 const sonEjercidosRepository = new PgRSonEjercidosRepository()
+const seccionRepository = new PgSeccionRepository()
 
 // Wire routes
 apiRouter.use('/auth', dbScopeMiddleware, createAuthRouter(userRepository))
@@ -52,5 +55,6 @@ apiRouter.use('/laboratorios', createLaboratorioRouter(laboratorioRepository))
 apiRouter.use('/users', createUserRouter(userRepository))
 apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))
 apiRouter.use('/relacion-son-ejercidos', createSonEjercidosRouter(sonEjercidosRepository))
+apiRouter.use('/secciones', createSeccionRouter(seccionRepository))
 
 export default apiRouter

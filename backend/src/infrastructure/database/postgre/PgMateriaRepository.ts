@@ -55,6 +55,8 @@ export class PgMateriaRepository implements MateriaRepository {
 
     const client = await getPool().connect()
     try {
+      await client.query('BEGIN')
+
       const query = `
         CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       `
@@ -70,7 +72,20 @@ export class PgMateriaRepository implements MateriaRepository {
         materia.modalidad,
         materia.nroSecciones
       ])
+
+      // Generar automáticamente las secciones según el nroSecciones
+      const sectionsQuery = `
+        INSERT INTO Secciones (CodTerm, CodAsig, NroSeccion)
+        VALUES ($1, $2, $3)
+        ON CONFLICT DO NOTHING;
+      `
+      for (let i = 1; i <= materia.nroSecciones; i++) {
+        await client.query(sectionsQuery, [term, materia.codMateria, i])
+      }
+
+      await client.query('COMMIT')
     } catch (error: any) {
+      await client.query('ROLLBACK')
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
       }
