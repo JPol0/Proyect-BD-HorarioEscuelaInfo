@@ -11,7 +11,9 @@ const BASE_URL = 'http://localhost:3000/api'
 
 export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   async obtenerPorProfesorYTerm (cedulaProfesor: string, codTerm: string): Promise<DisponibilidadHoraria[]> {
-    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`)
+    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
+      credentials: 'include'
+    })
     if (!response.ok) {
       throw new Error('Error al conectar con el servidor de horarios')
     }
@@ -20,7 +22,9 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   }
 
   async obtenerProfesor (cedulaProfesor: string, codTerm: string): Promise<Profesor> {
-    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`)
+    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
+      credentials: 'include'
+    })
     if (!response.ok) {
       throw new Error('Error al conectar con el servidor de horarios')
     }
@@ -31,6 +35,7 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
     const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -42,3 +47,4 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
     }
   }
 }
+

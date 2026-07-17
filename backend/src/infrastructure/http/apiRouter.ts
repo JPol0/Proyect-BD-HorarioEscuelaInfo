@@ -13,7 +13,7 @@ import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 // Import repository implementations (mocks for now)
 import { PgAlertRepository } from '../database/postgre/PgAlertRepository.js'
 import { PgTermRepository } from '../database/postgre/PgTermRepository.js'
-import { MockDisponibilidadRepository } from '../database/mocks/MockDisponibilidadRepository.js'
+import { PgDisponibilidadRepository } from '../database/postgre/PgDisponibilidadRepository.js'
 import { PgProfesorRepository } from '../database/postgre/PgProfesorRepository.js'
 import { PgMateriaRepository } from '../database/postgre/PgMateriaRepository.js'
 import { MockLaboratorioRepository } from '../database/mocks/MockLaboratorioRepository.js'
@@ -23,7 +23,7 @@ import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 const apiRouter = Router()
 
 const alertRepository = new PgAlertRepository()
-const disponibilidadRepository = new MockDisponibilidadRepository()
+const disponibilidadRepository = new PgDisponibilidadRepository()
 const profesorRepository = new PgProfesorRepository()
 const materiaRepository = new PgMateriaRepository()
 const laboratorioRepository = new MockLaboratorioRepository()

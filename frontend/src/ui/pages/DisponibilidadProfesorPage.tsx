@@ -10,7 +10,7 @@ import { GuardarDisponibilidadHoraria } from '../../core/application/useCases/Di
 import { DisponibilidadHeader } from '../components/disponibilidad/DisponibilidadHeader'
 import { DisponibilidadGrid } from '../components/disponibilidad/DisponibilidadGrid'
 
-const TERM_ACTIVO = '202615'
+const TERM_ACTIVO = '1'
 
 const disponibilidadRepository = new HttpDisponibilidadRepository()
 const obtenerDisponibilidadUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
