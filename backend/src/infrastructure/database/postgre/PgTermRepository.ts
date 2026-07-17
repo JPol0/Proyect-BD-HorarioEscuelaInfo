@@ -54,38 +54,6 @@ export class PgTermRepository implements TermRepository {
       const status = term.archived ? 'D' : 'A'
       await client.query(query, [term.id, term.name, status])
 
-      // 2. Buscar un término de origen que ya contenga materias del plan de estudios para copiar
-      const sourceTermRes = await client.query(
-        'SELECT CodTerm FROM Plan_de_Estudio LIMIT 1'
-      )
-
-      if (sourceTermRes.rowCount !== null && sourceTermRes.rowCount > 0) {
-        const sourceTerm = sourceTermRes.rows[0].codterm as string
-
-        // 3. Copiar las materias del término origen al nuevo término
-        const copySubjectsQuery = `
-          INSERT INTO Plan_de_Estudio (
-            CodAsig, CodTerm, NombrePE, EsComunPE, SemestrePE,
-            HoraPractica, HoraTeorica, HoraLaboratorio, ModalidadPE, NroSeccionesPE
-          )
-          SELECT 
-            CodAsig, $1, NombrePE, EsComunPE, SemestrePE,
-            HoraPractica, HoraTeorica, HoraLaboratorio, ModalidadPE, NroSeccionesPE
-          FROM Plan_de_Estudio
-          WHERE CodTerm = $2
-        `
-        await client.query(copySubjectsQuery, [term.id, sourceTerm])
-
-        // 4. Copiar los prerrequisitos asociados
-        const copyPrereqsQuery = `
-          INSERT INTO Prerequitos (CodAsig, CodTerm, CodAsigPreq, CodTermPreq)
-          SELECT CodAsig, $1, CodAsigPreq, $1
-          FROM Prerequitos
-          WHERE CodTerm = $2
-        `
-        await client.query(copyPrereqsQuery, [term.id, sourceTerm])
-      }
-
       await client.query('COMMIT')
     } catch (error: any) {
       await client.query('ROLLBACK')

@@ -61,11 +61,11 @@ export class HttpMateriaRepository implements MateriaRepository {
     }
   }
 
-  async uploadPlanEstudioExcel (file: File): Promise<{ count: number, skipped: number }> {
+  async uploadPlanEstudioExcel (file: File, term: string): Promise<{ count: number, skipped: number }> {
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await fetch(`${this.apiUrl}/upload-excel`, {
+    const response = await fetch(`${this.apiUrl}/upload-excel?term=${encodeURIComponent(term)}`, {
       method: 'POST',
       body: formData
     })

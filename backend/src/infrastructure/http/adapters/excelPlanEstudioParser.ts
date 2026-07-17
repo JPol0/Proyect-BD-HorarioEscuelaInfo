@@ -99,7 +99,7 @@ export function parseExcelPlanEstudio (buffer: Buffer): ExcelParseResult {
     throw new Error(`No se encontró la hoja "${sheetName}" en el archivo Excel.`)
   }
 
-  const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as unknown[][]
+  const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
 
   const materias: ParsedMateria[] = []
   let semestreActual = 0

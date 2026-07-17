@@ -18,10 +18,10 @@ const commonConfig = {
 const adminConfig = process.env.DATABASE_URL_ADMIN
   ? { connectionString: process.env.DATABASE_URL_ADMIN, ssl }
   : {
-    ...commonConfig,
-    user: process.env.DB_ADMIN_USER ?? process.env.DB_USER,
-    password: process.env.DB_ADMIN_PASSWORD ?? process.env.DB_PASSWORD
-  }
+      ...commonConfig,
+      user: process.env.DB_ADMIN_USER ?? process.env.DB_USER,
+      password: process.env.DB_ADMIN_PASSWORD ?? process.env.DB_PASSWORD
+    }
 
 export const adminPool = new Pool(adminConfig)
 
@@ -29,10 +29,10 @@ export const adminPool = new Pool(adminConfig)
 const lectorConfig = (process.env.DATABASE_URL_LECTOR)
   ? { connectionString: process.env.DATABASE_URL_LECTOR, ssl }
   : {
-    ...commonConfig,
-    user: process.env.DB_LECTOR_USER ?? process.env.DB_USER,
-    password: process.env.DB_LECTOR_PASSWORD ?? process.env.DB_PASSWORD
-  }
+      ...commonConfig,
+      user: process.env.DB_LECTOR_USER ?? process.env.DB_USER,
+      password: process.env.DB_LECTOR_PASSWORD ?? process.env.DB_PASSWORD
+    }
 
 export const lectorPool = new Pool(lectorConfig)
 
@@ -52,6 +52,6 @@ export const dbContext = new AsyncLocalStorage<pg.Pool>()
  * Retorna el Pool de conexiones activo del contexto actual de la petición.
  * Si se llama fuera de una petición HTTP, retorna por defecto el adminPool.
  */
-export function getPool(): pg.Pool {
+export function getPool (): pg.Pool {
   return dbContext.getStore() ?? adminPool
 }

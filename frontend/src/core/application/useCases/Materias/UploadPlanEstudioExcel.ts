@@ -7,7 +7,7 @@ export class UploadPlanEstudioExcel {
     this.repository = repository
   }
 
-  async execute (file: File): Promise<{ count: number, skipped: number }> {
-    return await this.repository.uploadPlanEstudioExcel(file)
+  async execute (file: File, term: string): Promise<{ count: number, skipped: number }> {
+    return await this.repository.uploadPlanEstudioExcel(file, term)
   }
 }
