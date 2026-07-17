@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
-import { Input, Modal, Button } from '@heroui/react'
+import { Input, Select, ListBox, Modal, Button } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -19,6 +19,12 @@ const STATUS_CONFIG = {
   P: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700' },
   R: { label: 'Retirado', color: 'bg-red-100 text-red-600' }
 }
+
+const STATUS_OPTIONS = [
+  { id: 'A', label: 'Activo' },
+  { id: 'P', label: 'Pendiente' },
+  { id: 'R', label: 'Retirado' }
+]
 
 export function ProfesoresPage() {
   const [profesores, setProfesores] = useState<Profesor[]>([])
