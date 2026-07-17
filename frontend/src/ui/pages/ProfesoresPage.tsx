@@ -1,15 +1,18 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
 import { Input, Modal, Button, Select, ListBox } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
+import { ActualizarStatusProfesor } from '../../core/application/useCases/Profesores/ActualizarStatusProfesor'
 import { CrearProfesorModal } from '../components/ProfesoresScreen/CrearProfesorModal'
 import Title from '../components/common/TitlePage'
+import { useUser } from '../store/userStore'
 
 const repository = new HttpProfesorRepository()
 const getProfesoresUseCase = new GetProfesores(repository)
+const actualizarStatusUseCase = new ActualizarStatusProfesor(repository)
 
 const STATUS_CONFIG = {
   A: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
@@ -30,6 +33,8 @@ export function ProfesoresPage () {
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState<'todos' | Profesor['status']>('todos')
   const navigate = useNavigate()
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
 
   useEffect(() => {
     const cargar = async () => {
@@ -47,14 +52,17 @@ export function ProfesoresPage () {
   }, [])
 
   const handleStatusChange = async (cedula: string, status: Profesor['status']): Promise<void> => {
+    setError(null)
+    const previous = [...profesores]
+    setProfesores((prev) => prev.map((p) =>
+      p.cedula === cedula ? { ...p, status } : p
+    ))
+
     try {
-      setError(null)
-      await repository.actualizarStatus(cedula, status)
-      setProfesores((prev) => prev.map((p) =>
-        p.cedula === cedula ? { ...p, status } : p
-      ))
+      await actualizarStatusUseCase.execute(cedula, status)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar el status')
+      setProfesores(previous)
+      setError(err instanceof Error ? err.message : 'Error al actualizar el estado del profesor')
     }
   }
 
@@ -71,27 +79,28 @@ export function ProfesoresPage () {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
           title="Gestión de Profesores"
           subtitle="Lista de docentes disponibles para la asignación de horarios."
         />
-        <div className="flex items-center gap-3 shrink-0">
-          <Modal>
-            <Button
-              variant="primary"
-              className="bg-button-primary hover:bg-button-primary-hover text-white text-xs font-semibold px-4 h-9 cursor-pointer flex items-center gap-2"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Añadir Profesor
-            </Button>
-            <CrearProfesorModal onCreado={handleCreado} />
-          </Modal>
-        </div>
+        {!isLector && (
+          <div className="flex items-center gap-3 shrink-0">
+            <Modal>
+              <Button
+                variant="primary"
+                className="bg-button-primary hover:bg-button-primary-hover text-white text-xs font-semibold px-4 h-9 cursor-pointer flex items-center gap-2"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Añadir Profesor
+              </Button>
+              <CrearProfesorModal onCreado={handleCreado} />
+            </Modal>
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 w-full items-end">
+      <div className="flex flex-col sm:flex-row gap-4 w-full items-end pb-4">
         <div className="w-full sm:w-80 flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-text-muted">Buscar</span>
           <div className="relative w-full flex items-center">
@@ -182,35 +191,37 @@ export function ProfesoresPage () {
 
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
-                      <Select
-                        variant="primary"
-                        value={profesor.status}
-                        onChange={(valor) => {
-                          if (valor) {
-                            void handleStatusChange(profesor.cedula, valor as Profesor['status'])
-                          }
-                        }}
-                        className="w-full text-sm"
-                      >
-                        <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt hover:bg-surface transition-colors text-xs text-text-primary h-9">
-                          <Select.Value />
-                          <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
-                        </Select.Trigger>
-                        <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 z-50">
-                          <ListBox>
-                            {STATUS_OPTIONS.map((opt) => (
-                              <ListBox.Item
-                                key={opt.id}
-                                id={opt.id}
-                                textValue={opt.label}
-                                className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block"
-                              >
-                                {opt.label}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
+                      {isLector ? (
+                        <div className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt text-xs text-text-primary h-9 font-hanken">
+                          {cfg.label}
+                        </div>
+                      ) : (
+                        <Select
+                          variant="primary"
+                          value={profesor.status}
+                          onChange={(valor) => { if (valor) void handleStatusChange(profesor.cedula, valor as Profesor['status']) }}
+                          className="w-full text-sm"
+                        >
+                          <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt hover:bg-surface transition-colors text-xs text-text-primary h-9">
+                            <Select.Value />
+                            <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
+                          </Select.Trigger>
+                          <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 z-50">
+                            <ListBox>
+                              {STATUS_OPTIONS.map((opt) => (
+                                <ListBox.Item
+                                  key={opt.id}
+                                  id={opt.id}
+                                  textValue={opt.label}
+                                  className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block"
+                                >
+                                  {opt.label}
+                                </ListBox.Item>
+                              ))}
+                            </ListBox>
+                          </Select.Popover>
+                        </Select>
+                      )}
                     </div>
 
                     <button

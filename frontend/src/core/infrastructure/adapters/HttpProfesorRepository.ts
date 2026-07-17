@@ -6,7 +6,7 @@ export class HttpProfesorRepository implements ProfesorRepository {
   private readonly apiUrl = `${API_CONFIG.BASE_URL}/profesores`
 
   async getProfesores (): Promise<Profesor[]> {
-    const response = await fetch(this.apiUrl)
+    const response = await fetch(this.apiUrl, { credentials: 'include' })
     if (!response.ok) {
       throw new Error('Error al conectar con el servidor')
     }
@@ -16,6 +16,7 @@ export class HttpProfesorRepository implements ProfesorRepository {
   async crearProfesor (datos: Profesor): Promise<Profesor> {
     const response = await fetch(this.apiUrl, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)
     })
@@ -29,6 +30,7 @@ export class HttpProfesorRepository implements ProfesorRepository {
   async actualizarStatus (cedula: string, status: Profesor['status']): Promise<Profesor> {
     const response = await fetch(`${this.apiUrl}/${cedula}/status`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     })

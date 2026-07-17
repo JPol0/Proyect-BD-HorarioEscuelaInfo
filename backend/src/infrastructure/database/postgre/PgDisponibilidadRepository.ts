@@ -42,6 +42,8 @@ export class PgDisponibilidadRepository implements DisponibilidadRepository {
   }
 
   async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
+    if (disponibilidad.length === 0) return
+
     const client = await getPool().connect()
 
     try {
