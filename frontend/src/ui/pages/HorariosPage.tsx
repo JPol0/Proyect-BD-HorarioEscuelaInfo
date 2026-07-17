@@ -13,12 +13,13 @@ import { useActiveTerm } from '../store/activeTermStore'
 import { type Materia } from '../../core/domain/Materia'
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 import Title from '../components/common/TitlePage'
-import { useMateriaLabStore } from '../store/materiaLabStore'
 import { DetalleHorarioModal } from '../components/MateriaScreen/DetalleHorarioModal'
 import { type Imparte } from '../../core/domain/Imparte'
 import { useUser } from '../store/userStore'
 import { HttpRImparteRepository } from '../../core/infrastructure/adapters/HttpRImparteRepository'
 import { GetRelacionesImparte } from '../../core/application/useCases/relacionImparte/GetRelacionesImparte'
+import { HttpRSonEjercidosRepository } from '../../core/infrastructure/adapters/HttpRSonEjercidosRepository'
+import { GetRelacionesSonEjercidos } from '../../core/application/useCases/relacionSonEjercidos/GetRelacionesSonEjercidos'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -29,6 +30,8 @@ const generarHorarioUseCase = new GenerarHorarioSemestre(disponibilidadRepositor
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
 const imparteRepository = new HttpRImparteRepository()
 const getRelacionesImparteUseCase = new GetRelacionesImparte(imparteRepository)
+const sonEjercidosRepository = new HttpRSonEjercidosRepository()
+const getRelacionesSonEjercidosUseCase = new GetRelacionesSonEjercidos(sonEjercidosRepository)
 
 export default function HorariosPage () {
   const { currentUser } = useUser()
@@ -36,7 +39,7 @@ export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
-  const laboratorioAssignments = useMateriaLabStore((state) => state.assignments)
+  const [laboratorioAssignments, setLaboratorioAssignments] = useState<Record<string, { principal: number, secundarios: number[] }>>({})
 
   const [relaciones, setRelaciones] = useState<Imparte[]>([])
 
@@ -127,7 +130,7 @@ export default function HorariosPage () {
         selectedSemester,
         profesorAssignments: profesorAssignments[activeTerm.id] || {},
         profesorLabAssignments: profesorLabAssignments?.[activeTerm.id] || {},
-        laboratorioAssignments: laboratorioAssignments[activeTerm.id] || {}
+        laboratorioAssignments: laboratorioAssignments
       })
 
       setTuplas(response.horarioActualizado)
@@ -155,14 +158,28 @@ export default function HorariosPage () {
       setLoading(true)
       setError(null)
       try {
-        const [payload, materiasPayload, relacionesPayload] = await Promise.all([
+        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(term),
           getMateriasUseCase.execute(term),
-          getRelacionesImparteUseCase.execute(term)
+          getRelacionesImparteUseCase.execute(term),
+          getRelacionesSonEjercidosUseCase.execute(term)
         ])
 
         setMaterias(materiasPayload)
         setRelaciones(relacionesPayload)
+
+        const mappedLabs: Record<string, { principal: number, secundarios: number[] }> = {}
+        sonEjercidosPayload.forEach((r) => {
+          if (!mappedLabs[r.codAsig]) {
+            mappedLabs[r.codAsig] = { principal: 0, secundarios: [] }
+          }
+          if (r.prioridad === 1) {
+            mappedLabs[r.codAsig].principal = r.codLab
+          } else if (r.prioridad === 2) {
+            mappedLabs[r.codAsig].secundarios.push(r.codLab)
+          }
+        })
+        setLaboratorioAssignments(mappedLabs)
 
         const draftStr = sessionStorage.getItem(`draft_horario_${term}`)
         let currentTuplas = draftStr ? JSON.parse(draftStr) as Horario[] : (payload ?? [])
@@ -204,7 +221,7 @@ export default function HorariosPage () {
                   throw new Error(`Choque de horarios: El ${block.dia} a las ${horaAsignar} ya está reservado para la Sección ${block.nroSeccion}.`)
                 }
 
-                const labObj = useMateriaLabStore.getState().getLabForMateria(term, materiaFromState.codMateria)
+                const labObj = laboratorioAssignments[materiaFromState.codMateria]
                 let labIdAsignar: number | undefined
 
                 if (labObj?.principal) {
@@ -216,19 +233,23 @@ export default function HorariosPage () {
 
                   if (!choquePrincipal) {
                     labIdAsignar = labObj.principal
-                  } else if (labObj.secundario) {
-                    const choqueSecundario = currentTuplas.some(t =>
-                      t.dia === block.dia &&
-                      t.hora === horaAsignar &&
-                      t.laboratorio?.id === labObj.secundario
-                    )
-                    if (!choqueSecundario) {
-                      labIdAsignar = labObj.secundario
-                    } else {
-                      throw new Error(`Choque de laboratorios: Ambos laboratorios asignados están ocupados el ${block.dia} a las ${horaAsignar}.`)
+                  } else if (labObj.secundarios && labObj.secundarios.length > 0) {
+                    for (const secId of labObj.secundarios) {
+                      const choqueSecundario = currentTuplas.some(t =>
+                        t.dia === block.dia &&
+                        t.hora === horaAsignar &&
+                        t.laboratorio?.id === secId
+                      )
+                      if (!choqueSecundario) {
+                        labIdAsignar = secId
+                        break
+                      }
+                    }
+                    if (!labIdAsignar) {
+                      throw new Error(`Choque de laboratorios: El principal y todos los laboratorios secundarios asignados están ocupados el ${block.dia} a las ${horaAsignar}.`)
                     }
                   } else {
-                    throw new Error(`Choque de laboratorios: El laboratorio principal está ocupado el ${block.dia} a las ${horaAsignar} y no hay secundario asignado.`)
+                    throw new Error(`Choque de laboratorios: El laboratorio principal está ocupado el ${block.dia} a las ${horaAsignar} y no hay secundarios asignados.`)
                   }
                 }
 

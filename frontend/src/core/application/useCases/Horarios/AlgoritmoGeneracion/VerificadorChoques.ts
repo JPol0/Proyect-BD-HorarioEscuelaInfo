@@ -10,7 +10,7 @@ export interface ContextoChoques {
   termId: string
   cedulaProfesor?: string
   laboratorioPrincipal?: number
-  laboratorioSecundario?: number
+  laboratoriosSecundarios?: number[]
   tuplasActualesYTemporales: Horario[]
   profesorAssignments: Record<string, Record<number, string>>
   profesorLabAssignments?: Record<string, Record<number, string>>
@@ -62,7 +62,7 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
   }
 
   // 4. Choque de Laboratorio
-  const isLab = !!(ctx.laboratorioPrincipal || ctx.laboratorioSecundario)
+  const isLab = !!(ctx.laboratorioPrincipal || (ctx.laboratoriosSecundarios && ctx.laboratoriosSecundarios.length > 0))
   if (!estaOcupado && isLab && ctx.laboratorioPrincipal) {
     const choquePrincipal = ctx.tuplasActualesYTemporales.some((t) =>
       t.dia === ctx.dia &&
@@ -72,19 +72,23 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
 
     if (!choquePrincipal) {
       labAAsignar = ctx.laboratorioPrincipal
-    } else if (ctx.laboratorioSecundario) {
-      const choqueSecundario = ctx.tuplasActualesYTemporales.some((t) =>
-        t.dia === ctx.dia &&
-        t.hora === ctx.hora &&
-        t.laboratorio?.id === ctx.laboratorioSecundario
-      )
-      if (!choqueSecundario) {
-        labAAsignar = ctx.laboratorioSecundario
-      } else {
-        estaOcupado = true // Ambos ocupados
+    } else if (ctx.laboratoriosSecundarios && ctx.laboratoriosSecundarios.length > 0) {
+      for (const secId of ctx.laboratoriosSecundarios) {
+        const choqueSecundario = ctx.tuplasActualesYTemporales.some((t) =>
+          t.dia === ctx.dia &&
+          t.hora === ctx.hora &&
+          t.laboratorio?.id === secId
+        )
+        if (!choqueSecundario) {
+          labAAsignar = secId
+          break
+        }
+      }
+      if (!labAAsignar) {
+        estaOcupado = true // Todos ocupados
       }
     } else {
-      estaOcupado = true // Principal ocupado y no hay secundario
+      estaOcupado = true // Principal ocupado y no hay secundarios
     }
   }
 
