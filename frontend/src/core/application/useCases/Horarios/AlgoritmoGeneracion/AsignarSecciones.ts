@@ -10,7 +10,7 @@ export interface AsignarSeccionesParams {
   termId: string
   profesorAssignments: Record<string, Record<number, string>>
   profesorLabAssignments?: Record<string, Record<number, string>>
-  laboratorioAssignments: Record<string, { principal: number, secundario?: number }>
+  laboratorioAssignments: Record<string, { principal: number, secundarios: number[] }>
   cacheDisponibilidad: Record<string, DisponibilidadHoraria[]>
   disponibilidadRepo: { obtenerPorProfesorYTerm: (cedula: string, termId: string) => Promise<DisponibilidadHoraria[]> }
 }
@@ -40,7 +40,7 @@ export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams)
     const cedulaProfesorLab = profesorLabAssignments?.[materia.codMateria]?.[sec]
     const labObj = laboratorioAssignments[materia.codMateria]
     const laboratorioPrincipal = labObj?.principal
-    const laboratorioSecundario = labObj?.secundario
+    const laboratorioSecundarios = labObj?.secundarios || []
 
     if (cedulaProfesorTeoria && !cacheDisponibilidad[cedulaProfesorTeoria]) {
       cacheDisponibilidad[cedulaProfesorTeoria] = await disponibilidadRepo.obtenerPorProfesorYTerm(cedulaProfesorTeoria, termId)
@@ -66,7 +66,7 @@ export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams)
         termId,
         cedulaProfesor,
         laboratorioPrincipal: tipo === 'Laboratorio' ? laboratorioPrincipal : undefined,
-        laboratorioSecundario: tipo === 'Laboratorio' ? laboratorioSecundario : undefined,
+        laboratoriosSecundarios: tipo === 'Laboratorio' ? laboratorioSecundarios : undefined,
         tuplasActualesYTemporales: tuplasActualizadas,
         profesorAssignments,
         profesorLabAssignments,
