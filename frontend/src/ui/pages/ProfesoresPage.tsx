@@ -5,11 +5,14 @@ import { Input, Modal, Button } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
+import { ActualizarStatusProfesor } from '../../core/application/useCases/Profesores/ActualizarStatusProfesor'
 import { CrearProfesorModal } from '../components/ProfesoresScreen/CrearProfesorModal'
 import Title from '../components/common/TitlePage'
+import { useUser } from '../store/userStore'
 
 const repository = new HttpProfesorRepository()
 const getProfesoresUseCase = new GetProfesores(repository)
+const actualizarStatusUseCase = new ActualizarStatusProfesor(repository)
 
 const STATUS_CONFIG = {
   A: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
@@ -17,12 +20,15 @@ const STATUS_CONFIG = {
   R: { label: 'Retirado', color: 'bg-red-100 text-red-600' }
 }
 
-export function ProfesoresPage () {
+export function ProfesoresPage() {
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState<'todos' | Profesor['status']>('todos')
   const navigate = useNavigate()
+  const { currentUser } = useUser()
+  const isLector = currentUser?.rol === 'lector'
 
   useEffect(() => {
     const cargar = async () => {
@@ -39,56 +45,106 @@ export function ProfesoresPage () {
     void cargar()
   }, [])
 
-  const handleStatusChange = (cedula: string, status: Profesor['status']) => {
+  const handleStatusChange = async (cedula: string, status: Profesor['status']): Promise<void> => {
+    setError(null)
+    const previous = [...profesores]
     setProfesores((prev) => prev.map((p) =>
       p.cedula === cedula ? { ...p, status } : p
     ))
+
+    try {
+      await actualizarStatusUseCase.execute(cedula, status)
+    } catch (err) {
+      setProfesores(previous)
+      setError(err instanceof Error ? err.message : 'Error al actualizar el estado del profesor')
+    }
   }
 
   const handleCreado = (nuevo: Profesor) => {
     setProfesores((prev) => [...prev, nuevo].sort((a, b) => a.nombre.localeCompare(b.nombre)))
   }
 
-  const profesoresFiltrados = profesores.filter((p) =>
-    p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-    p.cedula.toLowerCase().includes(busqueda.toLowerCase())
-  )
+  const profesoresFiltrados = profesores.filter((p) => {
+    const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.cedula.toLowerCase().includes(busqueda.toLowerCase())
+    const coincideEstado = filtroEstado === 'todos' || p.status === filtroEstado
+    return coincideBusqueda && coincideEstado
+  })
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
           title="Gestión de Profesores"
           subtitle="Lista de docentes disponibles para la asignación de horarios."
         />
-        <div className="flex items-center gap-3 shrink-0">
-          <Modal>
-            <Button
-              variant="primary"
-              className="bg-button-primary hover:bg-button-primary-hover text-white text-xs font-semibold px-4 h-9 cursor-pointer flex items-center gap-2"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Añadir Profesor
-            </Button>
-            <CrearProfesorModal onCreado={handleCreado} />
-          </Modal>
-        </div>
+        {!isLector && (
+          <div className="flex items-center gap-3 shrink-0">
+            <Modal>
+              <Button
+                variant="primary"
+                className="bg-button-primary hover:bg-button-primary-hover text-white text-xs font-semibold px-4 h-9 cursor-pointer flex items-center gap-2"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Añadir Profesor
+              </Button>
+              <CrearProfesorModal onCreado={handleCreado} />
+            </Modal>
+          </div>
+        )}
       </div>
 
-      <div className="w-full md:w-80">
-        <div className="relative w-full flex items-center">
-          <span className="absolute left-3 z-10 pointer-events-none flex items-center">
-            <Magnifier className="text-text-muted w-4 h-4" />
-          </span>
-          <Input
-            type="text"
-            placeholder="Buscar por nombre o cédula..."
-            value={busqueda}
-            onChange={(e) => { setBusqueda(e.target.value) }}
+      <div className="flex flex-col sm:flex-row gap-4 w-full items-end pb-4">
+        <div className="w-full sm:w-80 flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-text-muted">Buscar</span>
+          <div className="relative w-full flex items-center">
+            <span className="absolute left-3 z-10 pointer-events-none flex items-center">
+              <Magnifier className="text-text-muted w-4 h-4" />
+            </span>
+            <Input
+              type="text"
+              placeholder="Buscar por nombre o cédula..."
+              value={busqueda}
+              onChange={(e) => { setBusqueda(e.target.value) }}
+              variant="primary"
+              className="w-full pl-9 pr-3 text-sm h-9 border border-border rounded-lg bg-surface focus:bg-surface-alt transition-colors"
+            />
+          </div>
+        </div>
+
+        <div className="w-full sm:w-48 flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-text-muted">Estado</span>
+          <Select
+            aria-label="Filtrar por estado"
+            placeholder="Seleccionar estado"
             variant="primary"
-            className="w-full pl-9 pr-3 text-sm h-9 border border-border rounded-lg bg-surface focus:bg-surface-alt transition-colors"
-          />
+            value={filtroEstado}
+            onChange={(valor) => {
+              if (valor) setFiltroEstado(String(valor) as 'todos' | Profesor['status'])
+            }}
+            className="w-full text-xs"
+          >
+            <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt hover:bg-surface transition-colors text-sm text-text-primary h-9">
+              <Select.Value />
+              <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
+            </Select.Trigger>
+            <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 min-w-45 z-50">
+              <ListBox>
+                <ListBox.Item id="todos" textValue="Todos" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  Todos
+                </ListBox.Item>
+                <ListBox.Item id="A" textValue="Activo" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  Activo
+                </ListBox.Item>
+                <ListBox.Item id="P" textValue="Pendiente" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  Pendiente
+                </ListBox.Item>
+                <ListBox.Item id="R" textValue="Retirado" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  Retirado
+                </ListBox.Item>
+              </ListBox>
+            </Select.Popover>
+          </Select>
         </div>
       </div>
 
@@ -101,13 +157,13 @@ export function ProfesoresPage () {
       {cargando
         ? (
           <p className="text-subtitlePage italic animate-pulse font-hanken">Cargando profesores...</p>
-          )
+        )
         : profesoresFiltrados.length === 0
           ? (
             <div className="text-center py-12 text-text-muted bg-surface-alt rounded-xl border border-dashed border-border font-hanken">
               No se encontraron profesores con ese criterio.
             </div>
-            )
+          )
           : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {profesoresFiltrados.map((profesor) => {
@@ -121,7 +177,6 @@ export function ProfesoresPage () {
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-titlePage font-hanken truncate">{profesor.nombre}</h3>
                         <p className="text-xs text-subtitlePage font-hanken mt-0.5">{profesor.cedula}</p>
-                        <p className="text-xs text-text-muted font-hanken">{profesor.correo}</p>
                       </div>
                       <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>
                         {cfg.label}
@@ -130,15 +185,37 @@ export function ProfesoresPage () {
 
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
-                      <select
-                        value={profesor.status}
-                        onChange={(e) => { handleStatusChange(profesor.cedula, e.target.value as Profesor['status']) }}
-                        className="text-xs border border-border rounded-lg px-3 py-1.5 bg-surface-alt text-text-primary cursor-pointer focus:outline-none focus:ring-2 focus:ring-button-primary transition-colors"
-                      >
-                        <option value="A">Activo</option>
-                        <option value="P">Pendiente</option>
-                        <option value="R">Retirado</option>
-                      </select>
+                      {isLector ? (
+                        <div className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt text-xs text-text-primary h-9 font-hanken">
+                          {cfg.label}
+                        </div>
+                      ) : (
+                        <Select
+                          variant="primary"
+                          value={profesor.status}
+                          onChange={(valor) => { if (valor) void handleStatusChange(profesor.cedula, valor as Profesor['status']) }}
+                          className="w-full text-sm"
+                        >
+                          <Select.Trigger className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt hover:bg-surface transition-colors text-xs text-text-primary h-9">
+                            <Select.Value />
+                            <Select.Indicator className="text-text-muted text-[10px] ml-2">▼</Select.Indicator>
+                          </Select.Trigger>
+                          <Select.Popover placement="bottom start" className="bg-surface border border-border shadow-lg rounded-lg p-1 z-50">
+                            <ListBox>
+                              {STATUS_OPTIONS.map((opt) => (
+                                <ListBox.Item
+                                  key={opt.id}
+                                  id={opt.id}
+                                  textValue={opt.label}
+                                  className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block"
+                                >
+                                  {opt.label}
+                                </ListBox.Item>
+                              ))}
+                            </ListBox>
+                          </Select.Popover>
+                        </Select>
+                      )}
                     </div>
 
                     <button
@@ -152,7 +229,7 @@ export function ProfesoresPage () {
                 )
               })}
             </div>
-            )}
+          )}
     </div>
   )
 }
