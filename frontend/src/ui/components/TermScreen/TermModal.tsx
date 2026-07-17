@@ -7,6 +7,7 @@ interface TermModalProps {
 }
 
 export default function TermModal ({ onClose, onCrear }: TermModalProps) {
+  const [id, setId] = useState('')
   const [nombre, setNombre] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -17,6 +18,11 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
     e.preventDefault()
     setError(null)
 
+    const cleanedId = id.trim()
+    if (!/^\d{4}-\d{2}$/.test(cleanedId)) {
+      setError('El código del período debe tener el formato YYYY-XX (Ej. 2026-25)')
+      return
+    }
     if (nombre.trim() === '') {
       setError('El nombre del término es requerido')
       return
@@ -32,7 +38,7 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
 
     try {
       setCargando(true)
-      await onCrear({ name: nombre.trim(), startDate, endDate })
+      await onCrear({ id: cleanedId, name: nombre.trim(), startDate, endDate })
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado')
@@ -66,6 +72,20 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
         </div>
 
         <form onSubmit={(e) => { void handleSubmit(e) }} className="flex flex-col gap-5">
+          {/* Código del Periodo */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-hanken">
+              Código del Período
+            </label>
+            <input
+              type="text"
+              value={id}
+              onChange={(e) => { setId(e.target.value) }}
+              placeholder="Ej. 2026-25"
+              className="border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1A5F7A] focus:border-transparent transition font-hanken"
+            />
+          </div>
+
           {/* Nombre */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-hanken">

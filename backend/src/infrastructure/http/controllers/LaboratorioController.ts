@@ -41,7 +41,7 @@ export class LaboratorioController {
   save = async (req: Request, res: Response): Promise<void> => {
     try {
       const data = req.body as Partial<Laboratorio>
-      if (data.name === undefined || data.name === null || (data.name as string).trim() === '') {
+      if (data.name === undefined || data.name === null || (data.name).trim() === '') {
         res.status(400).json({ error: 'El nombre del laboratorio es obligatorio' })
         return
       }
@@ -49,7 +49,7 @@ export class LaboratorioController {
       // Si viene un id numérico válido se trata como actualización, si no como creación
       const laboratorio: Laboratorio = {
         id: (data.id !== undefined && !isNaN(Number(data.id))) ? Number(data.id) : 0,
-        name: (data.name as string).trim()
+        name: (data.name).trim()
       }
 
       await this.saveUseCase.execute(laboratorio)

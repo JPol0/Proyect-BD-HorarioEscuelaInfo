@@ -33,12 +33,13 @@ export class TermController {
 
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name, startDate, endDate } = req.body as {
+      const { id, name, startDate, endDate } = req.body as {
+        id: string
         name: string
         startDate: string
         endDate: string
       }
-      const term = await this.createUseCase.execute({ name, startDate, endDate })
+      const term = await this.createUseCase.execute({ id, name, startDate, endDate })
       res.status(201).json(term)
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno'

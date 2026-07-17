@@ -2,6 +2,7 @@ import { type Term } from '../../../domain/Term.js'
 import { type TermRepository } from '../../ports/TermRepository.js'
 
 interface CreateTermInput {
+  id: string
   name: string
   startDate: string
   endDate: string
@@ -15,6 +16,9 @@ export class CreateTerm {
   }
 
   async execute (input: CreateTermInput): Promise<Term> {
+    if (!input.id || !/^\d{4}-\d{2}$/.test(input.id)) {
+      throw new Error('El código del período debe tener el formato YYYY-XX (Ej. 2026-25)')
+    }
     if (input.name.trim() === '') {
       throw new Error('El nombre del término no puede estar vacío')
     }
@@ -23,7 +27,7 @@ export class CreateTerm {
     }
 
     const term: Term = {
-      id: crypto.randomUUID(),
+      id: input.id.trim(),
       name: input.name.trim(),
       startDate: input.startDate,
       endDate: input.endDate,

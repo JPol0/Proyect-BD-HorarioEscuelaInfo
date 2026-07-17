@@ -10,7 +10,7 @@ export class UploadPlanEstudio {
    * 2. Resuelve los prerrequisitos por nombre (match insensible a mayúsculas/minúsculas).
    * 3. Llama a repository.saveBatch con las materias y los prerrequisitos resueltos.
    */
-  async execute (fileBuffer: Buffer): Promise<{ count: number, skipped: number }> {
+  async execute (fileBuffer: Buffer, term: string): Promise<{ count: number, skipped: number }> {
     const { materias, skipped } = parseExcelPlanEstudio(fileBuffer)
 
     // Build a lookup map: nombre normalizado → codMateria
@@ -31,7 +31,11 @@ export class UploadPlanEstudio {
         .filter((code): code is string => code !== null)
     }))
 
-    await this.repository.saveBatchGlobal(materias, prereqsResolved)
+    // Limpiar materias existentes para el término seleccionado (Opción A)
+    await this.repository.clearTerm(term)
+
+    // Guardar materias para el término seleccionado
+    await this.repository.saveBatch(term, materias, prereqsResolved)
 
     return { count: materias.length, skipped }
   }

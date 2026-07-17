@@ -100,10 +100,34 @@ export class PgMateriaRepository implements MateriaRepository {
   }
 
   /**
-   * Guarda un lote de materias (upsert) y sus prerrequisitos de forma global para todos los términos de la BD.
+   * Limpia todas las materias y relaciones asociadas de un término (Opción A).
+   */
+  async clearTerm (term: string): Promise<void> {
+    const client = await getPool().connect()
+    try {
+      await client.query('BEGIN')
+      // Primero eliminar de Imparten para evitar violaciones de clave foránea (ON DELETE NO ACTION)
+      await client.query('DELETE FROM Imparten WHERE CodTerm = $1', [term])
+      // Eliminar de Plan_de_Estudio (esto eliminará en cascada Secciones, Horarios, Prerequitos, etc.)
+      await client.query('DELETE FROM Plan_de_Estudio WHERE CodTerm = $1', [term])
+      await client.query('COMMIT')
+    } catch (error: any) {
+      await client.query('ROLLBACK')
+      if (error.code === '42501') {
+        throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
+      }
+      throw error
+    } finally {
+      client.release()
+    }
+  }
+
+  /**
+   * Guarda un lote de materias (upsert) y sus prerrequisitos para un término seleccionado.
    * prereqs es un array de { codMateria, prereqNombres: string[] } con códigos de asignatura ya resueltos.
    */
-  async saveBatchGlobal (
+  async saveBatch (
+    term: string,
     materias: Materia[],
     prereqs: Array<{ codMateria: string, prereqNombres: string[] }>
   ): Promise<void> {
@@ -111,54 +135,46 @@ export class PgMateriaRepository implements MateriaRepository {
     try {
       await client.query('BEGIN')
 
-      // Obtener todos los términos registrados
-      const termsRes = await client.query('SELECT CodTerm FROM Terms')
-      const termIds = termsRes.rows.map(row => row.codterm as string)
+      const upsertQuery = `
+        CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+      `
+      const insertedCodes = new Set(materias.map(m => m.codMateria))
 
-      if (termIds.length > 0) {
-        const upsertQuery = `
-          CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
-        `
-        const insertedCodes = new Set(materias.map(m => m.codMateria))
+      // 1. Upsert de cada materia para este término
+      for (const materia of materias) {
+        await client.query(upsertQuery, [
+          materia.codMateria,
+          term,
+          materia.nombre,
+          materia.esComun,
+          materia.semestre,
+          materia.horasPrac,
+          materia.horasTeo,
+          materia.horasLab,
+          materia.modalidad,
+          materia.nroSecciones
+        ])
+      }
 
-        for (const termId of termIds) {
-          // 1. Upsert de cada materia para este término
-          for (const materia of materias) {
-            await client.query(upsertQuery, [
-              materia.codMateria,
-              termId,
-              materia.nombre,
-              materia.esComun,
-              materia.semestre,
-              materia.horasPrac,
-              materia.horasTeo,
-              materia.horasLab,
-              materia.modalidad,
-              materia.nroSecciones
-            ])
-          }
+      // 2. Cargar prerrequisitos de cada materia para este término
+      for (const { codMateria, prereqNombres } of prereqs) {
+        if (prereqNombres.length === 0) continue
 
-          // 2. Cargar prerrequisitos de cada materia para este término
-          for (const { codMateria, prereqNombres } of prereqs) {
-            if (prereqNombres.length === 0) continue
+        // Borrar prerrequisitos actuales de esta materia en este término
+        await client.query(
+          'DELETE FROM Prerequitos WHERE CodAsig = $1 AND CodTerm = $2',
+          [codMateria, term]
+        )
 
-            // Borrar prerrequisitos actuales de esta materia en este término
-            await client.query(
-              'DELETE FROM Prerequitos WHERE CodAsig = $1 AND CodTerm = $2',
-              [codMateria, termId]
-            )
-
-            // Insertar nuevos prerrequisitos
-            for (const prereqCode of prereqNombres) {
-              if (!insertedCodes.has(prereqCode)) continue
-              await client.query(
-                `INSERT INTO Prerequitos (CodAsig, CodTerm, CodAsigPreq, CodTermPreq)
-                 VALUES ($1, $2, $3, $4)
-                 ON CONFLICT DO NOTHING`,
-                [codMateria, termId, prereqCode, termId]
-              )
-            }
-          }
+        // Insertar nuevos prerrequisitos
+        for (const prereqCode of prereqNombres) {
+          if (!insertedCodes.has(prereqCode)) continue
+          await client.query(
+            `INSERT INTO Prerequitos (CodAsig, CodTerm, CodAsigPreq, CodTermPreq)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT DO NOTHING`,
+            [codMateria, term, prereqCode, term]
+          )
         }
       }
 
@@ -174,5 +190,3 @@ export class PgMateriaRepository implements MateriaRepository {
     }
   }
 }
-
-

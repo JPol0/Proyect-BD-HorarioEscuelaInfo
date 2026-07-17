@@ -11,7 +11,7 @@ import DeleteTermModal from '../components/TermScreen/DeleteTermModal'
 import UploadPlanModal from '../components/Materias/UploadPlanModal'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
-import { TrashBin } from '@gravity-ui/icons'
+import { TrashBin, FileArrowDown } from '@gravity-ui/icons'
 
 // Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
@@ -106,7 +106,7 @@ export default function TermsPage () {
               onClick={() => { setShowUploadModal(true) }}
               className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm"
             >
-              📥 Cargar Plan de Estudio
+              <FileArrowDown className="w-4 h-4" /> Cargar Plan de Estudio
             </button>
             {/* Botón New Term */}
             <button
@@ -173,6 +173,7 @@ export default function TermsPage () {
       <UploadPlanModal
         isOpen={showUploadModal}
         onClose={() => { setShowUploadModal(false) }}
+        termId={activeTerm?.id ?? ''}
       />
     </div>
   )

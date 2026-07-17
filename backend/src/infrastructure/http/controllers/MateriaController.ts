@@ -29,7 +29,11 @@ export class MateriaController {
    */
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      const term = typeof req.query.term === 'string' ? req.query.term : ''
+      if (term.trim() === '') {
+        res.json([])
+        return
+      }
       const materias = await this.getUseCase.execute(term)
       res.json(materias)
     } catch (error) {
@@ -90,17 +94,23 @@ export class MateriaController {
 
   /**
    * POST /api/materias/upload-excel
-   * Procesa la carga masiva del Plan de Estudio desde un archivo Excel de forma global.
+   * Procesa la carga masiva del Plan de Estudio desde un archivo Excel para un término seleccionado.
    */
   uploadExcel = async (req: Request, res: Response): Promise<void> => {
     try {
+      const term = typeof req.query.term === 'string' ? req.query.term : null
+      if (term === null || term.trim() === '') {
+        res.status(400).json({ error: 'El término (term) es obligatorio para cargar el plan de estudios' })
+        return
+      }
+
       const file = (req as any).file as Express.Multer.File | undefined
       if (file === undefined) {
         res.status(400).json({ error: 'No se recibió ningún archivo Excel' })
         return
       }
 
-      const result = await this.uploadUseCase.execute(file.buffer)
+      const result = await this.uploadUseCase.execute(file.buffer, term)
       res.json({ ok: true, count: result.count, skipped: result.skipped })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno al procesar el Excel'
