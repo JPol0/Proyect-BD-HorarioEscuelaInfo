@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import type { ObtenerLaboratorioPorId } from '../../../application/useCases/Laboratorio/ObtenerLaboratorioPorId.js'
-import type { ObtenerDisponibilidadLaboratorio } from '../../../application/useCases/Laboratorio/ObtenerDisponibilidadLaboratorio.js'
-import type { GuardarDisponibilidadLaboratorio } from '../../../application/useCases/Laboratorio/GuardarDisponibilidadLaboratorio.js'
+import type { ObtenerDisponibilidadLaboratorio } from '../../../application/useCases/DisponibilidadLaboratorio/ObtenerDisponibilidadLaboratorio.js'
+import type { GuardarDisponibilidadLaboratorio } from '../../../application/useCases/DisponibilidadLaboratorio/GuardarDisponibilidadLaboratorio.js'
 
 export class DisponibilidadLaboratorioController {
   constructor(
