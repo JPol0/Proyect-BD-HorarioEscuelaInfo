@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Modal, Select, ListBox } from '@heroui/react'
 import { type Laboratorio } from '../../../core/domain/Laboratorio'
-import { ApiHorarioRepository } from '../../../core/infrastructure/adapters/ApiHorarioRepository'
-import { ObtenerHorario } from '../../../core/application/useCases/Horarios/ObtenerHorario'
+import { HttpDisponibilidadLaboratorioRepository } from '../../../core/infrastructure/adapters/HttpDisponibilidadLaboratorioRepository'
+import { ObtenerDisponibilidadLaboratorio } from '../../../core/application/useCases/DisponibilidadLaboratorio/ObtenerDisponibilidadLaboratorio'
 import { useActiveTerm } from '../../store/activeTermStore'
-import { type Horario, type DaysOfWeek } from '../../../core/domain/Horario'
+import { type DaysOfWeek } from '../../../core/domain/Horario'
+import { type DisponibilidadLaboratorio } from '../../../core/domain/DisponibilidadLaboratorio'
 import { Clock } from '@gravity-ui/icons'
 
 interface LaboratorioDisponibilidadModalProps {
@@ -15,44 +16,29 @@ interface LaboratorioDisponibilidadModalProps {
 function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: number }) {
   const { activeTerm } = useActiveTerm()
   const [selectedLabId, setSelectedLabId] = useState<number>(initialLabId)
-  const [tuplas, setTuplas] = useState<Horario[]>([])
+  const [disponibilidad, setDisponibilidad] = useState<DisponibilidadLaboratorio[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchHorario = async () => {
-      if (!activeTerm) {
+    const fetchDisponibilidad = async () => {
+      if (!activeTerm || !selectedLabId) {
         setLoading(false)
         return
       }
       try {
         setLoading(true)
-        const repo = new ApiHorarioRepository()
-        const getSchedule = new ObtenerHorario(repo)
-        const allTuplas = await getSchedule.execute(activeTerm.id)
-
-        // También intentar leer del draft local que se usa en HorariosPage para reflejar cambios no guardados
-        const draftStr = sessionStorage.getItem(`draft_horario_${activeTerm.id}`)
-        if (draftStr) {
-          try {
-            const draftTuplas = JSON.parse(draftStr) as Horario[]
-            if (Array.isArray(draftTuplas) && draftTuplas.length > 0) {
-              setTuplas(draftTuplas)
-              return
-            }
-          } catch (e) {
-            console.error('Error parseando draft', e)
-          }
-        }
-
-        setTuplas(allTuplas)
+        const repo = new HttpDisponibilidadLaboratorioRepository()
+        const getDisponibilidad = new ObtenerDisponibilidadLaboratorio(repo)
+        const data = await getDisponibilidad.execute(selectedLabId, activeTerm.id)
+        setDisponibilidad(data)
       } catch (e) {
         console.error('Error al cargar la disponibilidad', e)
       } finally {
         setLoading(false)
       }
     }
-    void fetchHorario()
-  }, [activeTerm])
+    void fetchDisponibilidad()
+  }, [activeTerm, selectedLabId])
 
   const scheduleRows = useMemo(() => {
     const baseHours = [
@@ -62,13 +48,11 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
     ]
     const days: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
-    const labTuplas = tuplas.filter(t => t.laboratorio?.id === selectedLabId)
-
     return baseHours.map(hour => {
       const row: Record<string, string> = { hour }
       for (const day of days) {
-        const asig = labTuplas.find(t => t.dia === day && t.hora === hour)
-        if (asig) {
+        const celda = disponibilidad.find(t => (t.dia as string) === day && t.hora === hour)
+        if (celda && celda.ocupado) {
           row[day] = 'Ocupado'
         } else {
           row[day] = '-'
@@ -76,7 +60,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
       }
       return row
     })
-  }, [tuplas, selectedLabId])
+  }, [disponibilidad])
 
   const Cell = ({ value }: { value: string }) => {
     if (value === '-') return <span className="text-slate-300">—</span>
