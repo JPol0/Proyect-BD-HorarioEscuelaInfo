@@ -39,18 +39,22 @@ export class PgDisponibilidadLaboratorioRepository implements DisponibilidadLabo
     }))
   }
 
-  async eliminarPorLaboratorioYTerm (idLaboratorio: number, codTerm: string): Promise<void> {
+  async eliminarPorLaboratorioYTerm (idLaboratorio: number, codTerm: string, tx?: any): Promise<void> {
+    const executor = tx ?? getPool()
     const query = 'DELETE FROM Disponibilidad_Laboratorio WHERE CodLab = $1 AND CodTerm = $2'
-    await getPool().query(query, [idLaboratorio, codTerm])
+    await executor.query(query, [idLaboratorio, codTerm])
   }
 
-  async guardar (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[]): Promise<void> {
+  async guardar (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[], tx?: any): Promise<void> {
     if (disponibilidad.length === 0) return
 
-    const client = await getPool().connect()
+    const client = tx ?? await getPool().connect()
+    const shouldManageTransaction = tx === undefined
 
     try {
-      await client.query('BEGIN')
+      if (shouldManageTransaction) {
+        await client.query('BEGIN')
+      }
 
       for (const celda of disponibilidad) {
         await client.query(
@@ -70,12 +74,18 @@ export class PgDisponibilidadLaboratorioRepository implements DisponibilidadLabo
         )
       }
 
-      await client.query('COMMIT')
+      if (shouldManageTransaction) {
+        await client.query('COMMIT')
+      }
     } catch (error) {
-      await client.query('ROLLBACK')
+      if (shouldManageTransaction) {
+        await client.query('ROLLBACK')
+      }
       throw error
     } finally {
-      client.release()
+      if (shouldManageTransaction) {
+        client.release()
+      }
     }
   }
 }

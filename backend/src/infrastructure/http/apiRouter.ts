@@ -27,8 +27,11 @@ import { PgRImparteRepository } from '../database/postgre/PgRImparteRepository.j
 import { PgRSonEjercidosRepository } from '../database/postgre/PgRSonEjercidosRepository.js'
 import { PgSeccionRepository } from '../database/postgre/PgSeccionRepository.js'
 import { PgDisponibilidadLaboratorioRepository } from '../database/postgre/PgDisponibilidadLaboratorioRepository.js'
+import { PgTransactionManager } from '../database/postgre/PgTransactionManager.js'
 
 const apiRouter = Router()
+
+const transactionManager = new PgTransactionManager()
 
 const alertRepository = new PgAlertRepository()
 const disponibilidadRepository = new PgDisponibilidadRepository()
@@ -52,13 +55,13 @@ apiRouter.use(dbScopeMiddleware)
 apiRouter.use('/alerts', createAlertRouter(alertRepository))
 apiRouter.use('/terms', createTermRouter(termRepository))
 apiRouter.use('/weekly-schedule', createHorarioRouter(horarioRepository))
-apiRouter.use('/profesores', createDisponibilidadRouter(disponibilidadRepository, profesorRepository))
-apiRouter.use('/materias', createMateriaRouter(materiaRepository, imparteRepository))
+apiRouter.use('/profesores', createDisponibilidadRouter(disponibilidadRepository, profesorRepository, transactionManager))
+apiRouter.use('/materias', createMateriaRouter(materiaRepository, imparteRepository, transactionManager))
 apiRouter.use('/laboratorios', createLaboratorioRouter(laboratorioRepository))
 apiRouter.use('/users', createUserRouter(userRepository))
 apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))
 apiRouter.use('/relacion-son-ejercidos', createSonEjercidosRouter(sonEjercidosRepository))
 apiRouter.use('/secciones', createSeccionRouter(seccionRepository))
-apiRouter.use('/laboratorios/:id/disponibilidad', createDisponibilidadLaboratorioRouter(laboratorioRepository, disponibilidadLaboratorioRepository))
+apiRouter.use('/laboratorios/:id/disponibilidad', createDisponibilidadLaboratorioRouter(laboratorioRepository, disponibilidadLaboratorioRepository, transactionManager))
 
 export default apiRouter
