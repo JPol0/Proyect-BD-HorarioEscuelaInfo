@@ -16,6 +16,22 @@ export class PgLaboratorioRepository implements LaboratorioRepository {
   }
 
   /**
+   * Obtiene un laboratorio por su id.
+   */
+  async getById (id: number): Promise<Laboratorio | null> {
+    const query = 'SELECT CodLab, NombreLab FROM Laboratorios WHERE CodLab = $1'
+    const result = await getPool().query(query, [id])
+    if (result.rowCount === 0) {
+      return null
+    }
+    const row = result.rows[0]
+    return {
+      id: Number(row.codlab),
+      name: row.nombrelab as string
+    }
+  }
+
+  /**
    * Guarda un laboratorio: INSERT si id === 0, UPDATE si id > 0.
    */
   async save (laboratorio: Laboratorio): Promise<void> {

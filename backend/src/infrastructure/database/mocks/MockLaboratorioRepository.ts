@@ -13,6 +13,11 @@ export class MockLaboratorioRepository implements LaboratorioRepository {
     return [...MOCK_LABORATORIOS]
   }
 
+  async getById (id: number): Promise<Laboratorio | null> {
+    const lab = MOCK_LABORATORIOS.find((l) => l.id === id)
+    return lab !== undefined ? { ...lab } : null
+  }
+
   async save (laboratorio: Laboratorio): Promise<void> {
     const index = MOCK_LABORATORIOS.findIndex((l) => l.id === laboratorio.id)
     if (index !== -1) {
