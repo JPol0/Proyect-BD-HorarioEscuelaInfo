@@ -10,6 +10,7 @@ import createUserRouter from './routes/UserRoutes.js'
 import createImparteRouter from './routes/ImparteRoutes.js'
 import createSonEjercidosRouter from './routes/SonEjercidosRoutes.js'
 import createSeccionRouter from './routes/SeccionRoutes.js'
+import createDisponibilidadLaboratorioRouter from './routes/DisponibilidadLaboratorioRoutes.js'
 import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
@@ -25,6 +26,7 @@ import { PgUserRepository } from '../database/postgre/PgUserRepository.js'
 import { PgRImparteRepository } from '../database/postgre/PgRImparteRepository.js'
 import { PgRSonEjercidosRepository } from '../database/postgre/PgRSonEjercidosRepository.js'
 import { PgSeccionRepository } from '../database/postgre/PgSeccionRepository.js'
+import { PgDisponibilidadLaboratorioRepository } from '../database/postgre/PgDisponibilidadLaboratorioRepository.js'
 
 const apiRouter = Router()
 
@@ -39,6 +41,7 @@ const userRepository = new PgUserRepository()
 const imparteRepository = new PgRImparteRepository()
 const sonEjercidosRepository = new PgRSonEjercidosRepository()
 const seccionRepository = new PgSeccionRepository()
+const disponibilidadLaboratorioRepository = new PgDisponibilidadLaboratorioRepository()
 
 // Wire routes
 apiRouter.use('/auth', dbScopeMiddleware, createAuthRouter(userRepository))
@@ -56,5 +59,6 @@ apiRouter.use('/users', createUserRouter(userRepository))
 apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))
 apiRouter.use('/relacion-son-ejercidos', createSonEjercidosRouter(sonEjercidosRepository))
 apiRouter.use('/secciones', createSeccionRouter(seccionRepository))
+apiRouter.use('/laboratorios/:id/disponibilidad', createDisponibilidadLaboratorioRouter(laboratorioRepository, disponibilidadLaboratorioRepository))
 
 export default apiRouter
