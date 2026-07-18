@@ -11,7 +11,7 @@ export class PgSeccionRepository implements SeccionRepository {
       ORDER BY NroSeccion ASC
     `
     const result = await getPool().query(query, [codTerm, codMateria])
-    
+
     return result.rows.map(row => ({
       nroSeccion: Number(row.nroseccion),
       codTerm: row.codterm,
@@ -26,7 +26,7 @@ export class PgSeccionRepository implements SeccionRepository {
       WHERE CodTerm = $1 AND CodAsig = $2 AND NroSeccion = $3
     `
     const result = await getPool().query(query, [codTerm, codMateria, nroSeccion])
-    
+
     if (result.rowCount === 0) {
       return null
     }

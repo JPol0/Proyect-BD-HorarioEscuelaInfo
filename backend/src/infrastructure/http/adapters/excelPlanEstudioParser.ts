@@ -1,20 +1,55 @@
 import XLSX from 'xlsx'
-import { type Materia, type MateriaModalidad } from '../../../domain/Materia.js'
+import { type MateriaModalidad } from '../../../domain/Materia.js'
+import { type PlanEstudioParserPort, type ExcelParseResult, type ParsedMateria } from '../../../application/ports/PlanEstudioParserPort.js'
 
 // Maps semester ordinal name to number (supports accented and non-accented variants)
 const SEMESTRE_MAP: Record<string, number> = {
-  PRIMER: 1, PRIMERO: 1, PRIMERA: 1, I: 1,
-  SEGUNDO: 2, SEGUNDA: 2, II: 2,
-  TERCER: 3, TERCERO: 3, TERCERA: 3, III: 3,
-  CUARTO: 4, CUARTA: 4, IV: 4,
-  QUINTO: 5, QUINTA: 5, V: 5,
-  SEXTO: 6, SEXTA: 6, VI: 6,
-  SÉPTIMO: 7, SEPTIMO: 7, SÉPTIMA: 7, SEPTIMA: 7, VII: 7,
-  OCTAVO: 8, OCTAVA: 8, VIII: 8,
-  NOVENO: 9, NOVENA: 9, IX: 9,
-  DÉCIMO: 10, DECIMO: 10, DÉCIMA: 10, DECIMA: 10, X: 10,
-  UNDÉCIMO: 11, UNDECIMO: 11, UNDÉCIMA: 11, UNDECIMA: 11, XI: 11,
-  DUODÉCIMO: 12, DUODECIMO: 12, DUODÉCIMA: 12, DUODECIMA: 12, XII: 12
+  PRIMER: 1,
+  PRIMERO: 1,
+  PRIMERA: 1,
+  I: 1,
+  SEGUNDO: 2,
+  SEGUNDA: 2,
+  II: 2,
+  TERCER: 3,
+  TERCERO: 3,
+  TERCERA: 3,
+  III: 3,
+  CUARTO: 4,
+  CUARTA: 4,
+  IV: 4,
+  QUINTO: 5,
+  QUINTA: 5,
+  V: 5,
+  SEXTO: 6,
+  SEXTA: 6,
+  VI: 6,
+  SÉPTIMO: 7,
+  SEPTIMO: 7,
+  SÉPTIMA: 7,
+  SEPTIMA: 7,
+  VII: 7,
+  OCTAVO: 8,
+  OCTAVA: 8,
+  VIII: 8,
+  NOVENO: 9,
+  NOVENA: 9,
+  IX: 9,
+  DÉCIMO: 10,
+  DECIMO: 10,
+  DÉCIMA: 10,
+  DECIMA: 10,
+  X: 10,
+  UNDÉCIMO: 11,
+  UNDECIMO: 11,
+  UNDÉCIMA: 11,
+  UNDECIMA: 11,
+  XI: 11,
+  DUODÉCIMO: 12,
+  DUODECIMO: 12,
+  DUODÉCIMA: 12,
+  DUODECIMA: 12,
+  XII: 12
 }
 
 /**
@@ -23,7 +58,7 @@ const SEMESTRE_MAP: Record<string, number> = {
  * VIT, LIN → 'VIT'
  * Cualquier otro valor → 'PRE' (fallback seguro)
  */
-function normalizeModalidad(raw: string): MateriaModalidad {
+function normalizeModalidad (raw: string): MateriaModalidad {
   const upper = raw.toUpperCase().replace(/[*]/g, '').trim()
   if (upper === 'VIT' || upper === 'LIN') return 'VIT'
   return 'PRE'
@@ -37,7 +72,7 @@ function normalizeModalidad(raw: string): MateriaModalidad {
  *   - Dígitos: "SEMESTRE 1", "3er SEMESTRE"
  * Devuelve 0 si no puede determinar el semestre.
  */
-function parseSemestreFromText(text: string): number {
+function parseSemestreFromText (text: string): number {
   const upper = text.toUpperCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip diacritics
     .trim()
@@ -66,7 +101,7 @@ function parseSemestreFromText(text: string): number {
  * Criterio amplio: cualquier celda visible que contenga la palabra "SEMESTRE"
  * y la materia (col[2]) esté vacía.
  */
-function isSemestreHeader(row: unknown[]): boolean {
+function isSemestreHeader (row: unknown[]): boolean {
   const col2 = String(row[2] ?? '').trim()
   if (col2 !== '') return false // Has a subject name → not a header
 
@@ -81,15 +116,15 @@ function isSemestreHeader(row: unknown[]): boolean {
 const NOISE_PATTERNS = [
   /total\s+hr/i,
   /^\s*leyenda/i,
-  /^\s*[üu]\s/i,           // bullet character "ü" used in legend
+  /^\s*[üu]\s/i, // bullet character "ü" used in legend
   /consejo\s+universitario/i,
   /^\s*\*{1,3}\s+el\s+estudiante/i,
   /^\s*c\*:/i,
   /^\s*pre\*:/i,
-  /^\s*sep\*:/i,
+  /^\s*sep\*:/i
 ]
 
-function isNoiseLine(row: unknown[]): boolean {
+function isNoiseLine (row: unknown[]): boolean {
   const allText = row.map(c => String(c ?? '')).join(' ').trim()
   if (allText === '') return true
   return NOISE_PATTERNS.some(p => p.test(allText))
@@ -99,7 +134,7 @@ function isNoiseLine(row: unknown[]): boolean {
  * Genera un código de materia a partir de su nombre cuando no hay código explícito.
  * Usa las primeras letras de cada palabra (máx. 6 chars) + un contador para unicidad.
  */
-function generateCode(nombre: string, counter: number): string {
+function generateCode (nombre: string, counter: number): string {
   const initials = nombre
     .toUpperCase()
     .replace(/[^A-Z0-9\s]/g, '')
@@ -115,7 +150,7 @@ function generateCode(nombre: string, counter: number): string {
  * Normaliza el nombre eliminando diacríticos para ser tolerante a variaciones
  * ortográficas del Excel (ej. "Pasantías", "Pasantía Profesional", "Pasantias").
  */
-function isExcludedMateria(nombre: string): boolean {
+function isExcludedMateria (nombre: string): boolean {
   const normalizado = nombre
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -133,21 +168,11 @@ function isExcludedMateria(nombre: string): boolean {
   return excludedKeywords.some(keyword => normalizado.includes(keyword))
 }
 
-export interface ParsedMateria extends Materia {
-  /** Nombres de prerrequisitos tal como aparecen en la columna Pre-Req. (ya separados por +) */
-  prereqNombres: string[]
-}
-
-export interface ExcelParseResult {
-  materias: ParsedMateria[]
-  skipped: number
-}
-
 /**
  * Encuentra la primera hoja del libro que contenga datos de materias.
  * Intenta por nombre exacto primero, luego por coincidencia parcial, luego la primera hoja.
  */
-function findSheet(wb: XLSX.WorkBook): XLSX.WorkSheet {
+function findSheet (wb: XLSX.WorkBook): XLSX.WorkSheet {
   const preferredNames = ['INGENIERÍA INFORMÁTICA', 'INGENIERIA INFORMATICA']
   for (const name of preferredNames) {
     if (wb.Sheets[name] !== undefined) return wb.Sheets[name]
@@ -180,7 +205,7 @@ function findSheet(wb: XLSX.WorkBook): XLSX.WorkSheet {
  *  - Alfanumérico: "CUSC", "IISC", "IILTG"
  *  - Vacío / asteriscos: se genera automáticamente desde el nombre
  */
-export function parseExcelPlanEstudio(buffer: Buffer): ExcelParseResult {
+export function parseExcelPlanEstudio (buffer: Buffer): ExcelParseResult {
   const wb = XLSX.read(buffer, { type: 'buffer' })
   const ws = findSheet(wb)
 
@@ -287,3 +312,8 @@ export function parseExcelPlanEstudio(buffer: Buffer): ExcelParseResult {
   return { materias, skipped }
 }
 
+export class ExcelPlanEstudioParserAdapter implements PlanEstudioParserPort {
+  parse (buffer: Buffer): ExcelParseResult {
+    return parseExcelPlanEstudio(buffer)
+  }
+}

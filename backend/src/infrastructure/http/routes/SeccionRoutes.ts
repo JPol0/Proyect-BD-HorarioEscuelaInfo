@@ -13,7 +13,7 @@ export default function createSeccionRouter (repository: SeccionRepository): Rou
   const getSeccion = new GetSeccion(repository)
   const saveSeccion = new SaveSeccion(repository)
   const deleteSeccion = new DeleteSeccion(repository)
-  
+
   const controller = new SeccionController(getSecciones, getSeccion, saveSeccion, deleteSeccion)
 
   router.get('/', async (req, res) => { await controller.getAll(req, res) })

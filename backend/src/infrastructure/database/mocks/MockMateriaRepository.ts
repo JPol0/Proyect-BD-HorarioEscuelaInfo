@@ -98,7 +98,7 @@ export class MockMateriaRepository implements MateriaRepository {
   /**
    * Elimina todas las materias asociadas a un término (borrado en cascada).
    */
-  async clearTerm (term: string): Promise<void> {
+  async deleteByTerm (term: string, tx?: any): Promise<void> {
     this.almacen.delete(term)
   }
 
@@ -108,7 +108,8 @@ export class MockMateriaRepository implements MateriaRepository {
   async saveBatch (
     term: string,
     materias: Materia[],
-    _prereqs: Array<{ codMateria: string, prereqNombres: string[] }>
+    _prereqs: Array<{ codMateria: string, prereqNombres: string[] }>,
+    tx?: any
   ): Promise<void> {
     this.almacen.set(term, [...materias])
   }

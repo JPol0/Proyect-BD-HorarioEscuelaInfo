@@ -98,4 +98,17 @@ export class PgRImparteRepository implements RImparteRepository {
       throw error
     }
   }
+
+  async deleteByTerm (term: string, tx?: any): Promise<void> {
+    const executor = tx ?? getPool()
+    const query = 'DELETE FROM Imparten WHERE CodTerm = $1'
+    try {
+      await executor.query(query, [term])
+    } catch (error: any) {
+      if (error.code === '42501') {
+        throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
+      }
+      throw error
+    }
+  }
 }

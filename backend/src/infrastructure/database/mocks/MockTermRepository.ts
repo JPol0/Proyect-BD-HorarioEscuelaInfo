@@ -85,7 +85,7 @@ export class MockTermRepository implements TermRepository {
       this.disponibilidadRepository.clearTerm(id)
     }
     if (this.materiaRepository !== undefined) {
-      this.materiaRepository.clearTerm(id)
+      await this.materiaRepository.deleteByTerm(id)
     }
     if (this.horarioRepository !== undefined) {
       await this.horarioRepository.clearTerm(id)

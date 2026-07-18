@@ -1,8 +1,11 @@
 import { type MateriaRepository } from '../../ports/MateriaRepository.js'
-import { parseExcelPlanEstudio } from '../../../infrastructure/http/adapters/excelPlanEstudioParser.js'
+import { type PlanEstudioParserPort } from '../../ports/PlanEstudioParserPort.js'
 
 export class UploadPlanEstudio {
-  constructor (private readonly repository: MateriaRepository) {}
+  constructor (
+    private readonly repository: MateriaRepository,
+    private readonly parser: PlanEstudioParserPort
+  ) {}
 
   /**
    * Ejecuta la importación del plan de estudios desde un buffer de archivo Excel.
@@ -10,8 +13,8 @@ export class UploadPlanEstudio {
    * 2. Resuelve los prerrequisitos por nombre (match insensible a mayúsculas/minúsculas).
    * 3. Llama a repository.saveBatch con las materias y los prerrequisitos resueltos.
    */
-  async execute (fileBuffer: Buffer, term: string): Promise<{ count: number, skipped: number }> {
-    const { materias, skipped } = parseExcelPlanEstudio(fileBuffer)
+  async execute (fileBuffer: Buffer, term: string, tx?: any): Promise<{ count: number, skipped: number }> {
+    const { materias, skipped } = this.parser.parse(fileBuffer)
 
     // Build a lookup map: nombre normalizado → codMateria
     const nombreToCode = new Map<string, string>()
@@ -31,11 +34,8 @@ export class UploadPlanEstudio {
         .filter((code): code is string => code !== null)
     }))
 
-    // Limpiar materias existentes para el término seleccionado (Opción A)
-    await this.repository.clearTerm(term)
-
     // Guardar materias para el término seleccionado
-    await this.repository.saveBatch(term, materias, prereqsResolved)
+    await this.repository.saveBatch(term, materias, prereqsResolved, tx)
 
     return { count: materias.length, skipped }
   }
