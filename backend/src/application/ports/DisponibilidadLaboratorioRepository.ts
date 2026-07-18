@@ -2,6 +2,6 @@ import type { DisponibilidadLaboratorio } from '../../domain/DisponibilidadLabor
 
 export interface DisponibilidadLaboratorioRepository {
   obtenerPorLaboratorioYTerm: (idLaboratorio: number, codTerm: string) => Promise<DisponibilidadLaboratorio[]>
-  eliminarPorLaboratorioYTerm: (idLaboratorio: number, codTerm: string) => Promise<void>
-  guardar: (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[]) => Promise<void>
+  eliminarPorLaboratorioYTerm: (idLaboratorio: number, codTerm: string, tx?: any) => Promise<void>
+  guardar: (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[], tx?: any) => Promise<void>
 }

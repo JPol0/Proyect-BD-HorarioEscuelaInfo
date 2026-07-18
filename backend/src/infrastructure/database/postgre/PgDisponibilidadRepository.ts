@@ -41,13 +41,16 @@ export class PgDisponibilidadRepository implements DisponibilidadRepository {
     }))
   }
 
-  async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
+  async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[], tx?: any): Promise<void> {
     if (disponibilidad.length === 0) return
 
-    const client = await getPool().connect()
+    const client = tx ?? await getPool().connect()
+    const shouldManageTransaction = tx === undefined
 
     try {
-      await client.query('BEGIN')
+      if (shouldManageTransaction) {
+        await client.query('BEGIN')
+      }
 
       for (const celda of disponibilidad) {
         await client.query(
@@ -69,12 +72,18 @@ export class PgDisponibilidadRepository implements DisponibilidadRepository {
         )
       }
 
-      await client.query('COMMIT')
+      if (shouldManageTransaction) {
+        await client.query('COMMIT')
+      }
     } catch (error) {
-      await client.query('ROLLBACK')
+      if (shouldManageTransaction) {
+        await client.query('ROLLBACK')
+      }
       throw error
     } finally {
-      client.release()
+      if (shouldManageTransaction) {
+        client.release()
+      }
     }
   }
 }

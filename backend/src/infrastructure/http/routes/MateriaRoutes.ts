@@ -2,13 +2,13 @@ import { Router } from 'express'
 import multer from 'multer'
 import { type MateriaRepository } from '../../../application/ports/MateriaRepository.js'
 import { type RImparteRepository } from '../../../application/ports/RImparteRepository.js'
+import { type TransactionManager } from '../../../application/ports/TransactionManager.js'
 import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
 import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
 import { UploadPlanEstudio } from '../../../application/useCases/Materia/UploadPlanEstudio.js'
 import { ClearTermUseCase } from '../../../application/useCases/Terms/ClearTermUseCase.js'
 import { ExcelPlanEstudioParserAdapter } from '../adapters/excelPlanEstudioParser.js'
-import { PgTransactionManager } from '../../database/postgre/PgTransactionManager.js'
 import { MateriaController } from '../controllers/MateriaController.js'
 import { requireAdmin } from '../middlewares/authMiddleware.js'
 
@@ -17,12 +17,12 @@ const upload = multer({ storage: multer.memoryStorage() })
 
 export default function createMateriaRouter (
   materiaRepository: MateriaRepository,
-  imparteRepository: RImparteRepository
+  imparteRepository: RImparteRepository,
+  transactionManager: TransactionManager
 ): Router {
   const router = Router()
 
   const parser = new ExcelPlanEstudioParserAdapter()
-  const transactionManager = new PgTransactionManager()
 
   const getUseCase = new GetMaterias(materiaRepository)
   const saveUseCase = new SaveMateria(materiaRepository)
