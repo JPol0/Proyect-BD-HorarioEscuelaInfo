@@ -26,7 +26,7 @@ export class SeccionController {
     try {
       const term = req.query.term as string
       const materia = req.query.materia as string
-      
+
       if (!term || !materia) {
         res.status(400).json({ error: 'term y materia son requeridos en la query' })
         return
@@ -51,7 +51,7 @@ export class SeccionController {
       }
 
       const seccion = await this.getSeccion.execute(term, materia, nroSeccion)
-      
+
       if (!seccion) {
         res.status(404).json({ error: 'Sección no encontrada' })
         return

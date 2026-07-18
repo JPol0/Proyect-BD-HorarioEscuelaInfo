@@ -115,25 +115,18 @@ export class PgMateriaRepository implements MateriaRepository {
   }
 
   /**
-   * Limpia todas las materias y relaciones asociadas de un término (Opción A).
+   * Limpia todas las materias y relaciones asociadas de un término.
    */
-  async clearTerm (term: string): Promise<void> {
-    const client = await getPool().connect()
+  async deleteByTerm (term: string, tx?: any): Promise<void> {
+    const executor = tx ?? getPool()
     try {
-      await client.query('BEGIN')
-      // Primero eliminar de Imparten para evitar violaciones de clave foránea (ON DELETE NO ACTION)
-      await client.query('DELETE FROM Imparten WHERE CodTerm = $1', [term])
       // Eliminar de Plan_de_Estudio (esto eliminará en cascada Secciones, Horarios, Prerequitos, etc.)
-      await client.query('DELETE FROM Plan_de_Estudio WHERE CodTerm = $1', [term])
-      await client.query('COMMIT')
+      await executor.query('DELETE FROM Plan_de_Estudio WHERE CodTerm = $1', [term])
     } catch (error: any) {
-      await client.query('ROLLBACK')
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
       }
       throw error
-    } finally {
-      client.release()
     }
   }
 
@@ -144,11 +137,15 @@ export class PgMateriaRepository implements MateriaRepository {
   async saveBatch (
     term: string,
     materias: Materia[],
-    prereqs: Array<{ codMateria: string, prereqNombres: string[] }>
+    prereqs: Array<{ codMateria: string, prereqNombres: string[] }>,
+    tx?: any
   ): Promise<void> {
-    const client = await getPool().connect()
+    const client = tx ?? await getPool().connect()
+    const shouldManageTransaction = tx === undefined
     try {
-      await client.query('BEGIN')
+      if (shouldManageTransaction) {
+        await client.query('BEGIN')
+      }
 
       const upsertQuery = `
         CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
@@ -193,15 +190,21 @@ export class PgMateriaRepository implements MateriaRepository {
         }
       }
 
-      await client.query('COMMIT')
+      if (shouldManageTransaction) {
+        await client.query('COMMIT')
+      }
     } catch (error: any) {
-      await client.query('ROLLBACK')
+      if (shouldManageTransaction) {
+        await client.query('ROLLBACK')
+      }
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
       }
       throw error
     } finally {
-      client.release()
+      if (shouldManageTransaction) {
+        client.release()
+      }
     }
   }
 }

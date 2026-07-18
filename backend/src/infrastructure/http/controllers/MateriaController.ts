@@ -3,6 +3,8 @@ import { type GetMaterias } from '../../../application/useCases/Materia/GetMater
 import { type SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { type DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
 import { type UploadPlanEstudio } from '../../../application/useCases/Materia/UploadPlanEstudio.js'
+import { type ClearTermUseCase } from '../../../application/useCases/Terms/ClearTermUseCase.js'
+import { type TransactionManager } from '../../../application/ports/TransactionManager.js'
 import { type Materia } from '../../../domain/Materia.js'
 
 export class MateriaController {
@@ -10,17 +12,23 @@ export class MateriaController {
   private readonly saveUseCase: SaveMateria
   private readonly deleteUseCase: DeleteMateria
   private readonly uploadUseCase: UploadPlanEstudio
+  private readonly clearTermUseCase: ClearTermUseCase
+  private readonly transactionManager: TransactionManager
 
   constructor (
     getUseCase: GetMaterias,
     saveUseCase: SaveMateria,
     deleteUseCase: DeleteMateria,
-    uploadUseCase: UploadPlanEstudio
+    uploadUseCase: UploadPlanEstudio,
+    clearTermUseCase: ClearTermUseCase,
+    transactionManager: TransactionManager
   ) {
     this.getUseCase = getUseCase
     this.saveUseCase = saveUseCase
     this.deleteUseCase = deleteUseCase
     this.uploadUseCase = uploadUseCase
+    this.clearTermUseCase = clearTermUseCase
+    this.transactionManager = transactionManager
   }
 
   /**
@@ -110,7 +118,14 @@ export class MateriaController {
         return
       }
 
-      const result = await this.uploadUseCase.execute(file.buffer, term)
+      const result = await this.transactionManager.run(async (tx) => {
+        // 1. Limpiar materias y asignaciones docentes existentes transaccionalmente
+        await this.clearTermUseCase.execute(term, tx)
+
+        // 2. Guardar el nuevo plan de estudios transaccionalmente
+        return await this.uploadUseCase.execute(file.buffer, term, tx)
+      })
+
       res.json({ ok: true, count: result.count, skipped: result.skipped })
     } catch (error) {
       const mensaje = error instanceof Error ? error.message : 'Error interno al procesar el Excel'

@@ -1,24 +1,43 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { type MateriaRepository } from '../../../application/ports/MateriaRepository.js'
+import { type RImparteRepository } from '../../../application/ports/RImparteRepository.js'
 import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
 import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
 import { UploadPlanEstudio } from '../../../application/useCases/Materia/UploadPlanEstudio.js'
+import { ClearTermUseCase } from '../../../application/useCases/Terms/ClearTermUseCase.js'
+import { ExcelPlanEstudioParserAdapter } from '../adapters/excelPlanEstudioParser.js'
+import { PgTransactionManager } from '../../database/postgre/PgTransactionManager.js'
 import { MateriaController } from '../controllers/MateriaController.js'
 import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 // Multer con almacenamiento en memoria para procesar el buffer del Excel
 const upload = multer({ storage: multer.memoryStorage() })
 
-export default function createMateriaRouter (repository: MateriaRepository): Router {
+export default function createMateriaRouter (
+  materiaRepository: MateriaRepository,
+  imparteRepository: RImparteRepository
+): Router {
   const router = Router()
 
-  const getUseCase = new GetMaterias(repository)
-  const saveUseCase = new SaveMateria(repository)
-  const deleteUseCase = new DeleteMateria(repository)
-  const uploadUseCase = new UploadPlanEstudio(repository)
-  const controller = new MateriaController(getUseCase, saveUseCase, deleteUseCase, uploadUseCase)
+  const parser = new ExcelPlanEstudioParserAdapter()
+  const transactionManager = new PgTransactionManager()
+
+  const getUseCase = new GetMaterias(materiaRepository)
+  const saveUseCase = new SaveMateria(materiaRepository)
+  const deleteUseCase = new DeleteMateria(materiaRepository)
+  const uploadUseCase = new UploadPlanEstudio(materiaRepository, parser)
+  const clearTermUseCase = new ClearTermUseCase(imparteRepository, materiaRepository)
+
+  const controller = new MateriaController(
+    getUseCase,
+    saveUseCase,
+    deleteUseCase,
+    uploadUseCase,
+    clearTermUseCase,
+    transactionManager
+  )
 
   // GET /api/materias - Obtiene el universo completo de materias (60-70) para filtros locales
   router.get('/', controller.getAll)
