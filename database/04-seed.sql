@@ -142,16 +142,6 @@ INSERT INTO Laboratorios (CodLab, NombreLab) VALUES
 (6, 'Laboratorio de Circuitos Electricos')
 ON CONFLICT (CodLab) DO NOTHING;
 
--- Disponibilidad_Laboratorio
-INSERT INTO Disponibilidad_Laboratorio (CodLab, Codterm, Dia, Hora, OcupadoD) VALUES
-(1, '2026-25', 'Lunes', '7', FALSE),
-(1, '2026-25', 'Lunes', '8', TRUE),
-(2, '2026-25', 'Martes', '9', FALSE),
-(3, '2026-25', 'Miercoles', '10', TRUE),
-(4, '2026-25', 'Jueves', '11', FALSE),
-(5, '2026-25', 'Viernes', '12', TRUE)
-ON CONFLICT (CodTerm, CodLab, Dia, Hora) DO NOTHING;
-
 -- Secciones
 INSERT INTO Secciones (CodTerm, CodAsig, NroSeccion) VALUES
 ('2026-25', 'FING-02002', 1),
