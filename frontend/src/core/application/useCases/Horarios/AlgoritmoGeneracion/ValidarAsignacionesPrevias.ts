@@ -1,7 +1,7 @@
 import { type Materia } from '../../../../domain/Materia'
-import { type Horario } from '../../../../domain/Horario'
+import { type Horario, type DaysOfWeek } from '../../../../domain/Horario'
 
-export const DIAS_SEMANA_BASE: Array<import('../../../../domain/Horario').DaysOfWeek> = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+export const DIAS_SEMANA_BASE: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 export const HORAS_DISPONIBLES_BASE = [
   '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
   '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
