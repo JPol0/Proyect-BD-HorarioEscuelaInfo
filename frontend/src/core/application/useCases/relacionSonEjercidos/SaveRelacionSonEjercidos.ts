@@ -8,7 +8,7 @@ export class SaveRelacionSonEjercidos {
     this.repository = repository
   }
 
-  async execute (sonEjercidos: SonEjercidos): Promise<void> {
+  async execute (sonEjercidos: SonEjercidos, term: string): Promise<void> {
     if (sonEjercidos.prioridad !== 1 && sonEjercidos.prioridad !== 2) {
       throw new Error('La prioridad de laboratorio debe ser 1 o 2')
     }
@@ -18,10 +18,10 @@ export class SaveRelacionSonEjercidos {
     if (sonEjercidos.codAsig === undefined || sonEjercidos.codAsig === null || sonEjercidos.codAsig.trim() === '') {
       throw new Error('El código de la materia (codAsig) es obligatorio')
     }
-    if (sonEjercidos.codTerm === undefined || sonEjercidos.codTerm === null || sonEjercidos.codTerm.trim() === '') {
+    if (term === undefined || term === null || term.trim() === '') {
       throw new Error('El código del término (codTerm) es obligatorio')
     }
 
-    await this.repository.save(sonEjercidos)
+    await this.repository.save(sonEjercidos, term)
   }
 }

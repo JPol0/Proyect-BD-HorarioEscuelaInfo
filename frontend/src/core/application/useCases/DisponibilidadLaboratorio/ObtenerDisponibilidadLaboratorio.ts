@@ -33,7 +33,6 @@ export class ObtenerDisponibilidadLaboratorio {
 
         grillaCompleta.push({
           idLaboratorio,
-          codTerm,
           dia,
           hora,
           ocupado: false

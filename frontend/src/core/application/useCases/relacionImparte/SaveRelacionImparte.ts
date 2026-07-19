@@ -8,14 +8,14 @@ export class SaveRelacionImparte {
     this.repository = repository
   }
 
-  async execute (imparte: Imparte): Promise<void> {
+  async execute (imparte: Imparte, term: string): Promise<void> {
     if (imparte.cedulaP.trim() === '') {
       throw new Error('La cédula del profesor es requerida')
     }
     if (imparte.codAsig.trim() === '') {
       throw new Error('El código de asignatura es requerido')
     }
-    if (imparte.codTerm.trim() === '') {
+    if (term.trim() === '') {
       throw new Error('El código del término es requerido')
     }
     if (imparte.nroSeccion <= 0) {
@@ -25,6 +25,6 @@ export class SaveRelacionImparte {
       throw new Error('Las horas de teoría y laboratorio no pueden ser negativas')
     }
 
-    await this.repository.save(imparte)
+    await this.repository.save(imparte, term)
   }
 }

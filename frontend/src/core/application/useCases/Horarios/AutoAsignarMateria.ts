@@ -31,7 +31,6 @@ export class AutoAsignarMateria {
     return autoAsignarMateria(
       materia,
       horarioActual,
-      termId,
       seccion,
       laboratorioId,
       cedulaProfesor,

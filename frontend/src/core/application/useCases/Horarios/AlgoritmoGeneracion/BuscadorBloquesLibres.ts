@@ -58,7 +58,6 @@ export function intentarAsignarBloque (
       for (const { hora, labId } of horasAAsignar) {
         tuplasTemporales.push({
           codAsig: ctxBase.materia.codMateria,
-          codTerm: ctxBase.termId,
           nroSeccion: sec,
           dia,
           hora,

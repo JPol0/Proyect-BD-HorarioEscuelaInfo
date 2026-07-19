@@ -20,6 +20,9 @@ import { HttpRImparteRepository } from '../../core/infrastructure/adapters/HttpR
 import { GetRelacionesImparte } from '../../core/application/useCases/relacionImparte/GetRelacionesImparte'
 import { HttpRSonEjercidosRepository } from '../../core/infrastructure/adapters/HttpRSonEjercidosRepository'
 import { GetRelacionesSonEjercidos } from '../../core/application/useCases/relacionSonEjercidos/GetRelacionesSonEjercidos'
+import { type Prerequito } from '../../core/domain/Prerequito'
+import { HttpPrerequitoRepository } from '../../core/infrastructure/adapters/HttpPrerequitoRepository'
+import { ObtenerPrerequitosPorTerm } from '../../core/application/useCases/Prerequito/ObtenerPrerequitosPorTerm'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -32,6 +35,8 @@ const imparteRepository = new HttpRImparteRepository()
 const getRelacionesImparteUseCase = new GetRelacionesImparte(imparteRepository)
 const sonEjercidosRepository = new HttpRSonEjercidosRepository()
 const getRelacionesSonEjercidosUseCase = new GetRelacionesSonEjercidos(sonEjercidosRepository)
+const prerequitoRepository = new HttpPrerequitoRepository()
+const getPrerequitosUseCase = new ObtenerPrerequitosPorTerm(prerequitoRepository)
 
 export default function HorariosPage () {
   const { currentUser } = useUser()
@@ -39,6 +44,7 @@ export default function HorariosPage () {
   const navigate = useNavigate()
   const location = useLocation()
   const { activeTerm } = useActiveTerm()
+  const [selectedTerm] = useState<string | null>(activeTerm?.id ?? null)
   const [laboratorioAssignments, setLaboratorioAssignments] = useState<Record<string, { principal: number, secundarios: number[] }>>({})
 
   const [relaciones, setRelaciones] = useState<Imparte[]>([])
@@ -46,22 +52,23 @@ export default function HorariosPage () {
   const { profesorAssignments, profesorLabAssignments } = useMemo(() => {
     const assignments: Record<string, Record<string, Record<number, string>>> = {}
     const assignmentsLab: Record<string, Record<string, Record<number, string>>> = {}
+    const termId = selectedTerm || activeTerm?.id || 'default'
 
     relaciones.forEach((r) => {
       if (r.horasTeo > 0) {
-        if (!assignments[r.codTerm]) assignments[r.codTerm] = {}
-        if (!assignments[r.codTerm][r.codAsig]) assignments[r.codTerm][r.codAsig] = {}
-        assignments[r.codTerm][r.codAsig][r.nroSeccion] = r.cedulaP
+        if (!assignments[termId]) assignments[termId] = {}
+        if (!assignments[termId][r.codAsig]) assignments[termId][r.codAsig] = {}
+        assignments[termId][r.codAsig][r.nroSeccion] = r.cedulaP
       }
       if (r.horasLab > 0) {
-        if (!assignmentsLab[r.codTerm]) assignmentsLab[r.codTerm] = {}
-        if (!assignmentsLab[r.codTerm][r.codAsig]) assignmentsLab[r.codTerm][r.codAsig] = {}
-        assignmentsLab[r.codTerm][r.codAsig][r.nroSeccion] = r.cedulaP
+        if (!assignmentsLab[termId]) assignmentsLab[termId] = {}
+        if (!assignmentsLab[termId][r.codAsig]) assignmentsLab[termId][r.codAsig] = {}
+        assignmentsLab[termId][r.codAsig][r.nroSeccion] = r.cedulaP
       }
     })
 
     return { profesorAssignments: assignments, profesorLabAssignments: assignmentsLab }
-  }, [relaciones])
+  }, [relaciones, selectedTerm, activeTerm])
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -74,9 +81,7 @@ export default function HorariosPage () {
     }
   }
   const [materias, setMaterias] = useState<Materia[]>([])
-  // Usamos el id del term activo como punto de partida; cuando el backend real
-  // esté conectado, este id se enviará directamente para consultar la BD.
-  const [selectedTerm] = useState<string | null>(activeTerm?.id ?? null)
+  const [prerequitos, setPrerequitos] = useState<Prerequito[]>([])
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
@@ -125,12 +130,13 @@ export default function HorariosPage () {
     try {
       const response = await generarHorarioUseCase.execute({
         materias,
+        prerequitos,
         horarioActual: newTuplas,
         termId: activeTerm.id,
         selectedSemester,
         profesorAssignments: profesorAssignments[activeTerm.id] || {},
         profesorLabAssignments: profesorLabAssignments?.[activeTerm.id] || {},
-        laboratorioAssignments: laboratorioAssignments
+        laboratorioAssignments
       })
 
       setTuplas(response.horarioActualizado)
@@ -158,15 +164,17 @@ export default function HorariosPage () {
       setLoading(true)
       setError(null)
       try {
-        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload] = await Promise.all([
+        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload, prerequitosPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(term),
           getMateriasUseCase.execute(term),
           getRelacionesImparteUseCase.execute(term),
-          getRelacionesSonEjercidosUseCase.execute(term)
+          getRelacionesSonEjercidosUseCase.execute(term),
+          getPrerequitosUseCase.execute(term)
         ])
 
         setMaterias(materiasPayload)
         setRelaciones(relacionesPayload)
+        setPrerequitos(prerequitosPayload)
 
         const mappedLabs: Record<string, { principal: number, secundarios: number[] }> = {}
         sonEjercidosPayload.forEach((r) => {
@@ -194,7 +202,7 @@ export default function HorariosPage () {
 
             // Limpiamos las horas previas SOLO para esa sección
             currentTuplas = currentTuplas.filter(
-              (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === term && t.nroSeccion === secToOverwrite)
+              (t) => !(t.codAsig === materiaFromState.codMateria && t.nroSeccion === secToOverwrite)
             )
 
             const horasDisponiblesBase = [
@@ -255,7 +263,6 @@ export default function HorariosPage () {
 
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
-                  codTerm: term,
                   nroSeccion: block.nroSeccion,
                   dia: block.dia,
                   hora: horaAsignar,

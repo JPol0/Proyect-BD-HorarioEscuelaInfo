@@ -4,7 +4,6 @@ export type NivelDisponibilidad = 0 | 1 | 2
 
 export interface DisponibilidadHoraria {
   cedulaProfesor: string
-  codTerm: string
   dia: DiaSemana
   numeroModulo: number
   disponibilidad: NivelDisponibilidad

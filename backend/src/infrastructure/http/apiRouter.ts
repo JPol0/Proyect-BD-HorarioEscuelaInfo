@@ -11,6 +11,7 @@ import createImparteRouter from './routes/ImparteRoutes.js'
 import createSonEjercidosRouter from './routes/SonEjercidosRoutes.js'
 import createSeccionRouter from './routes/SeccionRoutes.js'
 import createDisponibilidadLaboratorioRouter from './routes/DisponibilidadLaboratorioRoutes.js'
+import createPrerequitoRouter from './routes/PrerequitoRoutes.js'
 import { authenticateToken } from './middlewares/authMiddleware.js'
 import { dbScopeMiddleware } from './middlewares/dbScopeMiddleware.js'
 
@@ -65,5 +66,6 @@ apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))
 apiRouter.use('/relacion-son-ejercidos', createSonEjercidosRouter(sonEjercidosRepository))
 apiRouter.use('/secciones', createSeccionRouter(seccionRepository))
 apiRouter.use('/laboratorios/:id/disponibilidad', createDisponibilidadLaboratorioRouter(laboratorioRepository, disponibilidadLaboratorioRepository, transactionManager))
+apiRouter.use('/prerequitos', createPrerequitoRouter(prerequitoRepository))
 
 export default apiRouter

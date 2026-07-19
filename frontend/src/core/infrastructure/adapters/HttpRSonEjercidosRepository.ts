@@ -10,7 +10,12 @@ export class HttpRSonEjercidosRepository implements RSonEjercidosRepository {
     if (!response.ok) {
       throw new Error('Error al recuperar las relaciones de laboratorios del servidor')
     }
-    return await response.json() as SonEjercidos[]
+    const raw = await response.json() as any[]
+    return raw.map(r => ({
+      codLab: Number(r.codLab),
+      codAsig: r.codAsig,
+      prioridad: r.prioridad
+    }))
   }
 
   async getByMateria (term: string, codAsig: string): Promise<SonEjercidos[]> {
@@ -18,16 +23,21 @@ export class HttpRSonEjercidosRepository implements RSonEjercidosRepository {
     if (!response.ok) {
       throw new Error('Error al recuperar las relaciones por materia del servidor')
     }
-    return await response.json() as SonEjercidos[]
+    const raw = await response.json() as any[]
+    return raw.map(r => ({
+      codLab: Number(r.codLab),
+      codAsig: r.codAsig,
+      prioridad: r.prioridad
+    }))
   }
 
-  async save (sonEjercidos: SonEjercidos): Promise<void> {
+  async save (sonEjercidos: SonEjercidos, term: string): Promise<void> {
     const response = await fetch(`${this.apiUrl}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(sonEjercidos)
+      body: JSON.stringify({ ...sonEjercidos, codTerm: term })
     })
 
     if (!response.ok) {

@@ -5,7 +5,6 @@ import { type DisponibilidadHoraria, MODULOS_HORARIO } from '../DisponibilidadHo
 export const autoAsignarMateria = (
   materia: Materia,
   horarioActual: Horario[],
-  termId: string,
   seccion: number = 1,
   laboratorioId?: number,
   cedulaProfesor?: string,
@@ -19,7 +18,7 @@ export const autoAsignarMateria = (
   const maxHorasPorDia = totalHoras === 6 ? 2 : 3
 
   const horarioSinEstaMateria = horarioActual.filter(
-    (t) => !(t.codAsig === materia.codMateria && t.codTerm === termId && t.nroSeccion === seccion)
+    (t) => !(t.codAsig === materia.codMateria && t.nroSeccion === seccion)
   )
 
   const diasSemanasBase: DaysOfWeek[] = materia.modalidad === 'VIT'
@@ -57,7 +56,7 @@ export const autoAsignarMateria = (
         // 2. Choca profesor
         if (!estaOcupado && cedulaProfesor && profesoresAsignados) {
           estaOcupado = horarioSinEstaMateria.some((t) => {
-            if (t.dia !== dia || t.hora !== hora || t.codTerm !== termId) return false
+            if (t.dia !== dia || t.hora !== hora) return false
             return profesoresAsignados[t.codAsig]?.[t.nroSeccion] === cedulaProfesor
           })
         }
@@ -108,7 +107,6 @@ export const autoAsignarMateria = (
         for (const hora of horasAAsignar) {
           tuplasTemporales.push({
             codAsig: materia.codMateria,
-            codTerm: termId,
             nroSeccion: seccion,
             dia,
             hora,
