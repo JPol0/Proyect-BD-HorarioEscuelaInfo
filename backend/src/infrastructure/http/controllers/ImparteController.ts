@@ -65,23 +65,6 @@ export class ImparteController {
       const term = typeof req.query.term === 'string' ? req.query.term : ''
       const nroSeccionVal = typeof req.query.nroSeccion === 'string' ? Number(req.query.nroSeccion) : NaN
 
-      if (cedulaP.trim() === '') {
-        res.status(400).json({ error: 'La cédula del profesor (cedulaP) es obligatoria para eliminar' })
-        return
-      }
-      if (codAsig.trim() === '') {
-        res.status(400).json({ error: 'El código de la materia (codAsig) es obligatorio para eliminar' })
-        return
-      }
-      if (term.trim() === '') {
-        res.status(400).json({ error: 'El término (term) es obligatorio para eliminar' })
-        return
-      }
-      if (isNaN(nroSeccionVal) || nroSeccionVal <= 0) {
-        res.status(400).json({ error: 'El número de sección (nroSeccion) debe ser un número entero válido y mayor a 0 para eliminar' })
-        return
-      }
-
       await this.deleteUseCase.execute(cedulaP, codAsig, term, nroSeccionVal)
       res.json({ ok: true, message: 'Asignación eliminada correctamente' })
     } catch (error) {
