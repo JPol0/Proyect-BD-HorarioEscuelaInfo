@@ -21,25 +21,26 @@ export class SaveMateria {
     }
 
     const saveOperation = async (currentTx: any) => {
-      let exists = false
-      if (!isNewCode) {
-        const existingMateria = await this.materiaRepository.getById(term, codMateria, currentTx)
-        if (existingMateria !== null) {
-          exists = true
-        }
-      }
-
       // Guardar/Upsert la materia
       await this.materiaRepository.save(term, materiaToSave, currentTx)
 
-      // Si es una materia nueva, auto-generar las secciones
-      if (!exists) {
-        for (let i = 1; i <= materiaToSave.nroSecciones; i++) {
+      // Sincronizar las secciones en la base de datos
+      const existingSecciones = await this.seccionRepository.getSecciones(term, codMateria, currentTx)
+      const existingCount = existingSecciones.length
+
+      if (materiaToSave.nroSecciones > existingCount) {
+        // Agregar las secciones que faltan
+        for (let i = existingCount + 1; i <= materiaToSave.nroSecciones; i++) {
           await this.seccionRepository.saveSeccion({
             codTerm: term,
             codMateria: codMateria,
-            nroSeccion: 0 // serial autogenerado
+            nroSeccion: i
           }, currentTx)
+        }
+      } else if (materiaToSave.nroSecciones < existingCount) {
+        // Eliminar las secciones sobrantes
+        for (let i = existingCount; i > materiaToSave.nroSecciones; i--) {
+          await this.seccionRepository.deleteSeccion(term, codMateria, i, currentTx)
         }
       }
     }

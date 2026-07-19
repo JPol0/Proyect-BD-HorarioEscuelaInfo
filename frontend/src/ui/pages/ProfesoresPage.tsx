@@ -16,13 +16,13 @@ const actualizarStatusUseCase = new ActualizarStatusProfesor(repository)
 
 const STATUS_CONFIG = {
   A: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
-  P: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700' },
+  ER: { label: 'En Reposo', color: 'bg-amber-100 text-amber-700' },
   R: { label: 'Retirado', color: 'bg-red-100 text-red-600' }
 }
 
 const STATUS_OPTIONS = [
   { id: 'A', label: 'Activo' },
-  { id: 'P', label: 'Pendiente' },
+  { id: 'ER', label: 'En Reposo' },
   { id: 'R', label: 'Retirado' }
 ]
 
@@ -142,8 +142,8 @@ export function ProfesoresPage() {
                 <ListBox.Item id="A" textValue="Activo" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
                   Activo
                 </ListBox.Item>
-                <ListBox.Item id="P" textValue="Pendiente" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
-                  Pendiente
+                <ListBox.Item id="ER" textValue="En Reposo" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  En Reposo
                 </ListBox.Item>
                 <ListBox.Item id="R" textValue="Retirado" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
                   Retirado

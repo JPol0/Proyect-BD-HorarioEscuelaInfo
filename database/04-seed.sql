@@ -35,7 +35,7 @@ ON CONFLICT (CodTerm, CodAsig) DO NOTHING;
 INSERT INTO Profesores (CedulaP, NombreP, StatusP) VALUES
 ('V-12345678', 'Carlos Gomez', 'A'),
 ('V-87654321', 'Maria Rodriguez', 'A'),
-('V-11223344', 'Jose Perez', 'P'),
+('V-11223344', 'Jose Perez', 'ER'),
 ('V-55667788', 'Ana Martinez', 'R'),
 ('V-99887766', 'Pedro Lopez', 'A')
 ON CONFLICT (CedulaP) DO NOTHING;
