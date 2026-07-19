@@ -108,7 +108,6 @@ export class MockMateriaRepository implements MateriaRepository {
   async saveBatch (
     term: string,
     materias: Materia[],
-    _prereqs: Array<{ codMateria: string, prereqNombres: string[] }>,
     tx?: any
   ): Promise<void> {
     this.almacen.set(term, [...materias])

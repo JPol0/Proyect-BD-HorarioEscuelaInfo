@@ -28,10 +28,12 @@ import { PgRSonEjercidosRepository } from '../database/postgre/PgRSonEjercidosRe
 import { PgSeccionRepository } from '../database/postgre/PgSeccionRepository.js'
 import { PgDisponibilidadLaboratorioRepository } from '../database/postgre/PgDisponibilidadLaboratorioRepository.js'
 import { PgTransactionManager } from '../database/postgre/PgTransactionManager.js'
+import { PgPrerequitoRepository } from '../database/postgre/PgPrerequitoRepository.js'
 
 const apiRouter = Router()
 
 const transactionManager = new PgTransactionManager()
+const prerequitoRepository = new PgPrerequitoRepository()
 
 const alertRepository = new PgAlertRepository()
 const disponibilidadRepository = new PgDisponibilidadRepository()
@@ -56,7 +58,7 @@ apiRouter.use('/alerts', createAlertRouter(alertRepository))
 apiRouter.use('/terms', createTermRouter(termRepository))
 apiRouter.use('/weekly-schedule', createHorarioRouter(horarioRepository))
 apiRouter.use('/profesores', createDisponibilidadRouter(disponibilidadRepository, profesorRepository, transactionManager))
-apiRouter.use('/materias', createMateriaRouter(materiaRepository, imparteRepository, transactionManager))
+apiRouter.use('/materias', createMateriaRouter(materiaRepository, imparteRepository, transactionManager, prerequitoRepository))
 apiRouter.use('/laboratorios', createLaboratorioRouter(laboratorioRepository))
 apiRouter.use('/users', createUserRouter(userRepository))
 apiRouter.use('/relacion-imparte', createImparteRouter(imparteRepository))

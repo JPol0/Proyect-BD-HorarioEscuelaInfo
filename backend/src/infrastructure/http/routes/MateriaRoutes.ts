@@ -3,6 +3,7 @@ import multer from 'multer'
 import { type MateriaRepository } from '../../../application/ports/MateriaRepository.js'
 import { type RImparteRepository } from '../../../application/ports/RImparteRepository.js'
 import { type TransactionManager } from '../../../application/ports/TransactionManager.js'
+import { type PrerequitoRepository } from '../../../application/ports/PrerequitoRepository.js'
 import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
 import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
@@ -18,7 +19,8 @@ const upload = multer({ storage: multer.memoryStorage() })
 export default function createMateriaRouter (
   materiaRepository: MateriaRepository,
   imparteRepository: RImparteRepository,
-  transactionManager: TransactionManager
+  transactionManager: TransactionManager,
+  prerequitoRepository: PrerequitoRepository
 ): Router {
   const router = Router()
 
@@ -27,7 +29,7 @@ export default function createMateriaRouter (
   const getUseCase = new GetMaterias(materiaRepository)
   const saveUseCase = new SaveMateria(materiaRepository)
   const deleteUseCase = new DeleteMateria(materiaRepository)
-  const uploadUseCase = new UploadPlanEstudio(materiaRepository, parser)
+  const uploadUseCase = new UploadPlanEstudio(materiaRepository, parser, prerequitoRepository)
   const clearTermUseCase = new ClearTermUseCase(imparteRepository, materiaRepository)
 
   const controller = new MateriaController(

@@ -137,7 +137,6 @@ export class PgMateriaRepository implements MateriaRepository {
   async saveBatch (
     term: string,
     materias: Materia[],
-    prereqs: Array<{ codMateria: string, prereqNombres: string[] }>,
     tx?: any
   ): Promise<void> {
     const client = tx ?? await getPool().connect()
@@ -150,7 +149,6 @@ export class PgMateriaRepository implements MateriaRepository {
       const upsertQuery = `
         CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       `
-      const insertedCodes = new Set(materias.map(m => m.codMateria))
 
       // 1. Upsert de cada materia para este término
       for (const materia of materias) {
@@ -166,28 +164,6 @@ export class PgMateriaRepository implements MateriaRepository {
           materia.modalidad,
           materia.nroSecciones
         ])
-      }
-
-      // 2. Cargar prerrequisitos de cada materia para este término
-      for (const { codMateria, prereqNombres } of prereqs) {
-        if (prereqNombres.length === 0) continue
-
-        // Borrar prerrequisitos actuales de esta materia en este término
-        await client.query(
-          'DELETE FROM Prerequitos WHERE CodAsig = $1 AND CodTerm = $2',
-          [codMateria, term]
-        )
-
-        // Insertar nuevos prerrequisitos
-        for (const prereqCode of prereqNombres) {
-          if (!insertedCodes.has(prereqCode)) continue
-          await client.query(
-            `INSERT INTO Prerequitos (CodAsig, CodTerm, CodAsigPreq, CodTermPreq)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT DO NOTHING`,
-            [codMateria, term, prereqCode, term]
-          )
-        }
       }
 
       if (shouldManageTransaction) {
