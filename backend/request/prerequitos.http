@@ -1,18 +1,18 @@
 ### recuperar todos los prerrequisitos de un término
-GET http://localhost:3000/api/prerequitos?term=2
+GET http://localhost:3000/api/prerequitos?term=1
 
 ### recuperar los prerrequisitos de una materia específica en un término
-GET http://localhost:3000/api/prerequitos?term=2&materia=INF-301
+GET http://localhost:3000/api/prerequitos?term=1&materia=PYE-2013
 
 ### guardar un prerrequisito
 POST http://localhost:3000/api/prerequitos
 Content-Type: application/json
 
 {
-    "codigoAsignatura": "INF-301",
-    "codigoTermAsignatura": "2",
-    "codigoAsignaturaPrerequito": "INF-202",
-    "codigoTermPrerequito": "2"
+    "codigoAsignatura": "BDD-3011",
+    "codigoTermAsignatura": "1",
+    "codigoAsignaturaPrerequito": "EDA-2053",
+    "codigoTermPrerequito": "1"
 }
 
 ### eliminar un prerrequisito
@@ -20,8 +20,8 @@ DELETE http://localhost:3000/api/prerequitos
 Content-Type: application/json
 
 {
-    "codigoAsignatura": "INF-301",
-    "codigoTermAsignatura": "2",
-    "codigoAsignaturaPrerequito": "INF-202",
-    "codigoTermPrerequito": "2"
+    "codigoAsignatura": "BDD-3011",
+    "codigoTermAsignatura": "1",
+    "codigoAsignaturaPrerequito": "EDA-2053",
+    "codigoTermPrerequito": "1"
 }
