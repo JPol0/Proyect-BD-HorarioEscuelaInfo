@@ -68,8 +68,8 @@ export default function Layout () {
           <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
           {activeTerm !== null
             ? (
-              <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.name}>
-                {'Term: ' + activeTerm.name}
+              <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.id}>
+                {'Term: ' + activeTerm.id}
               </p>
               )
             : (
