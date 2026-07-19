@@ -13,6 +13,7 @@ import {
   Persons
 } from '@gravity-ui/icons'
 import type { SVGProps, ComponentType } from 'react'
+import OdsCarousel from '../components/common/OdsCarousel'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
 
@@ -62,7 +63,7 @@ export default function Layout () {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
-      <aside className="w-72 bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden">
+      <aside className="w-64 bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden">
         <div className="px-6 pt-8 pb-6">
           <h2 className="text-2xl font-bold tracking-wide text-white">SGBD HORARIOS</h2>
           <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
@@ -87,40 +88,46 @@ export default function Layout () {
               const Icon = item.Icon
               if (!item.disponible) {
                 return (
-                <button
-                  key={item.id}
-                  disabled
-                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
-                  title="Próximamente"
-                >
-                  <Icon className="h-5 w-5 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
+                  <button
+                    key={item.id}
+                    disabled
+                    className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
+                    title="Próximamente"
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
                 )
               }
 
               return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                className={({ isActive }) =>
-                  [
-                    'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
-                    isActive
-                      ? 'bg-button-primary text-white font-semibold shadow-md'
-                      : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
-                  ].join(' ')
-                }
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span>{item.label}</span>
-              </NavLink>
+                <NavLink
+                  key={item.id}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    [
+                      'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
+                      isActive
+                        ? 'bg-button-primary text-white font-semibold shadow-md'
+                        : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
+                    ].join(' ')
+                  }
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span>{item.label}</span>
+                </NavLink>
               )
             })}
         </nav>
 
+        {/* Carrusel ODS 9 */}
+        <div className="mt-auto px-3 py-3 border-t border-slate-800/40 shrink-0">
+          <OdsCarousel />
+        </div>
+
         {/* Sección de Usuario en la parte inferior */}
-        <div className="mt-auto px-6 py-6 border-t border-slate-800 flex flex-col gap-3 bg-sidebar shrink-0">
+        <div className="px-6 py-6 border-t border-slate-800 flex flex-col gap-3 bg-sidebar shrink-0">
+
           <div className="flex flex-col">
             <span className="text-sm font-medium text-slate-200 truncate" title={currentUser?.nombre}>
               {currentUser?.nombre}

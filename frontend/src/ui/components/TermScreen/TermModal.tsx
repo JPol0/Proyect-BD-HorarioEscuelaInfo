@@ -6,7 +6,7 @@ interface TermModalProps {
   onCrear: (input: CreateTermInput) => Promise<void>
 }
 
-export default function TermModal({ onClose, onCrear }: TermModalProps) {
+export default function TermModal ({ onClose, onCrear }: TermModalProps) {
   const [id, setId] = useState('')
   const [nombre, setNombre] = useState('')
   const [startDate, setStartDate] = useState('')

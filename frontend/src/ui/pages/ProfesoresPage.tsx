@@ -26,7 +26,7 @@ const STATUS_OPTIONS = [
   { id: 'R', label: 'Retirado' }
 ]
 
-export function ProfesoresPage() {
+export function ProfesoresPage () {
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -163,13 +163,13 @@ export function ProfesoresPage() {
       {cargando
         ? (
           <p className="text-subtitlePage italic animate-pulse font-hanken">Cargando profesores...</p>
-        )
+          )
         : profesoresFiltrados.length === 0
           ? (
             <div className="text-center py-12 text-text-muted bg-surface-alt rounded-xl border border-dashed border-border font-hanken">
               No se encontraron profesores con ese criterio.
             </div>
-          )
+            )
           : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {profesoresFiltrados.map((profesor) => {
@@ -191,11 +191,13 @@ export function ProfesoresPage() {
 
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
-                      {isLector ? (
+                      {isLector
+                        ? (
                         <div className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt text-xs text-text-primary h-9 font-hanken">
                           {cfg.label}
                         </div>
-                      ) : (
+                          )
+                        : (
                         <Select
                           variant="primary"
                           value={profesor.status}
@@ -221,7 +223,7 @@ export function ProfesoresPage() {
                             </ListBox>
                           </Select.Popover>
                         </Select>
-                      )}
+                          )}
                     </div>
 
                     <button
@@ -235,7 +237,7 @@ export function ProfesoresPage() {
                 )
               })}
             </div>
-          )}
+            )}
     </div>
   )
 }
