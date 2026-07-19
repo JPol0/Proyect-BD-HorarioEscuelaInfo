@@ -34,11 +34,29 @@ export class PgHorarioRepository implements HorarioRepository {
     try {
       await client.query('BEGIN')
 
-      // 1. Limpiar el horario anterior para este semestre
+      // 1. Liberar disponibilidad del horario anterior
+      const releaseAvailabilityQuery = `
+        UPDATE Disponibilidad_Horaria dh
+        SET ocupadoDH = FALSE
+        FROM Horarios h
+        JOIN Imparten i ON h.CodTerm = i.CodTerm AND h.CodAsig = i.CodAsig AND h.NroSeccion = i.NroSeccion
+        WHERE h.CodTerm = $1
+          AND dh.CodTerm = h.CodTerm
+          AND dh.CedulaP = i.cedulaP
+          AND dh.Dia = h.DiaH
+          AND dh.Hora = h.HoraH
+          AND (
+            (h.CodLab IS NULL AND i.HorasTeo > 0) OR
+            (h.CodLab IS NOT NULL AND i.HorasLab > 0)
+          )
+      `
+      await client.query(releaseAvailabilityQuery, [term])
+
+      // 2. Limpiar el horario anterior para este semestre
       const deleteQuery = 'DELETE FROM Horarios WHERE CodTerm = $1'
       await client.query(deleteQuery, [term])
 
-      // 2. Insertar los nuevos bloques (si la lista no está vacía)
+      // 3. Insertar los nuevos bloques (si la lista no está vacía)
       if (schedule.length > 0) {
         const insertQuery = `
           INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, DiaH, HoraH, CodLab)
@@ -55,6 +73,24 @@ export class PgHorarioRepository implements HorarioRepository {
             codLab
           ])
         }
+
+        // 4. Ocupar disponibilidad del nuevo horario insertado
+        const occupyAvailabilityQuery = `
+          UPDATE Disponibilidad_Horaria dh
+          SET ocupadoDH = TRUE
+          FROM Horarios h
+          JOIN Imparten i ON h.CodTerm = i.CodTerm AND h.CodAsig = i.CodAsig AND h.NroSeccion = i.NroSeccion
+          WHERE h.CodTerm = $1
+            AND dh.CodTerm = h.CodTerm
+            AND dh.CedulaP = i.cedulaP
+            AND dh.Dia = h.DiaH
+            AND dh.Hora = h.HoraH
+            AND (
+              (h.CodLab IS NULL AND i.HorasTeo > 0) OR
+              (h.CodLab IS NOT NULL AND i.HorasLab > 0)
+            )
+        `
+        await client.query(occupyAvailabilityQuery, [term])
       }
 
       await client.query('COMMIT')
