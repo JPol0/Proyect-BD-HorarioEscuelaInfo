@@ -6,4 +6,3 @@ export interface SeccionRepository {
   saveSeccion: (seccion: Seccion, tx?: any) => Promise<void>
   deleteSeccion: (codTerm: string, codMateria: string, nroSeccion: number, tx?: any) => Promise<void>
 }
-

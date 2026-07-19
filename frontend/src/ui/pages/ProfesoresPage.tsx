@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
-import { Input, Select, ListBox, Modal, Button } from '@heroui/react'
+import { Input, Select, ListBox, Modal, Button, Tooltip } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -181,7 +181,16 @@ export function ProfesoresPage () {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-titlePage font-hanken truncate">{profesor.nombre}</h3>
+                        <Tooltip>
+                          <Tooltip.Trigger className="block min-w-0 w-full text-left cursor-default">
+                            <h3 className="text-base font-bold text-titlePage font-hanken truncate">
+                              {profesor.nombre}
+                            </h3>
+                          </Tooltip.Trigger>
+                          <Tooltip.Content className="bg-surface border border-border text-titlePage text-xs font-hanken px-2.5 py-1.5 rounded-md shadow-md z-50">
+                            {profesor.nombre}
+                          </Tooltip.Content>
+                        </Tooltip>
                         <p className="text-xs text-subtitlePage font-hanken mt-0.5">{profesor.cedula}</p>
                       </div>
                       <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>

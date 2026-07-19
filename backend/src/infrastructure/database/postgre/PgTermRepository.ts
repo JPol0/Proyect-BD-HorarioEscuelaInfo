@@ -4,7 +4,7 @@ import { getPool } from './db.js'
 
 function parseDatesFromName (name: string): { startDate: string, endDate: string } {
   const match = name.match(/(Primer|Segundo)\s+Semestre\s+(\d{4})/i)
-  if (match) {
+  if (match !== null) {
     const sem = match[1].toLowerCase()
     const year = match[2]
     if (sem === 'primer') {
@@ -24,10 +24,10 @@ export class PgTermRepository implements TermRepository {
     try {
       const result = await getPool().query(query)
       return result.rows.map(row => {
-        const { startDate, endDate } = parseDatesFromName(row.descripciont)
+        const { startDate, endDate } = parseDatesFromName(row.descripciont as string)
         return {
           id: row.codterm,
-          name: row.descripciont,
+          descripcion: row.descripciont as string,
           startDate,
           endDate,
           archived: row.statust === 'D'
@@ -52,7 +52,7 @@ export class PgTermRepository implements TermRepository {
         VALUES ($1, $2, $3)
       `
       const status = term.archived ? 'D' : 'A'
-      await client.query(query, [term.id, term.name, status])
+      await client.query(query, [term.id, term.descripcion, status])
 
       await client.query('COMMIT')
     } catch (error: any) {

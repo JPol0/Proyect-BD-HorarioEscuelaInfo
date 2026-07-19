@@ -114,21 +114,21 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
             <table className="w-full border-collapse min-w-[760px]">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-slate-200">
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white">Hora</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Lunes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Martes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Miércoles</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Jueves</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Viernes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Sábado</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100">Domingo</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white w-px">Hora</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Lunes</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Martes</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Miércoles</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Jueves</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Viernes</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Sábado</th>
+                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Domingo</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {scheduleRows.map((row) => (
                   <tr key={row.hour} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-3 py-3 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center">
-                      {row.hour}
+                    <td className="px-3 py-3 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center w-px">
+                      {`${row.hour} - ${row.hour.split(':')[0]}:59`}
                     </td>
                     <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
                       <Cell value={row.Lunes} />
@@ -166,7 +166,7 @@ export function LaboratorioDisponibilidadModal ({ laboratorios, initialLabId }: 
   return (
     <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
       <Modal.Container className="flex items-center justify-center p-4">
-        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden font-sans border border-slate-100">
+        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden font-sans border border-slate-100">
           {() => (
             <LaboratorioDisponibilidadInner laboratorios={laboratorios} initialLabId={initialLabId} />
           )}

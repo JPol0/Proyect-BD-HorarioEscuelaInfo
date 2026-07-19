@@ -230,8 +230,8 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
             </div>
 
             {/* Descripción del semestre */}
-            <span className="text-sm text-slate-600 font-hanken truncate" title={term.name}>
-              {term.name}
+            <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
+              {term.descripcion}
             </span>
 
             {/* Periodo */}

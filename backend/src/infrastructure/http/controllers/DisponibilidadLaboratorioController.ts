@@ -4,7 +4,7 @@ import type { ObtenerDisponibilidadLaboratorio } from '../../../application/useC
 import type { GuardarDisponibilidadLaboratorio } from '../../../application/useCases/DisponibilidadLaboratorio/GuardarDisponibilidadLaboratorio.js'
 
 export class DisponibilidadLaboratorioController {
-  constructor(
+  constructor (
     private readonly obtenerLaboratorioPorIdUseCase: ObtenerLaboratorioPorId,
     private readonly obtenerDisponibilidadLaboratorioUseCase: ObtenerDisponibilidadLaboratorio,
     private readonly guardarDisponibilidadLaboratorioUseCase: GuardarDisponibilidadLaboratorio
