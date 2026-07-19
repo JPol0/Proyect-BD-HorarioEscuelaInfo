@@ -112,17 +112,17 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }
       <table ref={tableRef} className="min-w-full text-sm" role="grid">
         <thead className="bg-slate-50 text-slate-700">
           <tr>
-            <th className="border border-slate-200 px-3 py-2 text-left">HORA</th>
+            <th className="border border-slate-200 px-3 py-2 text-left w-px">HORA</th>
             {DIAS_SEMANA.map((dia) => (
-              <th key={dia} className="border border-slate-200 px-3 py-2 text-center">{dia}</th>
+              <th key={dia} className="border border-slate-200 px-3 py-2 text-center w-[20%]">{dia}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {MODULOS_HORARIO.map((modulo, moduloIndex) => (
             <tr key={modulo.numeroModulo}>
-              <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-medium text-slate-600">
-                {modulo.horaInicio}
+              <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-medium text-slate-600 whitespace-nowrap w-px">
+                {`${modulo.horaInicio} - ${modulo.horaInicio.split(':')[0]}:59`}
               </td>
               {DIAS_SEMANA.map((dia, diaIndex) => {
                 const celda = grilla.find((item) => item.dia === dia && item.numeroModulo === modulo.numeroModulo)
