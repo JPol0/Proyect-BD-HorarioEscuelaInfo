@@ -6,7 +6,7 @@ interface TermModalProps {
   onCrear: (input: CreateTermInput) => Promise<void>
 }
 
-export default function TermModal ({ onClose, onCrear }: TermModalProps) {
+export default function TermModal({ onClose, onCrear }: TermModalProps) {
   const [id, setId] = useState('')
   const [nombre, setNombre] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -24,7 +24,7 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
       return
     }
     if (nombre.trim() === '') {
-      setError('El nombre del término es requerido')
+      setError('La descripción del semestre es requerida')
       return
     }
     if (!startDate || !endDate) {
@@ -75,7 +75,7 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
           {/* Código del Periodo */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-hanken">
-              Código del Período
+              Código del Term
             </label>
             <input
               type="text"
@@ -89,13 +89,13 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
           {/* Nombre */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider font-hanken">
-              Nombre del Período
+              Descripción del Semestre
             </label>
             <input
               type="text"
               value={nombre}
               onChange={(e) => { setNombre(e.target.value) }}
-              placeholder="Ej. Primer Semestre 2027"
+              placeholder="Ej. Simulacion del Semestre"
               className="border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1A5F7A] focus:border-transparent transition font-hanken"
             />
           </div>

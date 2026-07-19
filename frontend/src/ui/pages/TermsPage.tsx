@@ -20,7 +20,7 @@ const createTermUseCase = new CreateTerm(termRepository)
 const deleteTermUseCase = new DeleteTerm(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
-function formatPeriodo (startDate: string, endDate: string): string {
+function formatPeriodo(startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
     '02': 'Feb',
@@ -40,7 +40,7 @@ function formatPeriodo (startDate: string, endDate: string): string {
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage () {
+export default function TermsPage() {
   const { activeTerm, setActiveTerm, clearActiveTerm } = useActiveTerm()
   const { currentUser } = useUser()
   const isLector = currentUser?.rol === 'lector'
@@ -130,27 +130,25 @@ export default function TermsPage () {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-          )
+        )
         : (
           <section className="mb-8">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4">
-              <span>📅</span> Terms Académicos
-            </h2>
+
             {terms.length === 0
               ? (
-              <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
-                )
+                <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
+              )
               : (
-              <TermsTable
-                terms={terms}
-                activeTermId={activeTerm?.id ?? null}
-                onSelect={handleSelectTerm}
-                onDelete={!isLector ? handleDeleteClick : undefined}
-                isLector={isLector}
-              />
-                )}
+                <TermsTable
+                  terms={terms}
+                  activeTermId={activeTerm?.id ?? null}
+                  onSelect={handleSelectTerm}
+                  onDelete={!isLector ? handleDeleteClick : undefined}
+                  isLector={isLector}
+                />
+              )}
           </section>
-          )}
+        )}
 
       {/* Modal */}
       {showModal && (
@@ -188,15 +186,16 @@ interface TermsTableProps {
   isLector?: boolean
 }
 
-function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
+function TermsTable({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
   const showActions = !isLector && onDelete !== undefined
-  const gridColsClass = showActions ? 'grid-cols-[1fr_200px_60px]' : 'grid-cols-[1fr_200px]'
+  const gridColsClass = showActions ? 'grid-cols-[180px_1fr_200px_60px]' : 'grid-cols-[180px_1fr_200px]'
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
       {/* Encabezado de tabla */}
       <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100`}>
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Term</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">term</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Descripción</span>
         <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
         {showActions && (
           <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">
@@ -220,15 +219,20 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                 : 'hover:bg-slate-50'
             ].join(' ')}
           >
-            {/* Nombre del term + badge "Activo" */}
+            {/* Código del term académico + badge "Activo" */}
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 font-hanken">{term.name}</span>
+              <span className="text-sm font-semibold text-slate-800 font-hanken">{term.id}</span>
               {isActive && (
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5 shrink-0">
                   ✓ Trabajando
                 </span>
               )}
             </div>
+
+            {/* Descripción del semestre */}
+            <span className="text-sm text-slate-600 font-hanken truncate" title={term.name}>
+              {term.name}
+            </span>
 
             {/* Periodo */}
             <span className="text-sm text-slate-400 font-hanken tracking-wide">
