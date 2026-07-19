@@ -189,25 +189,10 @@ INSERT INTO Secciones (CodTerm, CodAsig, NroSeccion) VALUES
 ('2026-25', 'INFO-02029', 1)
 ON CONFLICT (CodTerm, CodAsig, NroSeccion) DO NOTHING;
 
--- Horarios
-INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, DiaH, HoraH, CodLab) VALUES
-('2026-25', 'FING-02002', 1, 'Lunes', '7', NULL),
-('2026-25', 'FING-02002', 1, 'Lunes', '8', NULL),
-('2026-25', 'ADCO-00350', 1, 'Martes', '9', 1),
-('2026-25', 'FING-02009', 1, 'Miercoles', '11', NULL),
-('2026-25', 'FING-02008', 1, 'Jueves', '13', 2),
-('2026-25', 'UCAB-00009', 1, 'Viernes', '15', 3)
-ON CONFLICT (CodTerm, CodAsig, NroSeccion, DiaH, HoraH) DO NOTHING;
 
--- Disponibilidad_Horaria
-INSERT INTO Disponibilidad_Horaria (CodTerm, CedulaP, Dia, Hora, disponibilidad, ocupadoDH) VALUES
-('2026-25', 'V-12345678', 'Lunes', '7', 2, TRUE),
-('2026-25', 'V-12345678', 'Lunes', '8', 2, TRUE),
-('2026-25', 'V-87654321', 'Martes', '9', 1, FALSE),
-('2026-25', 'V-11223344', 'Miercoles', '10', 0, FALSE),
-('2026-25', 'V-55667788', 'Jueves', '11', 1, FALSE),
-('2026-25', 'V-99887766', 'Viernes', '12', 2, TRUE)
-ON CONFLICT (CodTerm, CedulaP, Dia, Hora) DO NOTHING;
+-- Disponibilidad_Horaria_Profesor
+--INSERT INTO Disponibilidad_Horaria (CodTerm, CedulaP, Dia, Hora, disponibilidad, ocupadoDH) VALUES
+
 
 -- Imparten
 INSERT INTO Imparten (cedulaP, CodAsig, CodTerm, NroSeccion, HorasLab, HorasTeo, Asignada) VALUES
