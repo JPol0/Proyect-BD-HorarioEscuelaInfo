@@ -123,14 +123,6 @@ INSERT INTO Profesores (CedulaP, NombreP, StatusP) VALUES
 ('V-20000047', 'Profesor Integral', 'A')
 ON CONFLICT (CedulaP) DO NOTHING;
 
--- Warnings
-INSERT INTO Warnings (CodWarning, CodTerm, FechaW, EstadoW, DescripcionW, ComentarioW) VALUES
-(1, '2026-25', '2026-07-07 10:00:00', 'P', 'Conflicto de horario para el profesor Carlos Gomez', 'Revisar disponibilidad'),
-(2, '2026-25', '2026-07-07 10:30:00', 'I', 'Seccion 3 de Calculo I sin profesor asignado', 'Ignorado temporalmente'),
-(3, '2026-25', '2026-07-07 11:00:00', 'R', 'Superposicion de laboratorio Lab 1', 'Resuelto cambiando de aula'),
-(4, '2026-25', '2026-07-07 12:00:00', 'P', 'Exceso de horas para Maria Rodriguez', NULL),
-(5, '2026-25', '2026-07-07 13:00:00', 'P', 'Falta disponibilidad horaria para Jose Perez', NULL)
-ON CONFLICT (CodTerm, CodWarning) DO NOTHING;
 
 -- Laboratorios
 INSERT INTO Laboratorios (CodLab, NombreLab) VALUES
