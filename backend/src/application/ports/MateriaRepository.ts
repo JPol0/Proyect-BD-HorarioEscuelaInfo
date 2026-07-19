@@ -6,9 +6,4 @@ export interface MateriaRepository {
   save: (term: string, materia: Materia, tx?: any) => Promise<void>
   delete: (term: string, codMateria: string) => Promise<void>
   deleteByTerm: (term: string, tx?: any) => Promise<void>
-  saveBatch: (
-    term: string,
-    materias: Materia[],
-    tx?: any
-  ) => Promise<void>
 }

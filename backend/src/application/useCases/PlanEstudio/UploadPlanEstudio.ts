@@ -1,10 +1,10 @@
-import { type MateriaRepository } from '../../ports/MateriaRepository.js'
 import { type PlanEstudioParserPort } from '../../ports/PlanEstudioParserPort.js'
 import { type PrerequitoRepository } from '../../ports/PrerequitoRepository.js'
+import { type SaveBatchMateria } from '../Materia/SaveBatchMateria.js'
 
 export class UploadPlanEstudio {
   constructor (
-    private readonly repository: MateriaRepository,
+    private readonly saveBatchMateria: SaveBatchMateria,
     private readonly parser: PlanEstudioParserPort,
     private readonly prerequitoRepository: PrerequitoRepository
   ) {}
@@ -13,7 +13,7 @@ export class UploadPlanEstudio {
    * Ejecuta la importación del plan de estudios desde un buffer de archivo Excel.
    * 1. Parsea el Excel para extraer materias y prerrequisitos crudos.
    * 2. Resuelve los prerrequisitos por nombre (match insensible a mayúsculas/minúsculas).
-   * 3. Llama a repository.saveBatch con las materias y guarda los prerrequisitos en PrerequitoRepository.
+   * 3. Llama a saveBatchMateria con las materias y guarda los prerrequisitos en PrerequitoRepository.
    */
   async execute (fileBuffer: Buffer, term: string, tx?: any): Promise<{ count: number, skipped: number }> {
     const { materias, skipped } = this.parser.parse(fileBuffer)
@@ -36,8 +36,8 @@ export class UploadPlanEstudio {
         .filter((code): code is string => code !== null)
     }))
 
-    // Guardar materias para el término seleccionado
-    await this.repository.saveBatch(term, materias, tx)
+    // Guardar materias para el término seleccionado usando el caso de uso SaveBatchMateria
+    await this.saveBatchMateria.execute(term, materias, tx)
 
     // Guardar prerrequisitos de forma transaccional
     for (const { codMateria, prereqNombres } of prereqsResolved) {

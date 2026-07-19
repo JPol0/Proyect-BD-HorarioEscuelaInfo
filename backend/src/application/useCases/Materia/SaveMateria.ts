@@ -11,7 +11,7 @@ export class SaveMateria {
     private readonly transactionManager: TransactionManager
   ) {}
 
-  async execute (term: string, materia: Materia): Promise<void> {
+  async execute (term: string, materia: Materia, tx?: any): Promise<void> {
     const isNewCode = materia.codMateria === undefined || materia.codMateria.trim() === ''
     const codMateria = isNewCode ? randomUUID() : materia.codMateria
 
@@ -20,17 +20,17 @@ export class SaveMateria {
       codMateria
     }
 
-    await this.transactionManager.run(async (tx) => {
+    const saveOperation = async (currentTx: any) => {
       let exists = false
       if (!isNewCode) {
-        const existingMateria = await this.materiaRepository.getById(term, codMateria, tx)
+        const existingMateria = await this.materiaRepository.getById(term, codMateria, currentTx)
         if (existingMateria !== null) {
           exists = true
         }
       }
 
       // Guardar/Upsert la materia
-      await this.materiaRepository.save(term, materiaToSave, tx)
+      await this.materiaRepository.save(term, materiaToSave, currentTx)
 
       // Si es una materia nueva, auto-generar las secciones
       if (!exists) {
@@ -39,9 +39,17 @@ export class SaveMateria {
             codTerm: term,
             codMateria: codMateria,
             nroSeccion: 0 // serial autogenerado
-          }, tx)
+          }, currentTx)
         }
       }
-    })
+    }
+
+    if (tx !== undefined) {
+      await saveOperation(tx)
+    } else {
+      await this.transactionManager.run(async (clientTx) => {
+        await saveOperation(clientTx)
+      })
+    }
   }
 }

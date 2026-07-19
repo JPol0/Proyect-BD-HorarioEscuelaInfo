@@ -109,15 +109,4 @@ export class MockMateriaRepository implements MateriaRepository {
   async deleteByTerm (term: string, tx?: any): Promise<void> {
     this.almacen.delete(term)
   }
-
-  /**
-   * Guarda un lote de materias para un término seleccionado.
-   */
-  async saveBatch (
-    term: string,
-    materias: Materia[],
-    tx?: any
-  ): Promise<void> {
-    this.almacen.set(term, [...materias])
-  }
 }
