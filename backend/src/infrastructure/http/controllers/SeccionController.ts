@@ -65,14 +65,14 @@ export class SeccionController {
 
   async save (req: Request, res: Response): Promise<void> {
     try {
-      const { codMateria, codTerm } = req.body
+      const { codMateria, codTerm, nroSeccion } = req.body
 
-      if (!codMateria || !codTerm) {
+      if (!codMateria || !codTerm || nroSeccion === undefined) {
         res.status(400).json({ error: 'Faltan campos obligatorios para guardar la sección' })
         return
       }
 
-      await this.saveSeccion.execute({ codMateria, codTerm })
+      await this.saveSeccion.execute({ codMateria, codTerm, nroSeccion })
       res.status(201).json({ message: 'Sección guardada exitosamente' })
     } catch (error: any) {
       res.status(500).json({ error: error.message })
