@@ -25,7 +25,7 @@ const getRelacionesUseCase = new GetRelacionesImparteByMateria(imparteRepository
 const saveRelacionUseCase = new SaveRelacionImparte(imparteRepository)
 const deleteRelacionUseCase = new DeleteRelacionImparte(imparteRepository)
 
-export function MateriaProfesorModal({ materia, currentSection }: MateriaProfesorModalProps) {
+export function MateriaProfesorModal ({ materia, currentSection }: MateriaProfesorModalProps) {
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [relaciones, setRelaciones] = useState<Imparte[]>([])
   const [cargando, setCargando] = useState(true)
@@ -95,14 +95,13 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
   const handleAssignTeoria = async (profesor: Profesor) => {
     if (!activeTerm) return
-    
+
     const prevRelaciones = [...relaciones]
     const existingIndex = relaciones.findIndex(r => r.cedulaP === profesor.cedula && r.nroSeccion === currentSection)
-    let newRelaciones = [...relaciones]
+    const newRelaciones = [...relaciones]
     const imparteData: Imparte = {
       cedulaP: profesor.cedula,
       codAsig: materia.codMateria,
-      codTerm: activeTerm.id,
       nroSeccion: currentSection,
       horasTeo: materia.horasTeo,
       horasLab: existingIndex !== -1 ? relaciones[existingIndex].horasLab : 0,
@@ -119,7 +118,7 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
     try {
       setError(null)
-      await saveRelacionUseCase.execute(imparteData)
+      await saveRelacionUseCase.execute(imparteData, activeTerm.id)
       await refrescarRelaciones()
     } catch (err) {
       setRelaciones(prevRelaciones)
@@ -129,14 +128,13 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
   const handleAssignLab = async (profesor: Profesor) => {
     if (!activeTerm) return
-    
+
     const prevRelaciones = [...relaciones]
     const existingIndex = relaciones.findIndex(r => r.cedulaP === profesor.cedula && r.nroSeccion === currentSection)
-    let newRelaciones = [...relaciones]
+    const newRelaciones = [...relaciones]
     const imparteData: Imparte = {
       cedulaP: profesor.cedula,
       codAsig: materia.codMateria,
-      codTerm: activeTerm.id,
       nroSeccion: currentSection,
       horasTeo: existingIndex !== -1 ? relaciones[existingIndex].horasTeo : 0,
       horasLab: materia.horasLab,
@@ -153,7 +151,7 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
     try {
       setError(null)
-      await saveRelacionUseCase.execute(imparteData)
+      await saveRelacionUseCase.execute(imparteData, activeTerm.id)
       await refrescarRelaciones()
     } catch (err) {
       setRelaciones(prevRelaciones)
@@ -163,11 +161,11 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
   const handleRemoveTeoria = async () => {
     if (!activeTerm || !relationTeoria) return
-    
+
     const prevRelaciones = [...relaciones]
     const cedulaP = relationTeoria.cedulaP
-    
-    let newRelaciones = [...relaciones]
+
+    const newRelaciones = [...relaciones]
     const existingIndex = relaciones.findIndex(r => r.cedulaP === cedulaP && r.nroSeccion === currentSection)
     if (existingIndex !== -1) {
       if (relaciones[existingIndex].horasLab > 0) {
@@ -188,7 +186,7 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
           ...relationTeoria,
           horasTeo: 0
         }
-        await saveRelacionUseCase.execute(updatedRelation)
+        await saveRelacionUseCase.execute(updatedRelation, activeTerm.id)
       } else {
         await deleteRelacionUseCase.execute(cedulaP, materia.codMateria, activeTerm.id, currentSection)
       }
@@ -202,11 +200,11 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
   const handleRemoveLab = async () => {
     if (!activeTerm || !relationLab) return
-    
+
     const prevRelaciones = [...relaciones]
     const cedulaP = relationLab.cedulaP
-    
-    let newRelaciones = [...relaciones]
+
+    const newRelaciones = [...relaciones]
     const existingIndex = relaciones.findIndex(r => r.cedulaP === cedulaP && r.nroSeccion === currentSection)
     if (existingIndex !== -1) {
       if (relaciones[existingIndex].horasTeo > 0) {
@@ -227,7 +225,7 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
           ...relationLab,
           horasLab: 0
         }
-        await saveRelacionUseCase.execute(updatedRelation)
+        await saveRelacionUseCase.execute(updatedRelation, activeTerm.id)
       } else {
         await deleteRelacionUseCase.execute(cedulaP, materia.codMateria, activeTerm.id, currentSection)
       }
@@ -292,11 +290,13 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
 
                                 <div className="flex gap-2">
                                   {materia.horasTeo > 0 && (
-                                    isThisTeoriaAssigned ? (
+                                    isThisTeoriaAssigned
+                                      ? (
                                       <span className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/10 rounded-lg">
                                         Teoría Asignada
                                       </span>
-                                    ) : (
+                                        )
+                                      : (
                                       <Button
                                         size="sm"
                                         variant="outline"
@@ -306,15 +306,17 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                                       >
                                         Asignar Teoría
                                       </Button>
-                                    )
+                                        )
                                   )}
 
                                   {materia.horasLab > 0 && (
-                                    isThisLabAssigned ? (
+                                    isThisLabAssigned
+                                      ? (
                                       <span className="text-xs font-semibold text-emerald-700 px-3 py-1.5 bg-emerald-50 rounded-lg">
                                         Laboratorio Asignado
                                       </span>
-                                    ) : (
+                                        )
+                                      : (
                                       <Button
                                         size="sm"
                                         variant="outline"
@@ -324,14 +326,14 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                                       >
                                         Asignar Laboratorio
                                       </Button>
-                                    )
+                                        )
                                   )}
                                 </div>
                               </div>
                             )
                           })}
                         </div>
-                      )}
+                        )}
                 </div>
 
                 {/* --- Columna Derecha: Profesores Asignados --- */}
@@ -351,7 +353,8 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                         <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded uppercase tracking-wider text-center">
                           Horas Teóricas
                         </span>
-                        {assignedTeoria ? (
+                        {assignedTeoria
+                          ? (
                           <div className="bg-surface p-4 rounded-xl border border-border shadow-sm relative overflow-hidden group">
                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                             <p className="text-sm font-bold text-text-primary mb-0.5 line-clamp-1" title={assignedTeoria.nombre}>
@@ -369,11 +372,12 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                               Eliminar Asignación
                             </button>
                           </div>
-                        ) : (
+                            )
+                          : (
                           <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
                             Sin asignar
                           </div>
-                        )}
+                            )}
                       </div>
 
                       {/* Columna Laboratorio */}
@@ -382,7 +386,8 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                           <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded uppercase tracking-wider text-center">
                             Horas Laboratorio
                           </span>
-                          {assignedLab ? (
+                          {assignedLab
+                            ? (
                             <div className="bg-surface p-4 rounded-xl border border-border shadow-sm relative overflow-hidden group">
                               <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
                               <p className="text-sm font-bold text-text-primary mb-0.5 line-clamp-1" title={assignedLab.nombre}>
@@ -400,11 +405,12 @@ export function MateriaProfesorModal({ materia, currentSection }: MateriaProfeso
                                 Eliminar Asignación
                               </button>
                             </div>
-                          ) : (
+                              )
+                            : (
                             <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
                               Sin asignar
                             </div>
-                          )}
+                              )}
                         </div>
                       )}
                     </div>

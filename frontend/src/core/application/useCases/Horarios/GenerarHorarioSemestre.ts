@@ -1,6 +1,7 @@
 import { type Materia } from '../../../domain/Materia'
 import { type Horario } from '../../../domain/Horario'
 import { type DisponibilidadHoraria } from '../../../domain/DisponibilidadHoraria'
+import { type Prerequito } from '../../../domain/Prerequito'
 import { validarAsignacionesPrevias } from './AlgoritmoGeneracion/ValidarAsignacionesPrevias'
 import { asignarSeccionesDeMateria } from './AlgoritmoGeneracion/AsignarSecciones'
 
@@ -10,6 +11,7 @@ export interface ObtenerDisponibilidadPort {
 
 export interface GenerarHorarioRequest {
   materias: Materia[]
+  prerequitos: Prerequito[]
   horarioActual: Horario[]
   termId: string
   selectedSemester: number
@@ -32,7 +34,7 @@ export class GenerarHorarioSemestre {
   }
 
   async execute (request: GenerarHorarioRequest): Promise<GenerarHorarioResponse> {
-    const { materias, horarioActual, termId, selectedSemester, profesorAssignments, profesorLabAssignments, laboratorioAssignments } = request
+    const { materias, prerequitos, horarioActual, termId, selectedSemester, profesorAssignments, profesorLabAssignments, laboratorioAssignments } = request
     const advertencias: string[] = []
     let tuplasEnProceso = [...horarioActual]
 
@@ -52,8 +54,15 @@ export class GenerarHorarioSemestre {
     for (const materia of materiasDelSemestre) {
       if (materia.esComun) continue // Ya asignadas manualmente
 
+      const prereqCodes = new Set(
+        prerequitos
+          .filter(p => p.codigoAsignatura === materia.codMateria)
+          .map(p => p.codigoAsignaturaPrerequito)
+      )
+
       const resultado = await asignarSeccionesDeMateria({
         materia,
+        prereqCodes,
         tuplasEnProceso,
         termId,
         profesorAssignments,

@@ -16,7 +16,12 @@ export class HttpDisponibilidadLaboratorioRepository implements DisponibilidadLa
       throw new Error('Error al obtener la disponibilidad del laboratorio')
     }
     const data = await response.json() as DisponibilidadLaboratorioResponse
-    return data.disponibilidad
+    return data.disponibilidad.map(d => ({
+      idLaboratorio: Number(d.idLaboratorio),
+      dia: d.dia,
+      hora: d.hora,
+      ocupado: Boolean(d.ocupado)
+    }))
   }
 
   async guardar (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[]): Promise<void> {

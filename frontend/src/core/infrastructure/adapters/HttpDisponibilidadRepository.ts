@@ -18,7 +18,14 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
       throw new Error('Error al conectar con el servidor de horarios')
     }
     const data = await response.json() as DisponibilidadResponse
-    return data.disponibilidad
+    return data.disponibilidad.map(d => ({
+      cedulaProfesor: d.cedulaProfesor,
+      dia: d.dia,
+      numeroModulo: Number(d.numeroModulo),
+      disponibilidad: Number(d.disponibilidad) as any,
+      ocupado: Boolean(d.ocupado),
+      materiaAsignada: d.materiaAsignada ?? null
+    }))
   }
 
   async obtenerProfesor (cedulaProfesor: string, codTerm: string): Promise<Profesor> {
@@ -47,4 +54,3 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
     }
   }
 }
-

@@ -8,7 +8,6 @@ export interface MateriaRepository {
   saveBatch: (
     term: string,
     materias: Materia[],
-    prereqs: Array<{ codMateria: string, prereqNombres: string[] }>,
     tx?: any
   ) => Promise<void>
 }

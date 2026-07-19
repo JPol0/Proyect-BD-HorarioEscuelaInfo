@@ -79,9 +79,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
           await saveUseCase.execute({
             codLab: newPrincipalId,
             codAsig: materia.codMateria,
-            codTerm: activeTerm.id,
             prioridad: 1
-          })
+          }, activeTerm.id)
           setSelectedPrincipalId(valorId)
         }
       } catch (err) {
@@ -98,9 +97,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
         await saveUseCase.execute({
           codLab: newSecundarioId,
           codAsig: materia.codMateria,
-          codTerm: activeTerm.id,
           prioridad: 2
-        })
+        }, activeTerm.id)
         setSelectedSecundarioIds(prev => [...prev, valorId])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al guardar la asignación')
@@ -186,17 +184,22 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                                 </div>
 
                                 <div className="flex gap-2">
-                                  {isPrincipal ? (
+                                  {isPrincipal
+                                    ? (
                                     <span className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/10 rounded-lg">
                                       Principal Asignado
                                     </span>
-                                  ) : isSecundario ? (
+                                      )
+                                    : isSecundario
+                                      ? (
                                     <span className="text-xs font-semibold text-emerald-700 px-3 py-1.5 bg-emerald-50 rounded-lg">
                                       Secundario Asignado
                                     </span>
-                                  ) : (
+                                        )
+                                      : (
                                     <>
-                                      {selectedPrincipalId === 'ninguno' ? (
+                                      {selectedPrincipalId === 'ninguno'
+                                        ? (
                                         <Button
                                           size="sm"
                                           variant="outline"
@@ -205,7 +208,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                                         >
                                           Asignar Principal
                                         </Button>
-                                      ) : (
+                                          )
+                                        : (
                                         <Button
                                           size="sm"
                                           variant="outline"
@@ -214,15 +218,15 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                                         >
                                           Asignar Secundario
                                         </Button>
-                                      )}
+                                          )}
                                     </>
-                                  )}
+                                        )}
                                 </div>
                               </div>
                             )
                           })}
                         </div>
-                      )}
+                        )}
                 </div>
 
                 {/* --- Columna Derecha: Laboratorios Asignados --- */}
@@ -242,10 +246,11 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                         <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded uppercase tracking-wider text-center">
                           Laboratorio Principal
                         </span>
-                        {selectedPrincipalId !== 'ninguno' ? (
-                          (() => {
-                            const principalLab = laboratorios.find(l => String(l.id) === selectedPrincipalId)
-                            return (
+                        {selectedPrincipalId !== 'ninguno'
+                          ? (
+                              (() => {
+                                const principalLab = laboratorios.find(l => String(l.id) === selectedPrincipalId)
+                                return (
                               <div className="bg-surface p-4 rounded-xl border border-border shadow-sm relative overflow-hidden group bg-white">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                                 <p className="text-sm font-bold text-text-primary mb-0.5 line-clamp-1" title={principalLab?.name}>
@@ -263,13 +268,14 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                                   Eliminar Principal
                                 </button>
                               </div>
+                                )
+                              })()
                             )
-                          })()
-                        ) : (
+                          : (
                           <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
                             Sin principal asignado
                           </div>
-                        )}
+                            )}
                       </div>
 
                       {/* Laboratorios Secundarios */}
@@ -278,7 +284,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                           <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded uppercase tracking-wider text-center">
                             Laboratorios Secundarios
                           </span>
-                          {selectedSecundarioIds.length > 0 ? (
+                          {selectedSecundarioIds.length > 0
+                            ? (
                             <div className="flex flex-col gap-2 pr-1">
                               {selectedSecundarioIds.map(secId => {
                                 const secLab = laboratorios.find(l => String(l.id) === secId)
@@ -303,11 +310,12 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                                 )
                               })}
                             </div>
-                          ) : (
+                              )
+                            : (
                             <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
                               Sin secundarios asignados
                             </div>
-                          )}
+                              )}
                         </div>
                       )}
                     </div>

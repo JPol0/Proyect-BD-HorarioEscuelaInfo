@@ -10,7 +10,15 @@ export class HttpRImparteRepository implements RImparteRepository {
     if (!response.ok) {
       throw new Error('Error al recuperar las asignaciones del servidor')
     }
-    return await response.json() as Imparte[]
+    const raw = await response.json() as any[]
+    return raw.map(r => ({
+      cedulaP: r.cedulaP,
+      codAsig: r.codAsig,
+      nroSeccion: Number(r.nroSeccion),
+      horasLab: Number(r.horasLab),
+      horasTeo: Number(r.horasTeo),
+      asignada: Boolean(r.asignada)
+    }))
   }
 
   async getByMateria (term: string, codAsig: string): Promise<Imparte[]> {
@@ -18,16 +26,24 @@ export class HttpRImparteRepository implements RImparteRepository {
     if (!response.ok) {
       throw new Error('Error al recuperar las asignaciones por materia del servidor')
     }
-    return await response.json() as Imparte[]
+    const raw = await response.json() as any[]
+    return raw.map(r => ({
+      cedulaP: r.cedulaP,
+      codAsig: r.codAsig,
+      nroSeccion: Number(r.nroSeccion),
+      horasLab: Number(r.horasLab),
+      horasTeo: Number(r.horasTeo),
+      asignada: Boolean(r.asignada)
+    }))
   }
 
-  async save (imparte: Imparte): Promise<void> {
+  async save (imparte: Imparte, term: string): Promise<void> {
     const response = await fetch(`${this.apiUrl}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(imparte)
+      body: JSON.stringify({ ...imparte, codTerm: term })
     })
 
     if (!response.ok) {

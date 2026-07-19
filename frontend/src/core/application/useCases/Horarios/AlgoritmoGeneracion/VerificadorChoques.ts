@@ -16,6 +16,7 @@ export interface ContextoChoques {
   profesorLabAssignments?: Record<string, Record<number, string>>
   disponibilidad: DisponibilidadHoraria[]
   soloPrioridad1: boolean
+  prereqCodes?: Set<string>
 }
 
 export interface ResultadoChoque {
@@ -33,7 +34,7 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
   // 2. Choque de Profesor
   if (!estaOcupado && ctx.cedulaProfesor) {
     estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
-      if (t.dia !== ctx.dia || t.hora !== ctx.hora || t.codTerm !== ctx.termId) return false
+      if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
       const hasLab = !!t.laboratorio || !!(t as any).codLaboratorio
       const profeAsignado = hasLab
         ? ctx.profesorLabAssignments?.[t.codAsig]?.[t.nroSeccion]
@@ -51,7 +52,7 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
 
       const esAdyacente = Math.abs(t.semestre - ctx.materia.semestre) === 1
       if (esAdyacente) {
-        const materiaChocandoEsPrerrequisito = ctx.materia.prerrequisitos?.some(p => p.codMateria === t.codAsig)
+        const materiaChocandoEsPrerrequisito = ctx.prereqCodes?.has(t.codAsig)
         if (materiaChocandoEsPrerrequisito) {
           return false
         }

@@ -25,7 +25,7 @@ export class PgHorarioRepository implements HorarioRepository {
       dia: row.diah,
       hora: row.horah,
       semestre: Number(row.semestrepe),
-      laboratorio: row.codlab ? { id: Number(row.codlab), name: row.nombrelab } : null
+      laboratorio: (row.codlab !== null && row.codlab !== undefined) ? { id: Number(row.codlab), name: String(row.nombrelab) } : null
     }))
   }
 
@@ -45,9 +45,9 @@ export class PgHorarioRepository implements HorarioRepository {
           VALUES ($1, $2, $3, $4, $5, $6)
         `
         for (const bloque of schedule) {
-          const codLab = bloque.laboratorio ? bloque.laboratorio.id : null
+          const codLab = (bloque.laboratorio !== null && bloque.laboratorio !== undefined) ? bloque.laboratorio.id : null
           await client.query(insertQuery, [
-            bloque.codTerm,
+            term,
             bloque.codAsig,
             bloque.nroSeccion,
             bloque.dia,

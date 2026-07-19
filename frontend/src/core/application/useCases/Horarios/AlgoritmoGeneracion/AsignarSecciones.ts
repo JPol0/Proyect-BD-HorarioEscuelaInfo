@@ -6,6 +6,7 @@ import { intentarAsignarBloque } from './BuscadorBloquesLibres'
 
 export interface AsignarSeccionesParams {
   materia: Materia
+  prereqCodes?: Set<string>
   tuplasEnProceso: Horario[]
   termId: string
   profesorAssignments: Record<string, Record<number, string>>
@@ -21,7 +22,7 @@ export interface AsignarSeccionesResult {
 }
 
 export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams): Promise<AsignarSeccionesResult> {
-  const { materia, termId, profesorAssignments, profesorLabAssignments, laboratorioAssignments, cacheDisponibilidad, disponibilidadRepo } = params
+  const { materia, prereqCodes, termId, profesorAssignments, profesorLabAssignments, laboratorioAssignments, cacheDisponibilidad, disponibilidadRepo } = params
   let tuplasActualizadas = [...params.tuplasEnProceso]
   const advertencias: string[] = []
 
@@ -62,6 +63,7 @@ export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams)
 
       const ctxBase = {
         materia,
+        prereqCodes,
         nroSeccion: sec,
         termId,
         cedulaProfesor,

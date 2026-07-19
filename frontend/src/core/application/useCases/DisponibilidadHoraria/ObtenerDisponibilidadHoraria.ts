@@ -27,7 +27,6 @@ export class ObtenerDisponibilidadHoraria {
 
         grillaCompleta.push({
           cedulaProfesor,
-          codTerm,
           dia,
           numeroModulo: modulo.numeroModulo,
           disponibilidad: 0,

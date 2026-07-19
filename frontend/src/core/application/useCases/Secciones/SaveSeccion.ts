@@ -8,7 +8,7 @@ export class SaveSeccion {
     this.repository = repository
   }
 
-  async execute (seccion: Seccion): Promise<void> {
-    await this.repository.saveSeccion(seccion)
+  async execute (seccion: Seccion, term: string): Promise<void> {
+    await this.repository.saveSeccion(seccion, term)
   }
 }

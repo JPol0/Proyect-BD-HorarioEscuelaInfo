@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     NroSeccionesPE dom_num_secciones NOT NULL,
     
     PRIMARY KEY (CodTerm,CodAsig),
+    CONSTRAINT uq_plan_de_estudio_nombre UNIQUE (CodTerm, NombrePE),
     CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
