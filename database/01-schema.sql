@@ -22,8 +22,8 @@ CREATE DOMAIN dom_num_secciones AS SMALLINT
     CONSTRAINT chk_dom_num_secciones CHECK (VALUE BETWEEN 1 AND 20);
 
 --Dominios para tabla Profesores
-CREATE DOMAIN dom_status_profesor AS VARCHAR(1)
-    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'P', 'R'));
+CREATE DOMAIN dom_status_profesor AS VARCHAR(2)
+    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'ER', 'R'));
 
 --Dominios para tabla Warnings
 CREATE DOMAIN dom_estado_warning AS VARCHAR(1)
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
 CREATE TABLE IF NOT EXISTS Profesores(
     CedulaP VARCHAR(10) NOT NULL,
     NombreP VARCHAR(100) NOT NULL,
-    StatusP dom_status_profesor NOT NULL, -- Activo, Pausado, Reposo
+    StatusP dom_status_profesor NOT NULL, -- Activo, En Reposo, Retirado
     
     PRIMARY KEY (CedulaP)
 );

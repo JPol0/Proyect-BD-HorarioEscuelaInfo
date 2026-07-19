@@ -53,7 +53,7 @@ export class DisponibilidadController {
     try {
       const { cedula } = req.params as { cedula: string }
       const { status } = req.body as { status: string }
-      const profesor = await this.actualizarStatusUseCase.execute(cedula, status as 'A' | 'P' | 'R')
+      const profesor = await this.actualizarStatusUseCase.execute(cedula, status as 'A' | 'ER' | 'R')
       res.json(profesor)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado'
