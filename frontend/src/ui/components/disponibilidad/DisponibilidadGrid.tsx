@@ -1,11 +1,12 @@
 import { type JSX, type KeyboardEvent, useCallback, useRef, useState } from 'react'
-import type { DiaSemana, DisponibilidadHoraria } from '../../../core/domain/DisponibilidadHoraria'
+import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../../core/domain/DisponibilidadHoraria'
 import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../core/domain/DisponibilidadHoraria'
 import { DisponibilidadCell } from './DisponibilidadCell'
 
 interface DisponibilidadGridProps {
   grilla: DisponibilidadHoraria[]
   onCeldaClick: (dia: DiaSemana, numeroModulo: number) => void
+  onCeldaValueChange: (dia: DiaSemana, numeroModulo: number, valor: NivelDisponibilidad) => void
 }
 
 interface CeldaSeleccionada {
@@ -13,7 +14,7 @@ interface CeldaSeleccionada {
   moduloIndex: number
 }
 
-export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGridProps): JSX.Element {
+export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }: DisponibilidadGridProps): JSX.Element {
   const [seleccionada, setSeleccionada] = useState<CeldaSeleccionada | null>(null)
   const tableRef = useRef<HTMLTableElement>(null)
 
@@ -46,6 +47,18 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
     let nextModulo = moduloIndex
 
     switch (event.key) {
+      case '0':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 0)
+        return
+      case '1':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 1)
+        return
+      case '2':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 2)
+        return
       case 'ArrowRight':
         event.preventDefault()
         nextDia = Math.min(diaIndex + 1, DIAS_SEMANA.length - 1)
@@ -92,7 +105,7 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
 
     setSeleccionada({ diaIndex: nextDia, moduloIndex: nextModulo })
     focusCelda(nextDia, nextModulo)
-  }, [onCeldaClick, focusCelda])
+  }, [onCeldaClick, onCeldaValueChange, focusCelda])
 
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">

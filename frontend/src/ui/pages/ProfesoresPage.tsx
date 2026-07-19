@@ -183,11 +183,11 @@ export function ProfesoresPage () {
                       <div className="flex-1 min-w-0">
                         <Tooltip>
                           <Tooltip.Trigger className="block min-w-0 w-full text-left cursor-default">
-                            <h3 className="text-base font-bold text-titlePage font-hanken truncate" title={profesor.nombre}>
+                            <h3 className="text-base font-bold text-titlePage font-hanken truncate">
                               {profesor.nombre}
                             </h3>
                           </Tooltip.Trigger>
-                          <Tooltip.Content className="bg-surface border border-border text-titlePage text-xs font-hanken px-2.5 py-1.5 rounded-md shadow-md">
+                          <Tooltip.Content className="bg-surface border border-border text-titlePage text-xs font-hanken px-2.5 py-1.5 rounded-md shadow-md z-50">
                             {profesor.nombre}
                           </Tooltip.Content>
                         </Tooltip>

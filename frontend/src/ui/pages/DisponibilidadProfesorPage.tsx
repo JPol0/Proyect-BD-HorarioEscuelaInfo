@@ -1,7 +1,7 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import type { DiaSemana, DisponibilidadHoraria } from '../../core/domain/DisponibilidadHoraria'
+import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../core/domain/DisponibilidadHoraria'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpDisponibilidadRepository } from '../../core/infrastructure/adapters/HttpDisponibilidadRepository'
 import { ObtenerDisponibilidadHoraria } from '../../core/application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria'
@@ -54,6 +54,18 @@ export function DisponibilidadProfesorPage (): JSX.Element {
     setGrilla((actual) => actualizarCeldaUseCase.execute(actual, dia, numeroModulo))
   }, [])
 
+  const onCeldaValueChange = useCallback((dia: DiaSemana, numeroModulo: number, valor: NivelDisponibilidad): void => {
+    setGrilla((actual) => actual.map((celda) => {
+      if (celda.dia !== dia || celda.numeroModulo !== numeroModulo || celda.ocupado) {
+        return celda
+      }
+      return {
+        ...celda,
+        disponibilidad: valor
+      }
+    }))
+  }, [])
+
   const onGuardar = useCallback(async (): Promise<void> => {
     try {
       setGuardando(true)
@@ -80,7 +92,7 @@ export function DisponibilidadProfesorPage (): JSX.Element {
       {cargando ? <p className="text-subtitlePage font-hanken">Cargando disponibilidad...</p> : null}
       {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{mensajeExito}</p> : null}
-      {!cargando ? <DisponibilidadGrid grilla={grilla} onCeldaClick={onCeldaClick} /> : null}
+      {!cargando ? <DisponibilidadGrid grilla={grilla} onCeldaClick={onCeldaClick} onCeldaValueChange={onCeldaValueChange} /> : null}
     </div>
   )
 }
