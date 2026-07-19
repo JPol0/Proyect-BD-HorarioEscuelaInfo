@@ -39,13 +39,14 @@ export class PgSeccionRepository implements SeccionRepository {
     }
   }
 
-  async saveSeccion (seccion: Seccion): Promise<void> {
+  async saveSeccion (seccion: Seccion, tx?: any): Promise<void> {
+    const executor = tx ?? getPool()
     const query = `
       INSERT INTO Secciones (CodTerm, CodAsig)
       VALUES ($1, $2)
     `
     try {
-      await getPool().query(query, [seccion.codTerm, seccion.codMateria])
+      await executor.query(query, [seccion.codTerm, seccion.codMateria])
     } catch (error: any) {
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')

@@ -17,8 +17,8 @@ export class DeleteRelacionImparte {
     if (term.trim() === '') {
       throw new Error('El término es requerido para eliminar')
     }
-    if (nroSeccion <= 0) {
-      throw new Error('El número de sección es requerido para eliminar')
+    if (isNaN(nroSeccion) || nroSeccion <= 0) {
+      throw new Error('El número de sección debe ser un número entero válido y mayor a 0 para eliminar')
     }
 
     await this.repository.delete(cedulaP, codAsig, term, nroSeccion)

@@ -8,10 +8,10 @@ export class SaveSeccion {
     this.repository = repository
   }
 
-  async execute (seccion: Seccion): Promise<void> {
-    if (!seccion.codTerm || !seccion.codMateria) {
+  async execute (seccion: Seccion, tx?: any): Promise<void> {
+    if (seccion.codTerm.trim() === '' || seccion.codMateria.trim() === '') {
       throw new Error('El término y la materia son obligatorios para crear una sección')
     }
-    await this.repository.saveSeccion(seccion)
+    await this.repository.saveSeccion(seccion, tx)
   }
 }
