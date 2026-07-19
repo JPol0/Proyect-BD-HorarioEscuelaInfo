@@ -4,6 +4,7 @@ import { type MateriaRepository } from '../../../application/ports/MateriaReposi
 import { type RImparteRepository } from '../../../application/ports/RImparteRepository.js'
 import { type TransactionManager } from '../../../application/ports/TransactionManager.js'
 import { type PrerequitoRepository } from '../../../application/ports/PrerequitoRepository.js'
+import { type SeccionRepository } from '../../../application/ports/SeccionRepository.js'
 import { GetMaterias } from '../../../application/useCases/Materia/GetMaterias.js'
 import { SaveMateria } from '../../../application/useCases/Materia/SaveMateria.js'
 import { DeleteMateria } from '../../../application/useCases/Materia/DeleteMateria.js'
@@ -20,14 +21,15 @@ export default function createMateriaRouter (
   materiaRepository: MateriaRepository,
   imparteRepository: RImparteRepository,
   transactionManager: TransactionManager,
-  prerequitoRepository: PrerequitoRepository
+  prerequitoRepository: PrerequitoRepository,
+  seccionRepository: SeccionRepository
 ): Router {
   const router = Router()
 
   const parser = new ExcelPlanEstudioParserAdapter()
 
   const getUseCase = new GetMaterias(materiaRepository)
-  const saveUseCase = new SaveMateria(materiaRepository)
+  const saveUseCase = new SaveMateria(materiaRepository, seccionRepository, transactionManager)
   const deleteUseCase = new DeleteMateria(materiaRepository)
   const uploadUseCase = new UploadPlanEstudio(materiaRepository, parser, prerequitoRepository)
   const clearTermUseCase = new ClearTermUseCase(imparteRepository, materiaRepository)

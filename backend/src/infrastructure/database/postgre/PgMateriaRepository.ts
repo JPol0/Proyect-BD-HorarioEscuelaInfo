@@ -46,21 +46,62 @@ export class PgMateriaRepository implements MateriaRepository {
   }
 
   /**
+   * Obtiene una materia específica por su código y término.
+   */
+  async getById (term: string, codMateria: string, tx?: any): Promise<Materia | null> {
+    const executor = tx ?? getPool()
+    const query =
+      `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE,
+      NroSeccionesPE
+      FROM Plan_de_Estudio
+      WHERE CodTerm = $1 AND CodAsig = $2
+      ;`
+
+    interface PlanEstudioRow {
+      codasig: string
+      nombrepe: string
+      horapractica: number
+      horateorica: number
+      horalaboratorio: number
+      semestrepe: number
+      escomunpe: boolean
+      modalidadpe: string
+      nroseccionespe: number
+    }
+
+    const result = await executor.query(query, [term, codMateria])
+    if (result.rowCount === 0) {
+      return null
+    }
+
+    const row = result.rows[0] as PlanEstudioRow
+    return {
+      codMateria: row.codasig,
+      nombre: row.nombrepe,
+      nroSecciones: Number(row.nroseccionespe),
+      horasPrac: Number(row.horapractica),
+      horasTeo: Number(row.horateorica),
+      horasLab: Number(row.horalaboratorio),
+      semestre: Number(row.semestrepe),
+      modalidad: row.modalidadpe as MateriaModalidad,
+      esComun: Boolean(row.escomunpe)
+    }
+  }
+
+  /**
    * Guarda una materia mediante un Upsert (inserta o actualiza si ya existe).
    */
-  async save (term: string, materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia, tx?: any): Promise<void> {
     if (materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
 
-    const client = await getPool().connect()
+    const executor = tx ?? getPool()
     try {
-      await client.query('BEGIN')
-
       const query = `
         CALL upsert_materia($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       `
-      await client.query(query, [
+      await executor.query(query, [
         materia.codMateria,
         term,
         materia.nombre,
@@ -72,26 +113,11 @@ export class PgMateriaRepository implements MateriaRepository {
         materia.modalidad,
         materia.nroSecciones
       ])
-
-      // Generar automáticamente las secciones según el nroSecciones
-      const sectionsQuery = `
-        INSERT INTO Secciones (CodTerm, CodAsig, NroSeccion)
-        VALUES ($1, $2, $3)
-        ON CONFLICT DO NOTHING;
-      `
-      for (let i = 1; i <= materia.nroSecciones; i++) {
-        await client.query(sectionsQuery, [term, materia.codMateria, i])
-      }
-
-      await client.query('COMMIT')
     } catch (error: any) {
-      await client.query('ROLLBACK')
       if (error.code === '42501') {
         throw new Error('Permisos de base de datos insuficientes para realizar esta operación.')
       }
       throw error
-    } finally {
-      client.release()
     }
   }
 
