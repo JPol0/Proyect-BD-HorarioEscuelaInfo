@@ -38,7 +38,7 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
 
     try {
       setCargando(true)
-      await onCrear({ id: cleanedId, name: nombre.trim(), startDate, endDate })
+      await onCrear({ id: cleanedId, descripcion: nombre.trim(), startDate, endDate })
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado')

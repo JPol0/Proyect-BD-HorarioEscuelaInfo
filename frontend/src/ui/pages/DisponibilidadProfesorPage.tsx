@@ -21,7 +21,6 @@ export function DisponibilidadProfesorPage (): JSX.Element {
   const navigate = useNavigate()
   const { activeTerm } = useActiveTerm()
   const termId = activeTerm?.id ?? '2026-25'
-  const termName = activeTerm?.name ?? 'Semestre 1'
   const cedulaProfesor = cedula ?? 'V-12345678'
 
   const [profesor, setProfesor] = useState<Profesor | null>(null)
@@ -90,7 +89,7 @@ export function DisponibilidadProfesorPage (): JSX.Element {
       >
         ← Volver a Profesores
       </button>
-      <DisponibilidadHeader profesor={profesor} codTerm={termName} guardando={guardando} onGuardar={() => { void onGuardar() }} />
+      <DisponibilidadHeader profesor={profesor} codTerm={termId} guardando={guardando} onGuardar={() => { void onGuardar() }} />
       {cargando ? <p className="text-subtitlePage font-hanken">Cargando disponibilidad...</p> : null}
       {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{mensajeExito}</p> : null}

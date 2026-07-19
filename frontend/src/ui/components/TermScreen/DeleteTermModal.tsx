@@ -8,7 +8,7 @@ interface DeleteTermModalProps {
   onConfirm: (term: Term) => Promise<void>
 }
 
-export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTermModalProps) {
+export default function DeleteTermModal({ term, onClose, onConfirm }: DeleteTermModalProps) {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -54,7 +54,7 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
         <div className="my-5 p-4 bg-slate-50 rounded-xl border border-slate-100">
           <p className="text-sm text-slate-700 font-hanken">
             ¿Estás seguro de que deseas eliminar el período académico{' '}
-            <strong className="text-slate-900 font-bold">"{term.name}"</strong>?
+            <strong className="text-slate-900 font-bold">"{term.id}"</strong>?
           </p>
         </div>
 
@@ -85,11 +85,11 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
             {cargando
               ? 'Eliminando...'
               : (
-              <>
-                <TrashBin className="w-4 h-4" />
-                Eliminar Term
-              </>
-                )}
+                <>
+                  <TrashBin className="w-4 h-4" />
+                  Eliminar Term
+                </>
+              )}
           </button>
         </div>
       </div>

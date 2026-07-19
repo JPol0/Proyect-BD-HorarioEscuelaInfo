@@ -33,7 +33,7 @@ export class SaveMateria {
         for (let i = existingCount + 1; i <= materiaToSave.nroSecciones; i++) {
           await this.seccionRepository.saveSeccion({
             codTerm: term,
-            codMateria: codMateria,
+            codMateria,
             nroSeccion: i
           }, currentTx)
         }

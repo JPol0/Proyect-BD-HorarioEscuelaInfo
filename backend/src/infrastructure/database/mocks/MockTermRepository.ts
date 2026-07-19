@@ -8,35 +8,35 @@ import { type JsonHorarioRepository } from './JsonHorarioRepository.js'
 const MOCK_TERMS: Term[] = [
   {
     id: '1',
-    name: 'Segundo Semestre 2026',
+    descripcion: 'Segundo Semestre 2026',
     startDate: '2026-08-01',
     endDate: '2026-12-31',
     archived: true
   },
   {
     id: '2',
-    name: 'Primer Semestre 2026',
+    descripcion: 'Primer Semestre 2026',
     startDate: '2026-03-01',
     endDate: '2026-07-31',
     archived: true
   },
   {
     id: '3',
-    name: 'Segundo Semestre 2025',
+    descripcion: 'Segundo Semestre 2025',
     startDate: '2025-08-01',
     endDate: '2025-12-31',
     archived: true
   },
   {
     id: '4',
-    name: 'Primer Semestre 2025',
+    descripcion: 'Primer Semestre 2025',
     startDate: '2025-03-01',
     endDate: '2025-07-31',
     archived: true
   },
   {
     id: '5',
-    name: 'Segundo Semestre 2024',
+    descripcion: 'Segundo Semestre 2024',
     startDate: '2024-08-01',
     endDate: '2024-12-31',
     archived: true
