@@ -20,7 +20,7 @@ const createTermUseCase = new CreateTerm(termRepository)
 const deleteTermUseCase = new DeleteTerm(termRepository)
 
 // Formatea "2026-08-01" → "Ago 2026" en español abreviado
-function formatPeriodo(startDate: string, endDate: string): string {
+function formatPeriodo (startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
     '02': 'Feb',
@@ -40,7 +40,7 @@ function formatPeriodo(startDate: string, endDate: string): string {
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage() {
+export default function TermsPage () {
   const { activeTerm, setActiveTerm, clearActiveTerm } = useActiveTerm()
   const { currentUser } = useUser()
   const isLector = currentUser?.rol === 'lector'
@@ -130,14 +130,14 @@ export default function TermsPage() {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-        )
+          )
         : (
           <section className="mb-8">
 
             {terms.length === 0
               ? (
                 <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
-              )
+                )
               : (
                 <TermsTable
                   terms={terms}
@@ -146,9 +146,9 @@ export default function TermsPage() {
                   onDelete={!isLector ? handleDeleteClick : undefined}
                   isLector={isLector}
                 />
-              )}
+                )}
           </section>
-        )}
+          )}
 
       {/* Modal */}
       {showModal && (
@@ -186,7 +186,7 @@ interface TermsTableProps {
   isLector?: boolean
 }
 
-function TermsTable({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
+function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
   const showActions = !isLector && onDelete !== undefined
   const gridColsClass = showActions ? 'grid-cols-[180px_1fr_200px_60px]' : 'grid-cols-[180px_1fr_200px]'
 

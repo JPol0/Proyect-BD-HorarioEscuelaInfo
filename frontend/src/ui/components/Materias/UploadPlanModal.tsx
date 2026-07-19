@@ -221,8 +221,8 @@ export default function UploadPlanModal ({ isOpen, onClose, termId: propTermId, 
                     onPress={() => { void handleUpload() }}
                     isDisabled={file == null || uploadState === 'loading' || termId === ''}
                   >
-                    {uploadState === 'loading' 
-                      ? 'Importando...' 
+                    {uploadState === 'loading'
+                      ? 'Importando...'
                       : <><FileArrowDown className="w-4 h-4" /> Importar Plan</>}
                   </Button>
                 )}
