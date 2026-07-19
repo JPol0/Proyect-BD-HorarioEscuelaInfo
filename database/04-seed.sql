@@ -136,9 +136,10 @@ ON CONFLICT (CodTerm, CodWarning) DO NOTHING;
 INSERT INTO Laboratorios (CodLab, NombreLab) VALUES
 (1, 'Laboratorio de Computacion 1'),
 (2, 'Laboratorio de Computacion 2'),
-(3, 'Laboratorio de Fisica'),
-(4, 'Laboratorio de Quimica'),
-(5, 'Laboratorio de Redes')
+(3, 'Laboratorio de Base de Datos'),
+(4, 'Laboratorio de Aplicaciones Moviles'),
+(5, 'Laboratorio de Redes'),
+(6, 'Laboratorio de Circuitos Electricos')
 ON CONFLICT (CodLab) DO NOTHING;
 
 -- Disponibilidad_Laboratorio
