@@ -23,6 +23,7 @@ import { GetRelacionesSonEjercidos } from '../../core/application/useCases/relac
 import { type Prerequito } from '../../core/domain/Prerequito'
 import { HttpPrerequitoRepository } from '../../core/infrastructure/adapters/HttpPrerequitoRepository'
 import { ObtenerPrerequitosPorTerm } from '../../core/application/useCases/Prerequito/ObtenerPrerequitosPorTerm'
+import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAlertRepository'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -37,6 +38,7 @@ const sonEjercidosRepository = new HttpRSonEjercidosRepository()
 const getRelacionesSonEjercidosUseCase = new GetRelacionesSonEjercidos(sonEjercidosRepository)
 const prerequitoRepository = new HttpPrerequitoRepository()
 const getPrerequitosUseCase = new ObtenerPrerequitosPorTerm(prerequitoRepository)
+const alertRepository = new HttpAlertRepository()
 
 export default function HorariosPage () {
   const { currentUser } = useUser()
@@ -86,12 +88,14 @@ export default function HorariosPage () {
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
   const [selectedBlockModal, setSelectedBlockModal] = useState<{
-    materia: Materia
-    seccion: number
     dia: DaysOfWeek
     horaStr: string
-    cedulaProfesor?: string
-    laboratorioId?: number
+    asigs: Array<{
+      materia: Materia
+      seccion: number
+      cedulaProfesor?: string
+      laboratorioId?: number
+    }>
   } | null>(null)
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
@@ -120,7 +124,11 @@ export default function HorariosPage () {
     let newTuplas = [...tuplas]
 
     if (overwrite) {
-      newTuplas = newTuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
+      newTuplas = newTuplas.filter(t => {
+        const mat = materias.find(m => m.codMateria === t.codAsig)
+        const isCommon = mat ? mat.esComun : false
+        return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
+      })
     }
 
     setAssignmentErrors([])
@@ -143,9 +151,29 @@ export default function HorariosPage () {
 
       if (response.errores.length > 0) {
         setAssignmentErrors(response.errores)
+
+        // Guardar los errores asincrónicamente en la BD como alertas
+        Promise.all(response.errores.map(async err =>
+          await alertRepository.save(activeTerm.id, {
+            id: null,
+            titulo: err,
+            estado: 'PENDIENTE',
+            fecha: null
+          })
+        )).catch(console.error)
       }
       if (response.advertencias.length > 0) {
         setAssignmentWarnings(response.advertencias)
+
+        // Guardar las advertencias asincrónicamente en la BD
+        Promise.all(response.advertencias.map(async warn =>
+          await alertRepository.save(activeTerm.id, {
+            id: null,
+            titulo: warn,
+            estado: 'PENDIENTE',
+            fecha: null
+          })
+        )).catch(console.error)
       }
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Ocurrió un error al generar el horario.')
@@ -344,23 +372,34 @@ export default function HorariosPage () {
   const handleCellClick = (day: DaysOfWeek, hour: string) => {
     const asigs = tuplas.filter(t => t.dia === day && t.hora === hour && t.semestre === selectedSemester)
     if (asigs.length === 0) return
-    const asig = asigs[0]
-    const materia = materias.find(m => m.codMateria === asig.codAsig)
-    if (!materia) return
 
     const h = parseInt(hour.split(':')[0], 10)
-    const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
-    const cedulaProfesor = hasLab
-      ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
-      : profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+
+    const mappedAsigs = asigs.map(asig => {
+      const materia = materias.find(m => m.codMateria === asig.codAsig)
+      if (!materia) return null
+
+      const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
+      const cedulaProfesor = (hasLab
+        ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+        : undefined) ||
+        profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion] ||
+        profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+
+      return {
+        materia,
+        seccion: asig.nroSeccion,
+        cedulaProfesor,
+        laboratorioId: asig.laboratorio?.id
+      }
+    }).filter(Boolean) as any[]
+
+    if (mappedAsigs.length === 0) return
 
     setSelectedBlockModal({
-      materia,
-      seccion: asig.nroSeccion,
       dia: day,
       horaStr: `${h}:00 - ${h}:50`,
-      cedulaProfesor,
-      laboratorioId: asig.laboratorio?.id
+      asigs: mappedAsigs
     })
   }
 
@@ -386,18 +425,39 @@ export default function HorariosPage () {
         </div>
       )}
 
-      {assignmentErrors.length > 0 && (
-        <div className="flex flex-col gap-2 mb-6 w-full">
+      {(assignmentErrors.length > 0 || assignmentWarnings.length > 0) && (
+        <div className="fixed top-24 right-4 z-50 flex flex-col gap-3 max-w-sm w-full" style={{ maxHeight: 'calc(100vh - 100px)', overflowY: 'auto' }}>
           {assignmentErrors.map((err, idx) => (
-            <Alert key={idx} color="danger" title="Problema de Asignación">{err}</Alert>
+            <div key={`err-${idx}`} className="relative shadow-lg rounded-xl">
+              <Alert color="danger" title="Problema de Asignación">
+                <div className="pr-8 text-sm leading-relaxed">{err}</div>
+              </Alert>
+              <button 
+                className="absolute top-3 right-3 text-red-700 hover:text-red-900 hover:bg-red-100 rounded-lg p-1.5 cursor-pointer z-10 transition-colors" 
+                onClick={() => setAssignmentErrors((prev) => prev.filter((_, i) => i !== idx))}
+                aria-label="Cerrar alerta"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+              </button>
+            </div>
           ))}
-        </div>
-      )}
-
-      {assignmentWarnings.length > 0 && (
-        <div className="flex flex-col gap-2 mb-6 w-full">
           {assignmentWarnings.map((warn, idx) => (
-            <Alert key={idx} color="warning" title="Advertencia">{warn}</Alert>
+            <div key={`warn-${idx}`} className="relative shadow-lg rounded-xl">
+              <Alert color="warning" title="Advertencia">
+                <div className="pr-8 text-sm leading-relaxed">{warn}</div>
+              </Alert>
+              <button 
+                className="absolute top-3 right-3 text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 rounded-lg p-1.5 cursor-pointer z-10 transition-colors" 
+                onClick={() => setAssignmentWarnings((prev) => prev.filter((_, i) => i !== idx))}
+                aria-label="Cerrar alerta"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+              </button>
+            </div>
           ))}
         </div>
       )}
@@ -486,7 +546,11 @@ export default function HorariosPage () {
                   }
 
                   if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
-                    const remainingTuplas = tuplas.filter(t => !(t.semestre === selectedSemester && !t.isManual))
+                  const remainingTuplas = tuplas.filter(t => {
+                    const mat = materias.find(m => m.codMateria === t.codAsig)
+                    const isCommon = mat ? mat.esComun : false
+                    return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
+                  })
                     setTuplas(remainingTuplas)
                     void (async () => {
                       try {
@@ -634,12 +698,9 @@ export default function HorariosPage () {
         <DetalleHorarioModal
           isOpen={true}
           onClose={() => setSelectedBlockModal(null)}
-          materia={selectedBlockModal.materia}
-          seccion={selectedBlockModal.seccion}
           dia={selectedBlockModal.dia}
           horaStr={selectedBlockModal.horaStr}
-          cedulaProfesor={selectedBlockModal.cedulaProfesor}
-          laboratorioId={selectedBlockModal.laboratorioId}
+          asigs={selectedBlockModal.asigs}
         />
       )}
     </div>

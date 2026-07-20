@@ -1,17 +1,16 @@
 import type { DisponibilidadLaboratorioRepository } from '../../application/ports/DisponibilidadLaboratorioRepository'
 import type { DisponibilidadLaboratorio } from '../../domain/DisponibilidadLaboratorio'
 import type { Laboratorio } from '../../domain/Laboratorio'
+import { API_CONFIG } from '../config/api'
 
 interface DisponibilidadLaboratorioResponse {
   laboratorio: Laboratorio
   disponibilidad: DisponibilidadLaboratorio[]
 }
 
-const BASE_URL = 'http://localhost:3000/api'
-
 export class HttpDisponibilidadLaboratorioRepository implements DisponibilidadLaboratorioRepository {
   async obtenerPorLaboratorioYTerm (idLaboratorio: number, codTerm: string): Promise<DisponibilidadLaboratorio[]> {
-    const response = await fetch(`${BASE_URL}/laboratorios/${idLaboratorio}/disponibilidad?term=${codTerm}`)
+    const response = await fetch(`${API_CONFIG.BASE_URL}/laboratorios/${idLaboratorio}/disponibilidad?term=${codTerm}`)
     if (!response.ok) {
       throw new Error('Error al obtener la disponibilidad del laboratorio')
     }
@@ -25,7 +24,7 @@ export class HttpDisponibilidadLaboratorioRepository implements DisponibilidadLa
   }
 
   async guardar (idLaboratorio: number, codTerm: string, disponibilidad: DisponibilidadLaboratorio[]): Promise<void> {
-    const response = await fetch(`${BASE_URL}/laboratorios/${idLaboratorio}/disponibilidad?term=${codTerm}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/laboratorios/${idLaboratorio}/disponibilidad?term=${codTerm}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

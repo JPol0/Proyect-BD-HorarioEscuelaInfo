@@ -50,6 +50,25 @@ export class GenerarHorarioSemestre {
     // Cache de disponibilidades para no consultar múltiples veces por el mismo profesor
     const cacheDisponibilidad: Record<string, DisponibilidadHoraria[]> = {}
 
+    // FASE 1.5: Asignar laboratorios a materias comunes
+    for (const materia of materiasDelSemestre) {
+      if (!materia.esComun) continue
+      if (materia.horasLab === 0) continue
+
+      const labObj = laboratorioAssignments[materia.codMateria]
+      if (!labObj?.principal) continue
+
+      tuplasEnProceso = tuplasEnProceso.map(t => {
+        if (t.codAsig === materia.codMateria && !t.laboratorio) {
+          return {
+            ...t,
+            laboratorio: { id: labObj.principal, name: '' }
+          }
+        }
+        return t
+      })
+    }
+
     // FASE 2: MOTOR DE ASIGNACIÓN
     for (const materia of materiasDelSemestre) {
       if (materia.esComun) continue // Ya asignadas manualmente

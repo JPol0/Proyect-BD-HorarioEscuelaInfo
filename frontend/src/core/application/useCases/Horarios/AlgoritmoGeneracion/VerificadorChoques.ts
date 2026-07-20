@@ -28,8 +28,20 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
   let estaOcupado = false
   let labAAsignar: number | undefined
 
-  // 1. Choque del Mismo Semestre (sólo si es la misma sección)
-  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre && t.nroSeccion === ctx.nroSeccion)
+  // 1. Choque del Mismo Semestre
+  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
+    if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
+    if (t.semestre === ctx.materia.semestre) {
+      if (t.codAsig === ctx.materia.codMateria) {
+        // Es la misma materia. Solo choca si es la MISMA sección.
+        // Si son secciones distintas, pueden darse a la misma hora (el choque de profe se valida en regla 2).
+        return t.nroSeccion === ctx.nroSeccion
+      }
+      // Es una materia distinta del mismo semestre. Chocan SIEMPRE.
+      return true
+    }
+    return false
+  })
 
   // 2. Choque de Profesor
   if (!estaOcupado && ctx.cedulaProfesor) {

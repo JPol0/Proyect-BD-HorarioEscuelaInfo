@@ -50,7 +50,7 @@ const SLIDES: Slide[] = [
   }
 ]
 
-export default function OdsCarousel() {
+export default function OdsCarousel () {
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
