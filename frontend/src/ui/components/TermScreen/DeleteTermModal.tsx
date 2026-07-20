@@ -8,7 +8,7 @@ interface DeleteTermModalProps {
   onConfirm: (term: Term) => Promise<void>
 }
 
-export default function DeleteTermModal({ term, onClose, onConfirm }: DeleteTermModalProps) {
+export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTermModalProps) {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -89,7 +89,7 @@ export default function DeleteTermModal({ term, onClose, onConfirm }: DeleteTerm
                   <TrashBin className="w-4 h-4" />
                   Eliminar Term
                 </>
-              )}
+                )}
           </button>
         </div>
       </div>

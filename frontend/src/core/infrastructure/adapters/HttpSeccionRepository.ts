@@ -57,4 +57,22 @@ export class HttpSeccionRepository implements SeccionRepository {
       throw new Error(errorMessage)
     }
   }
+
+  async deleteSeccion (codTerm: string, codMateria: string, nroSeccion: number): Promise<void> {
+    const response = await fetch(`${this.apiUrl}/${encodeURIComponent(nroSeccion)}?term=${encodeURIComponent(codTerm)}&materia=${encodeURIComponent(codMateria)}`, {
+      method: 'DELETE'
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al eliminar la sección en el servidor'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {
+      }
+      throw new Error(errorMessage)
+    }
+  }
 }

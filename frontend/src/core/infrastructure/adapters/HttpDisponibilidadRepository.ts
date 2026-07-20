@@ -1,17 +1,16 @@
 import type { DisponibilidadRepository } from '../../application/ports/DisponibilidadRepository'
 import type { DisponibilidadHoraria } from '../../domain/DisponibilidadHoraria'
 import type { Profesor } from '../../domain/Profesor'
+import { API_CONFIG } from '../config/api'
 
 interface DisponibilidadResponse {
   profesor: Profesor
   disponibilidad: DisponibilidadHoraria[]
 }
 
-const BASE_URL = 'http://localhost:3000/api'
-
 export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   async obtenerPorProfesorYTerm (cedulaProfesor: string, codTerm: string): Promise<DisponibilidadHoraria[]> {
-    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
       credentials: 'include'
     })
     if (!response.ok) {
@@ -29,7 +28,7 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   }
 
   async obtenerProfesor (cedulaProfesor: string, codTerm: string): Promise<Profesor> {
-    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
       credentials: 'include'
     })
     if (!response.ok) {
@@ -40,7 +39,7 @@ export class HttpDisponibilidadRepository implements DisponibilidadRepository {
   }
 
   async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
-    const response = await fetch(`${BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/profesores/${cedulaProfesor}/disponibilidad?term=${codTerm}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {

@@ -11,6 +11,10 @@ import { DeleteMateria } from '../../core/application/useCases/Materias/DeleteMa
 import { ValidateAssignHours } from '../../core/application/useCases/Materias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
+import { HttpSeccionRepository } from '../../core/infrastructure/adapters/HttpSeccionRepository'
+import { SaveSeccion } from '../../core/application/useCases/Secciones/SaveSeccion'
+import { DeleteSeccion } from '../../core/application/useCases/Secciones/DeleteSeccion'
+
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
@@ -25,6 +29,10 @@ const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
 const deleteMateriaUseCase = new DeleteMateria(repository)
 const validateAssignHoursUseCase = new ValidateAssignHours()
+
+const seccionRepository = new HttpSeccionRepository()
+const saveSeccionUseCase = new SaveSeccion(seccionRepository)
+const deleteSeccionUseCase = new DeleteSeccion(seccionRepository)
 
 // Helper para convertir números a romanos
 const convertirARomano = (num: number): string => {
@@ -123,6 +131,33 @@ export function MateriasPage () {
     } catch (err) {
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudo crear la materia en el servidor')
+    }
+  }
+
+  const handleAddSection = async (materia: Materia) => {
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: m.nroSecciones + 1 } : m)
+    )
+    try {
+      await saveSeccionUseCase.execute({ codMateria: materia.codMateria, nroSeccion: materia.nroSecciones + 1 }, termId)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo agregar la sección en el servidor')
+    }
+  }
+
+  const handleRemoveSection = async (materia: Materia) => {
+    if (materia.nroSecciones <= 0) return
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: Math.max(0, m.nroSecciones - 1) } : m)
+    )
+    try {
+      await deleteSeccionUseCase.execute(termId, materia.codMateria, materia.nroSecciones)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo eliminar la sección en el servidor')
     }
   }
 
@@ -263,6 +298,8 @@ export function MateriasPage () {
                     materia={materia}
                     onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
                     onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
+                    onAddSection={(materia) => { void handleAddSection(materia) }}
+                    onRemoveSection={(materia) => { void handleRemoveSection(materia) }}
                     onAssignHours={(materiaParaAsignar, manualHours) => {
                       try {
                         validateAssignHoursUseCase.execute(materiaParaAsignar)

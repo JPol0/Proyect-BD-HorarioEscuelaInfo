@@ -135,13 +135,15 @@ export const autoAsignarMateria = (
     }
 
     if (!exito) {
-      if (tipo === 'Laboratorio' && laboratorioId) {
-        throw new Error(`El laboratorio asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas.`)
+      if (tipo === 'Laboratorio') {
+        if (laboratorioId !== undefined) {
+          throw new Error(`El laboratorio asignado a ${materia.nombre} no tiene disponibilidad de horas o la sección presenta choques de horarios con otras materias.`)
+        } else {
+          throw new Error(`El profesor asignado a ${materia.nombre} no tiene disponibilidad de horas o la sección presenta choques de horarios con otras materias.`)
+        }
+      } else {
+        throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Considera las disponibilidades y cruces.`)
       }
-      if (cedulaProfesor) {
-        throw new Error(`El profesor asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas de ${tipo}.`)
-      }
-      throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Considera las disponibilidades y cruces.`)
     }
   }
 

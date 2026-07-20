@@ -35,9 +35,11 @@ export function validarAsignacionesPrevias (
   for (const materia of materiasDelSemestre) {
     const nroSecciones = Math.max(1, materia.nroSecciones)
     for (let sec = 1; sec <= nroSecciones; sec++) {
-      const cedulaProf = profesorAssignments[materia.codMateria]?.[sec]
-      if (!cedulaProf) {
-        missingProfessors.push(`- ${materia.nombre} (Sección ${convertirARomano(sec)}) (Teoría/Práctica)`)
+      if (materia.horasTeo > 0 || materia.horasPrac > 0) {
+        const cedulaProf = profesorAssignments[materia.codMateria]?.[sec]
+        if (!cedulaProf) {
+          missingProfessors.push(`- ${materia.nombre} (Sección ${convertirARomano(sec)}) (Teoría/Práctica)`)
+        }
       }
 
       if (materia.horasLab > 0) {
