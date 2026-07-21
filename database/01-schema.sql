@@ -150,6 +150,8 @@ CREATE TABLE IF NOT EXISTS Horarios(
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE
+
+    CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH);
 );
 
 -- Creación de Tabla Disponibilidad_Horaria
