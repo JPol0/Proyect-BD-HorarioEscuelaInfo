@@ -80,7 +80,9 @@ CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     
     PRIMARY KEY (CodTerm,CodAsig),
     CONSTRAINT uq_plan_de_estudio_nombre UNIQUE (CodTerm, NombrePE),
-    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT chk_plan_de_estudio_horas CHECK (HoraPractica + HoraTeorica + HoraLaboratorio BETWEEN 2 AND 6)
 );
 
 -- Creación de Tabla Profesores
@@ -149,9 +151,9 @@ CREATE TABLE IF NOT EXISTS Horarios(
 
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
 
-    CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH);
+    CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH)
 );
 
 -- Creación de Tabla Disponibilidad_Horaria
