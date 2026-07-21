@@ -6,7 +6,7 @@ import { type Alerta, type EstadoAlerta } from '../../core/domain/Alarm'
 import { AlertCard } from '../components/AlertScreen/AlertCard'
 import Title from '../components/common/TitlePage'
 import { Select, ListBox } from '@heroui/react'
-import { Clock, Check, EyeSlash } from '@gravity-ui/icons'
+import { Clock, Check, EyeSlash, CircleCheckFill } from '@gravity-ui/icons'
 import { useActiveTerm } from '../store/activeTermStore'
 
 // Instanciación manual de dependencias
@@ -153,8 +153,13 @@ export default function AlarmCenter () {
           )
         : alertasFiltradas.length === 0
           ? (
-            <div className="p-8 bg-emerald-50/60 border border-emerald-100 text-emerald-800 rounded-xl text-center font-medium font-hanken shadow-sm">
-              {filtro === 'PENDIENTE' && '🎉 ¡Excelente! No se registran alertas ni conflictos pendientes en este ciclo.'}
+            <div className="p-8 bg-emerald-50/60 border border-emerald-100 text-emerald-800 rounded-xl text-center font-medium font-hanken shadow-sm flex items-center justify-center gap-2">
+              {filtro === 'PENDIENTE' && (
+                <>
+                  <CircleCheckFill className="w-5 h-5 text-emerald-600" />
+                  <span>¡Excelente! No se registran alertas ni conflictos pendientes en este ciclo.</span>
+                </>
+              )}
               {filtro === 'RESUELTA' && 'No se registran alertas resueltas.'}
               {filtro === 'IGNORADA' && 'No se registran alertas ignoradas.'}
               {filtro === 'TODAS' && 'No se registran alertas en este ciclo.'}
