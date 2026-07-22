@@ -72,7 +72,7 @@ export default function AlarmCenter () {
           Listado de Conflictos
         </h2>
 
-        <div className="w-full sm:w-56 shrink-0 z-40">
+        <div className="w-full sm:w-56 shrink-0 z-30">
           <Select
             aria-label="Filtrar por estado"
             placeholder="Filtrar por estado"
@@ -101,7 +101,7 @@ export default function AlarmCenter () {
               <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
             </Select.Trigger>
 
-            <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-50 z-50">
+            <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-50 z-30">
               <ListBox>
                 <ListBox.Item
                   id="PENDIENTE"

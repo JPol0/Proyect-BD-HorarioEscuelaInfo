@@ -613,7 +613,7 @@ export default function HorariosPage () {
                 </Select.Indicator>
               </Select.Trigger>
 
-              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[150px] z-50">
+              <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-[150px] z-30">
                 <ListBox>
                   {opcionesSemestres.map((semestre) => (
                     <ListBox.Item
@@ -632,11 +632,11 @@ export default function HorariosPage () {
         </div>
 
         {/* Contenedor Derecho: Botones de Acción */}
-        <div className="flex items-center shrink-0 w-full md:w-auto mt-2 md:mt-0 gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center shrink-0 w-full md:w-auto mt-2 md:mt-0 gap-2">
           <button
             type="button"
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap"
+            className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-slate-600">
               <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -645,7 +645,7 @@ export default function HorariosPage () {
           </button>
 
           {!isLector && (
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 disabled={isGenerating}
@@ -657,7 +657,7 @@ export default function HorariosPage () {
                     void handleGenerarHorario(false)
                   }
                 }}
-                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating
                   ? (
@@ -699,7 +699,7 @@ export default function HorariosPage () {
                     })()
                   }
                 }}
-                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-red-600 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-red-50 cursor-pointer whitespace-nowrap"
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-red-600 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-red-50 cursor-pointer whitespace-nowrap"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
                   <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -722,7 +722,7 @@ export default function HorariosPage () {
                     }
                   })()
                 }}
-                className="flex items-center gap-2 h-9 px-4 rounded-lg bg-button-primary text-white text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover cursor-pointer whitespace-nowrap"
+                className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-4 rounded-lg bg-button-primary text-white text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover cursor-pointer whitespace-nowrap"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
                   <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />

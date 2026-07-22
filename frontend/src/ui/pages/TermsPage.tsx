@@ -97,18 +97,18 @@ export default function TermsPage () {
           subtitle="Selecciona un term para trabajar sobre él, o crea un nuevo term para configurar su horario."
         />
         {!isLector && (
-          <div className="flex items-center gap-3 shrink-0 mt-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto shrink-0 mt-1">
             {/* Botón Cargar Plan de Estudio */}
             <button
               onClick={() => { setShowUploadModal(true) }}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               <FileArrowDown className="w-4 h-4" /> Cargar Plan de Estudio
             </button>
             {/* Botón New Term */}
             <button
               onClick={() => { setShowModal(true) }}
-              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               + Nuevo Term
             </button>
@@ -188,69 +188,73 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
 
   return (
     <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-      {/* Encabezado de tabla */}
-      <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100`}>
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">term</span>
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Descripción</span>
-        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
-        {showActions && (
-          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">
-            Acción
-          </span>
-        )}
-      </div>
-
-      {/* Filas */}
-      {terms.map((term, index) => {
-        const isActive = term.id === activeTermId
-        return (
-          <div
-            key={term.id}
-            onClick={() => { onSelect(term) }}
-            className={[
-              `grid ${gridColsClass} px-6 py-4 items-center transition-colors cursor-pointer`,
-              index !== 0 ? 'border-t border-slate-50' : '',
-              isActive
-                ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
-                : 'hover:bg-slate-50'
-            ].join(' ')}
-          >
-            {/* Código del term académico + badge "Activo" */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-slate-800 font-hanken">{term.id}</span>
-              {isActive && (
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5 shrink-0">
-                  ✓ Trabajando
-                </span>
-              )}
-            </div>
-
-            {/* Descripción del semestre */}
-            <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
-              {term.descripcion}
-            </span>
-
-            {/* Periodo */}
-            <span className="text-sm text-slate-400 font-hanken tracking-wide">
-              {formatPeriodo(term.startDate, term.endDate)}
-            </span>
-
-            {/* Botón de eliminar */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[640px]">
+          {/* Encabezado de tabla */}
+          <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100 gap-2`}>
+            <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Term</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Descripción</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
             {showActions && (
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={(e) => { onDelete(term, e) }}
-                  title="Eliminar período"
-                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
-                >
-                  <TrashBin className="w-4 h-4" />
-                </button>
-              </div>
+              <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">
+                Acción
+              </span>
             )}
           </div>
-        )
-      })}
+
+          {/* Filas */}
+          {terms.map((term, index) => {
+            const isActive = term.id === activeTermId
+            return (
+              <div
+                key={term.id}
+                onClick={() => { onSelect(term) }}
+                className={[
+                  `grid ${gridColsClass} px-6 py-4 items-center gap-2 transition-colors cursor-pointer`,
+                  index !== 0 ? 'border-t border-slate-50' : '',
+                  isActive
+                    ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
+                    : 'hover:bg-slate-50'
+                ].join(' ')}
+              >
+                {/* Código del term académico + badge "Activo" */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-800 font-hanken">{term.id}</span>
+                  {isActive && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5 shrink-0">
+                      ✓ Trabajando
+                    </span>
+                  )}
+                </div>
+
+                {/* Descripción del semestre */}
+                <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
+                  {term.descripcion}
+                </span>
+
+                {/* Periodo */}
+                <span className="text-sm text-slate-400 font-hanken tracking-wide">
+                  {formatPeriodo(term.startDate, term.endDate)}
+                </span>
+
+                {/* Botón de eliminar */}
+                {showActions && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={(e) => { onDelete(term, e) }}
+                      title="Eliminar período"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      <TrashBin className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }

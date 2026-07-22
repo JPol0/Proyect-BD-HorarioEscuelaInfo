@@ -100,7 +100,7 @@ export default function Layout () {
       {/* Overlay backdrop del Drawer en móvil */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[60] lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -109,7 +109,7 @@ export default function Layout () {
       {/* Sidebar (Drawer en móvil, Fijo en escritorio lg) */}
       <aside
         className={[
-          'bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden transition-transform duration-300 ease-in-out z-50',
+          'bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden transition-transform duration-300 ease-in-out z-[70]',
           'fixed inset-y-0 left-0 w-72 lg:static lg:translate-x-0',
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         ].join(' ')}
@@ -134,7 +134,7 @@ export default function Layout () {
           <button
             type="button"
             onClick={() => { setIsMobileMenuOpen(false) }}
-            className="text-slate-400 hover:text-white p-1"
+            className="text-slate-400 hover:text-white p-1 lg:hidden cursor-pointer"
           >
             <Xmark className="h-5 w-5" />
           </button>
@@ -161,6 +161,7 @@ export default function Layout () {
                 <NavLink
                   key={item.id}
                   to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
                     [
                       'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
