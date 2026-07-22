@@ -201,7 +201,8 @@ export function ProfesoresPage () {
 
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Estado</label>
-                      {isLector ? (
+                      {isLector
+                        ? (
                         <div className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt text-xs text-text-primary h-11 sm:h-9 font-hanken">
                           {cfg.label}
                         </div>

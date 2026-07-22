@@ -142,9 +142,9 @@ export default function Layout () {
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
           {navFiltered.map((item) => {
-              const Icon = item.Icon
-              if (!item.disponible) {
-                return (
+            const Icon = item.Icon
+            if (!item.disponible) {
+              return (
                   <button
                     key={item.id}
                     disabled
@@ -154,10 +154,10 @@ export default function Layout () {
                     <Icon className="h-5 w-5 shrink-0" />
                     <span>{item.label}</span>
                   </button>
-                )
-              }
+              )
+            }
 
-              return (
+            return (
                 <NavLink
                   key={item.id}
                   to={item.path}
@@ -174,8 +174,8 @@ export default function Layout () {
                   <Icon className="h-5 w-5 shrink-0" />
                   <span>{item.label}</span>
                 </NavLink>
-              )
-            })}
+            )
+          })}
         </nav>
 
         {/* Carrusel ODS 9 */}
