@@ -17,6 +17,7 @@ export interface ContextoChoques {
   disponibilidad: DisponibilidadHoraria[]
   soloPrioridad1: boolean
   prereqCodes?: Set<string>
+  materiasComunesCodes?: Set<string>
 }
 
 export interface ResultadoChoque {
@@ -68,6 +69,13 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
         if (materiaChocandoEsPrerrequisito) {
           return false
         }
+
+        const esMateriaComun = ctx.materia.esComun
+        const materiaChocandoEsComun = ctx.materiasComunesCodes?.has(t.codAsig)
+        if (esMateriaComun || materiaChocandoEsComun) {
+          return false
+        }
+
         return true
       }
       return false

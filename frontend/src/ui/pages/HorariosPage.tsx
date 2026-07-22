@@ -23,6 +23,7 @@ import { GetRelacionesSonEjercidos } from '../../core/application/useCases/relac
 import { type Prerequito } from '../../core/domain/Prerequito'
 import { HttpPrerequitoRepository } from '../../core/infrastructure/adapters/HttpPrerequitoRepository'
 import { ObtenerPrerequitosPorTerm } from '../../core/application/useCases/Prerequito/ObtenerPrerequitosPorTerm'
+import { verificarChoquesYDisponibilidad, type ContextoChoques } from '../../core/application/useCases/Horarios/AlgoritmoGeneracion/VerificadorChoques'
 import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAlertRepository'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -107,6 +108,8 @@ export default function HorariosPage () {
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [draggedBlock, setDraggedBlock] = useState<{ dia: DaysOfWeek, hora: string } | null>(null)
+  const [dragError, setDragError] = useState<string | null>(null)
   const [selectedBlockModal, setSelectedBlockModal] = useState<{
     dia: DaysOfWeek
     horaStr: string
@@ -217,6 +220,8 @@ export default function HorariosPage () {
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Ocurrió un error al generar el horario.')
     } finally {
+      // Retardo artificial para que la animación de carga se aprecie
+      await new Promise(resolve => setTimeout(resolve, 1500))
       setIsGenerating(false)
     }
   }
@@ -444,6 +449,84 @@ export default function HorariosPage () {
       horaStr: `${h}:00 - ${h}:50`,
       asigs: mappedAsigs
     })
+  }
+
+  const handleDrop = async (targetDay: DaysOfWeek, targetHour: string) => {
+    if (!draggedBlock) return
+    if (draggedBlock.dia === targetDay && draggedBlock.hora === targetHour) {
+      setDraggedBlock(null)
+      return
+    }
+
+    const asigsToMove = tuplas.filter(t => t.dia === draggedBlock.dia && t.hora === draggedBlock.hora && t.semestre === selectedSemester)
+    if (asigsToMove.length === 0) {
+      setDraggedBlock(null)
+      return
+    }
+
+    // Fail-safe: No permitir mover materias comunes
+    const isComun = asigsToMove.some(a => materias.find(m => m.codMateria === a.codAsig)?.esComun)
+    if (isComun) {
+      setDragError('No se permite mover bloques de materias comunes.')
+      setDraggedBlock(null)
+      return
+    }
+
+    const newTuplas = tuplas.filter(t => !(t.dia === draggedBlock.dia && t.hora === draggedBlock.hora && t.semestre === selectedSemester))
+
+    let hasConflict = false
+    let conflictMsg = ''
+
+    for (const asig of asigsToMove) {
+      const materia = materias.find(m => m.codMateria === asig.codAsig)
+      if (!materia) continue
+
+      const prereqCodes = new Set(prerequitos.filter(p => p.codigoAsignatura === materia.codMateria).map(p => p.codigoAsignaturaPrerequito))
+
+      const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
+      const cedulaProfesor = (hasLab
+        ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+        : undefined) ||
+        profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion] ||
+        profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
+
+      const labObj = laboratorioAssignments[asig.codAsig]
+
+      const ctx: ContextoChoques = {
+        dia: targetDay,
+        hora: targetHour,
+        materia,
+        nroSeccion: asig.nroSeccion,
+        termId: selectedTerm || '',
+        cedulaProfesor,
+        laboratorioPrincipal: labObj?.principal,
+        laboratoriosSecundarios: labObj?.secundarios,
+        tuplasActualesYTemporales: newTuplas,
+        profesorAssignments: profesorAssignments[selectedTerm!] || {},
+        profesorLabAssignments: profesorLabAssignments?.[selectedTerm!] || {},
+        disponibilidad: [],
+        soloPrioridad1: false,
+        prereqCodes,
+        materiasComunesCodes: new Set(materias.filter(m => m.esComun).map(m => m.codMateria))
+      }
+
+      const { estaOcupado } = verificarChoquesYDisponibilidad(ctx)
+      if (estaOcupado) {
+        hasConflict = true
+        conflictMsg = 'No se puede asignar este bloque de hora para esta materia por choques de horario.'
+        break
+      }
+    }
+
+    if (hasConflict) {
+      setDragError(conflictMsg)
+    } else {
+      const movedTuplas = asigsToMove.map(t => ({ ...t, dia: targetDay, hora: targetHour, isManual: true }))
+      const finalTuplas = [...newTuplas, ...movedTuplas]
+      setTuplas(finalTuplas)
+    }
+
+    setDraggedBlock(null)
   }
 
   return (
@@ -702,10 +785,25 @@ export default function HorariosPage () {
                         const content = row[day]
                         const isEmpty = content === '-' || !content
 
+                        const asigsCell = tuplas.filter(t => t.dia === day && t.hora === row.hour && t.semestre === selectedSemester)
+                        const isComun = asigsCell.some(a => materias.find(m => m.codMateria === a.codAsig)?.esComun)
+                        const canDrag = !isEmpty && !isComun
+
                         return (
                           <td
                             key={day}
-                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 transition-colors' : ''}`}
+                            draggable={canDrag}
+                            onDragStart={(e) => {
+                              if (canDrag) {
+                                setDraggedBlock({ dia: day, hora: row.hour })
+                              }
+                            }}
+                            onDragOver={(e) => { e.preventDefault() }}
+                            onDrop={(e) => {
+                              e.preventDefault()
+                              void handleDrop(day, row.hour)
+                            }}
+                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200' : ''} ${canDrag ? 'cursor-grab active:cursor-grabbing' : ''}`}
                             onClick={() => !isEmpty && handleCellClick(day, row.hour)}
                           >
                             {isEmpty ? <span className="text-slate-300">—</span> : content}
@@ -790,6 +888,31 @@ export default function HorariosPage () {
         selectedSemester={selectedSemester}
         onConfirmExport={(config) => { void handleConfirmExport(config) }}
       />
+      {dragError && (
+        <Modal isOpen={!!dragError} onOpenChange={(open) => !open && setDragError(null)}>
+          <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+            <Modal.Container className="flex items-center justify-center p-4">
+              <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-sans border border-slate-100 p-6 text-center">
+                <Modal.Heading className="text-lg font-bold text-slate-800 mb-3 text-red-600">
+                  ¡Atención!
+                </Modal.Heading>
+                <Modal.Body className="text-sm text-slate-600 mb-6">
+                  {dragError}
+                </Modal.Body>
+                <Modal.Footer className="flex justify-center gap-3">
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-medium text-xs px-5 h-9 cursor-pointer"
+                    onPress={() => setDragError(null)}
+                  >
+                    Entendido
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+      )}
     </div>
   )
 }
