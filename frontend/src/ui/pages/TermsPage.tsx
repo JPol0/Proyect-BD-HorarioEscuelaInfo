@@ -13,13 +13,11 @@ import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
 import { TrashBin, FileArrowDown } from '@gravity-ui/icons'
 
-// Instanciación manual de dependencias (hexagonal)
 const termRepository = new HttpTermRepository()
 const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
 const deleteTermUseCase = new DeleteTerm(termRepository)
 
-// Formatea "2026-08-01" → "Ago 2026" en español abreviado
 function formatPeriodo (startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
@@ -86,15 +84,14 @@ export default function TermsPage () {
     await cargarTerms()
   }
 
-  // Selecciona el término activo
   const handleSelectTerm = (term: Term) => {
     setActiveTerm(term)
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       {/* Header: Título + Botones */}
-      <div className="flex items-start justify-between mb-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Title
           title="Terms Academicos"
           subtitle="Selecciona un term para trabajar sobre él, o crea un nuevo term para configurar su horario."
@@ -111,7 +108,7 @@ export default function TermsPage () {
             {/* Botón New Term */}
             <button
               onClick={() => { setShowModal(true) }}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm"
+              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               + Nuevo Term
             </button>
@@ -121,7 +118,7 @@ export default function TermsPage () {
 
       {/* Banner de error */}
       {error !== null && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm font-hanken">
+        <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-xl text-sm font-hanken">
           ⚠️ {error}
         </div>
       )}
@@ -177,7 +174,6 @@ export default function TermsPage () {
   )
 }
 
-// Sub-componente: tabla de terms
 interface TermsTableProps {
   terms: Term[]
   activeTermId: string | null
@@ -228,6 +224,9 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                 </span>
               )}
             </div>
+          )
+        })}
+      </div>
 
             {/* Descripción del semestre */}
             <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
@@ -251,10 +250,23 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                   <TrashBin className="w-4 h-4" />
                 </button>
               </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+
+              {showActions && (
+                <div className="flex justify-end pt-2 border-t border-slate-100/80">
+                  <button
+                    type="button"
+                    onClick={(e) => { onDelete(term, e) }}
+                    className="flex items-center gap-1.5 text-xs text-red-600 font-semibold px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors min-h-[44px]"
+                  >
+                    <TrashBin className="w-3.5 h-3.5" />
+                    Eliminar
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </>
   )
 }

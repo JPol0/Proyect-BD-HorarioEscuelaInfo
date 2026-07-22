@@ -84,18 +84,13 @@ export function MateriasPage () {
   }, [termId])
 
   const handleSaveMateria = async (materiaActualizada: Materia) => {
-    // 1. Respaldamos el estado actual por si ocurre un error (Rollback)
     const estadoPrevio = [...materias]
-
-    // 2. ACTUALIZACIÓN OPTIMISTA: Modificamos la UI de inmediato en memoria
     setMaterias((prev) =>
       prev.map((m) => m.codMateria === materiaActualizada.codMateria ? materiaActualizada : m)
     )
     try {
-      // 3. Enviamos al backend en segundo plano (SIN cambiar el estado 'loading' global)
       await saveMateriaUseCase.execute(termId, materiaActualizada)
     } catch (err) {
-      // 4. Si el backend falla, restauramos el estado anterior y avisamos al usuario
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudieron guardar los cambios en el servidor')
     }
@@ -125,7 +120,7 @@ export function MateriasPage () {
     try {
       await saveMateriaUseCase.execute(termId, {
         ...nuevaMateriaProvisional,
-        codMateria: '' // Enviamos vacío para indicar que el backend debe generarlo
+        codMateria: ''
       })
       await cargarMaterias()
     } catch (err) {
@@ -175,8 +170,6 @@ export function MateriasPage () {
     return `Gestionando las asignaturas correspondientes al Semestre ${convertirARomano(Number(selectedSemestre))}.`
   }
 
-  // --- Lógica del Estado Derivado ---
-  // Usamos la función pura para calcular dinámicamente los semestres
   const semestreMaximo = calcularSemestreMaximo(materias)
   const opcionesSemestres = Array.from({ length: semestreMaximo }, (_, i) => i + 1)
 
@@ -196,31 +189,30 @@ export function MateriasPage () {
             <Select
               aria-label="Filtrar por semestre"
               placeholder="Seleccionar semestre"
-              variant="primary" // <-- Corregido a 'primary' según tu documentación
-              value={selectedSemestre} // <-- Corregido a 'value'
-              onChange={(valor) => { // <-- Corregido a 'onChange'
+              variant="primary"
+              value={selectedSemestre}
+              onChange={(valor) => {
                 if (valor) setSelectedSemestre(String(valor))
               }}
               className="w-full text-xs"
             >
-              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-9">
+              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-11 sm:h-9">
                 <Select.Value />
                 <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
               </Select.Trigger>
 
               <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
                 <ListBox>
-                  <ListBox.Item id="todos" textValue="Todos los semestres" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                  <ListBox.Item id="todos" textValue="Todos los semestres" className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center">
                     Todos los semestres
                   </ListBox.Item>
 
-                  {/* --- Mapeo Dinámico --- */}
                   {opcionesSemestres.map((semestre) => (
                     <ListBox.Item
                       key={semestre.toString()}
                       id={semestre.toString()}
                       textValue={`Semestre ${convertirARomano(semestre)}`}
-                      className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                      className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center"
                     >
                       Semestre {convertirARomano(semestre)}
                     </ListBox.Item>
@@ -291,7 +283,7 @@ export function MateriasPage () {
               </div>
               )
             : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {materiasFiltradas.map((materia) => (
                   <MateriaCard
                     key={materia.codMateria}

@@ -16,6 +16,7 @@ interface CeldaSeleccionada {
 
 export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }: DisponibilidadGridProps): JSX.Element {
   const [seleccionada, setSeleccionada] = useState<CeldaSeleccionada | null>(null)
+  const [activeMobileDia, setActiveMobileDia] = useState<DiaSemana>('Lunes')
   const tableRef = useRef<HTMLTableElement>(null)
 
   const focusCelda = useCallback((diaIndex: number, moduloIndex: number): void => {
@@ -143,9 +144,42 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }
                   : null
               })}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {MODULOS_HORARIO.map((modulo, moduloIndex) => (
+              <tr key={modulo.numeroModulo}>
+                <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-xs text-slate-600 whitespace-nowrap">
+                  {modulo.horaInicio}
+                </td>
+                {DIAS_SEMANA.map((dia, diaIndex) => {
+                  const celda = grilla.find((item) => item.dia === dia && item.numeroModulo === modulo.numeroModulo)
+                  const estaSeleccionada =
+                    seleccionada != null &&
+                    seleccionada.diaIndex === diaIndex &&
+                    seleccionada.moduloIndex === moduloIndex
+                  const isVisibleInMobile = dia === activeMobileDia
+
+                  if (celda == null) return null
+
+                  return (
+                    <td
+                      key={`${dia}-${modulo.numeroModulo}`}
+                      className={isVisibleInMobile ? 'table-cell' : 'hidden sm:table-cell'}
+                    >
+                      <DisponibilidadCell
+                        celda={celda}
+                        isSelected={estaSeleccionada}
+                        onClick={handleClick}
+                        onKeyDown={handleKeyDown}
+                      />
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

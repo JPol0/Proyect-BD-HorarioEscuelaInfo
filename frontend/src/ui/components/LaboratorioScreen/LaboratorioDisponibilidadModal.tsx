@@ -69,11 +69,11 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
 
   return (
     <>
-      <Modal.CloseTrigger className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-sm" />
+      <Modal.CloseTrigger className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-sm p-1" />
 
-      <Modal.Header className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <Modal.Heading className="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-[#2a6eea]" />
+      <Modal.Header className="px-4 sm:px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <Modal.Heading className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+          <Clock className="w-5 h-5 text-[#2a6eea] shrink-0" />
           Disponibilidad de Laboratorios
         </Modal.Heading>
 
@@ -84,14 +84,14 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
             onChange={(valor) => { if (valor) setSelectedLabId(Number(valor)) }}
             className="w-full text-sm"
           >
-            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10">
+            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-11 sm:h-10">
               <Select.Value />
               <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
             </Select.Trigger>
             <Select.Popover placement="bottom end" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50 max-h-60 overflow-y-auto">
               <ListBox>
                 {laboratorios.map(lab => (
-                  <ListBox.Item key={lab.id} id={lab.id} textValue={lab.name} className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                  <ListBox.Item key={lab.id} id={lab.id} textValue={lab.name} className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center">
                     {lab.name}
                   </ListBox.Item>
                 ))}
@@ -111,7 +111,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
             )
           : (
           <div className="overflow-x-auto w-full max-w-full">
-            <table className="w-full border-collapse min-w-[760px]">
+            <table className="w-full border-collapse min-w-[700px] sm:min-w-[760px]">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-slate-200">
                   <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white w-px">Hora</th>
@@ -165,6 +165,8 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
 export function LaboratorioDisponibilidadModal ({ laboratorios, initialLabId }: LaboratorioDisponibilidadModalProps) {
   return (
     <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+      <Modal.Container className="flex items-center justify-center p-2 sm:p-4">
+        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden font-sans border border-slate-100">
       <Modal.Container className="flex items-center justify-center p-4">
         <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden font-sans border border-slate-100">
           {() => (

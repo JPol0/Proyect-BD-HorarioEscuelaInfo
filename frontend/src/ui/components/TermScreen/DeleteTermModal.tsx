@@ -27,12 +27,12 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in border border-slate-100"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 animate-fade-in border border-slate-100"
         onClick={(e) => { e.stopPropagation() }}
       >
         {/* Encabezado con Icono de Advertencia */}
@@ -41,7 +41,7 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
             <TriangleExclamationFill className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800 font-hanken tracking-wide">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-800 font-hanken tracking-wide">
               Eliminar Term Académico
             </h2>
             <p className="text-xs text-slate-500 font-hanken">
@@ -67,12 +67,12 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
         )}
 
         {/* Botones de Acción */}
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={cargando}
-            className="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-lg transition font-hanken"
+            className="px-5 py-3 sm:py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 rounded-lg transition font-hanken min-h-[44px] sm:min-h-0 cursor-pointer"
           >
             Cancelar
           </button>
@@ -80,7 +80,7 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
             type="button"
             onClick={() => { void handleConfirm() }}
             disabled={cargando}
-            className="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-lg transition font-hanken flex items-center gap-2 shadow-sm"
+            className="px-5 py-3 sm:py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 shadow-sm min-h-[44px] sm:min-h-0 cursor-pointer"
           >
             {cargando
               ? 'Eliminando...'

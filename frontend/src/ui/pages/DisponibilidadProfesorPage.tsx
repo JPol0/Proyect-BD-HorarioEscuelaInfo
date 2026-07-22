@@ -82,10 +82,10 @@ export function DisponibilidadProfesorPage (): JSX.Element {
   }, [cedulaProfesor, termId, grilla])
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       <button
         onClick={() => { void navigate('/profesores') }}
-        className="text-sm text-button-primary hover:underline font-hanken mb-2 flex items-center gap-1"
+        className="text-sm text-button-primary hover:underline font-hanken mb-2 inline-flex items-center gap-1 min-h-[44px] cursor-pointer font-medium"
       >
         ← Volver a Profesores
       </button>

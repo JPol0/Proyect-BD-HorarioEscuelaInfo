@@ -38,28 +38,26 @@ export default function LoginPage () {
   }
 
   return (
-    <div className="min-h-screen w-screen flex flex-col items-center justify-center bg-bgmain p-4">
-      {/* Círculo/Logo azul superior */}
+    <div className="min-h-screen w-screen flex flex-col items-center justify-center bg-bgmain p-4 sm:p-6">
       <div className="flex flex-col items-center mb-6">
-        <div className="w-20 h-20 bg-button-primary rounded-full flex items-center justify-center shadow-md mb-4">
-          <Calendar className="text-white w-10 h-10" />
+        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-button-primary rounded-full flex items-center justify-center shadow-md mb-4">
+          <Calendar className="text-white w-8 sm:w-10 h-8 sm:h-10" />
         </div>
-        <h1 className="text-2xl font-bold tracking-wider text-titlePage font-sans">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-wider text-titlePage font-sans text-center">
           SGBD HORARIOS
         </h1>
       </div>
 
-      {/* Tarjeta de Login */}
-      <Card className="w-full max-w-sm bg-white shadow-xl border border-border px-8 py-10 !rounded-2xl">
+      <Card className="w-full max-w-sm bg-white shadow-xl border border-border px-6 sm:px-8 py-8 sm:py-10 !rounded-2xl">
         <Card.Content>
-          <form onSubmit={handleLogin} className="flex flex-col gap-6">
+          <form onSubmit={handleLogin} className="flex flex-col gap-5 sm:gap-6">
             {error !== null && (
               <Alert color="danger" className="text-xs font-hanken py-2 px-3">
                 {error}
               </Alert>
             )}
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-600 font-hanken">
                 Nombre de usuario
               </label>
@@ -67,12 +65,12 @@ export default function LoginPage () {
                 value={nombre}
                 onChange={(e) => { setNombre(e.target.value) }}
                 placeholder="Ingresa tu usuario"
-                className="w-full font-hanken"
+                className="w-full font-hanken h-11 sm:h-10"
                 required
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-600 font-hanken">
                 Contraseña
               </label>
@@ -81,7 +79,7 @@ export default function LoginPage () {
                 value={password}
                 onChange={(e) => { setPassword(e.target.value) }}
                 placeholder="Ingresa tu contraseña"
-                className="w-full font-hanken"
+                className="w-full font-hanken h-11 sm:h-10"
                 required
               />
             </div>
@@ -89,7 +87,7 @@ export default function LoginPage () {
             <Button
               type="submit"
               isDisabled={loading}
-              className="w-full bg-button-primary hover:bg-button-primary-hover text-white font-semibold py-3.5 transition-colors font-hanken"
+              className="w-full bg-button-primary hover:bg-button-primary-hover text-white font-semibold py-3.5 transition-colors font-hanken min-h-[44px] cursor-pointer"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
