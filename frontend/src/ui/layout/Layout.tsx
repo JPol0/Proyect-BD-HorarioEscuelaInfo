@@ -15,6 +15,8 @@ import {
   Bars,
   Xmark
 } from '@gravity-ui/icons'
+import type { SVGProps, ComponentType } from 'react'
+import OdsCarousel from '../components/common/OdsCarousel'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
 
@@ -73,10 +75,11 @@ export default function Layout () {
       <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-sidebar text-white shrink-0 border-b border-slate-800 z-30">
         <div className="flex flex-col">
           <h2 className="text-lg font-bold tracking-wide text-white">SGBD HORARIOS</h2>
+          <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
           {activeTerm !== null
             ? (
-              <span className="text-xs text-[#57a8c8] font-hanken font-bold truncate max-w-[200px]" title={activeTerm.name}>
-                {'Term: ' + activeTerm.name}
+              <span className="text-xs text-[#57a8c8] font-hanken font-bold truncate max-w-[200px]" title={activeTerm.id}>
+                {'Term: ' + activeTerm.id}
               </span>
               )
             : (
@@ -140,45 +143,53 @@ export default function Layout () {
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
-          {navFiltered.map((item) => {
-            const Icon = item.Icon
-            if (!item.disponible) {
+          {NAV_ITEMS
+            .filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector'))
+            .filter(item => !(item.id === 'usuarios' && currentUser?.rol !== 'administrador'))
+            .map((item) => {
+              const Icon = item.Icon
+              if (!item.disponible) {
+                return (
+                  <button
+                    key={item.id}
+                    disabled
+                    className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
+                    title="Próximamente"
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                )
+              }
+
               return (
-                <button
+                <NavLink
                   key={item.id}
-                  disabled
-                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors min-h-[44px]"
-                  title="Próximamente"
+                  to={item.path}
+                  className={({ isActive }) =>
+                    [
+                      'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
+                      isActive
+                        ? 'bg-button-primary text-white font-semibold shadow-md'
+                        : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
+                    ].join(' ')
+                  }
                 >
                   <Icon className="h-5 w-5 shrink-0" />
                   <span>{item.label}</span>
-                </button>
+                </NavLink>
               )
-            }
-
-            return (
-              <NavLink
-                key={item.id}
-                to={item.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  [
-                    'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors min-h-[44px]',
-                    isActive
-                      ? 'bg-button-primary text-white font-semibold shadow-md'
-                      : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
-                  ].join(' ')
-                }
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span>{item.label}</span>
-              </NavLink>
-            )
-          })}
+            })}
         </nav>
 
+        {/* Carrusel ODS 9 */}
+        <div className="mt-auto px-3 py-3 border-t border-slate-800/40 shrink-0">
+          <OdsCarousel />
+        </div>
+
         {/* Sección de Usuario en la parte inferior */}
-        <div className="mt-auto px-6 py-6 border-t border-slate-800 flex flex-col gap-3 bg-sidebar shrink-0">
+        <div className="px-6 py-6 border-t border-slate-800 flex flex-col gap-3 bg-sidebar shrink-0">
+
           <div className="flex flex-col">
             <span className="text-sm font-medium text-slate-200 truncate" title={currentUser?.nombre}>
               {currentUser?.nombre}

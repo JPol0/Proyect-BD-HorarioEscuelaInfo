@@ -1,7 +1,7 @@
 import { type Materia } from '../../../../domain/Materia'
-import { type Horario } from '../../../../domain/Horario'
+import { type Horario, type DaysOfWeek } from '../../../../domain/Horario'
 
-export const DIAS_SEMANA_BASE: import('../../../../domain/Horario').DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+export const DIAS_SEMANA_BASE: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 export const HORAS_DISPONIBLES_BASE = [
   '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
   '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
@@ -21,12 +21,12 @@ export const convertirARomano = (num: number): string => {
   return resultado
 }
 
-export function validarAsignacionesPrevias(
+export function validarAsignacionesPrevias (
   materiasDelSemestre: Materia[],
   tuplasEnProceso: Horario[],
   profesorAssignments: Record<string, Record<number, string>>,
   profesorLabAssignments: Record<string, Record<number, string>> | undefined,
-  laboratorioAssignments: Record<string, { principal: string, secundario?: string }>
+  laboratorioAssignments: Record<string, { principal: number, secundarios: number[] }>
 ): void {
   const missingProfessors: string[] = []
   const missingLabs: string[] = []
@@ -35,14 +35,16 @@ export function validarAsignacionesPrevias(
   for (const materia of materiasDelSemestre) {
     const nroSecciones = Math.max(1, materia.nroSecciones)
     for (let sec = 1; sec <= nroSecciones; sec++) {
-      const cedulaProf = profesorAssignments[materia.codMateria]?.[sec]
-      if (!cedulaProf) {
-        missingProfessors.push(`- ${materia.nombre} (Sección ${convertirARomano(sec)}) (Teoría/Práctica)`)
+      if (materia.horasTeo > 0 || materia.horasPrac > 0) {
+        const cedulaProf = profesorAssignments[materia.codMateria]?.[sec]
+        if (!cedulaProf) {
+          missingProfessors.push(`- ${materia.nombre} (Sección ${convertirARomano(sec)}) (Teoría/Práctica)`)
+        }
       }
 
       if (materia.horasLab > 0) {
         const labObj = laboratorioAssignments[materia.codMateria]
-        if (!labObj || !labObj.principal) {
+        if (!labObj?.principal) {
           missingLabs.push(`- ${materia.nombre} (Falta Laboratorio Principal)`)
         }
         const cedulaProfLab = profesorLabAssignments?.[materia.codMateria]?.[sec]

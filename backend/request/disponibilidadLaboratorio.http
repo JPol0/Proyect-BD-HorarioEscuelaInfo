@@ -1,0 +1,35 @@
+
+### GET laboratory availability (existing data or default grid)
+GET http://localhost:3000/api/laboratorios/1/disponibilidad?term=1
+
+###
+PUT http://localhost:3000/api/laboratorios/1/disponibilidad?term=1
+Content-Type: application/json
+
+[
+  {
+    "idLaboratorio": 1,
+    "codTerm": "1",
+    "dia": "Lunes",
+    "hora": "07:00",
+    "ocupado": true
+  },
+  {
+    "idLaboratorio": 1,
+    "codTerm": "1",
+    "dia": "Lunes",
+    "hora": "08:00",
+    "ocupado": true
+  },
+  {
+    "idLaboratorio": 1,
+    "codTerm": "1",
+    "dia": "Martes",
+    "hora": "09:00",
+    "ocupado": true
+  }
+]
+
+
+### GET laboratory availability for non-existent laboratory (should return 404)
+GET http://localhost:3000/api/laboratorios/999/disponibilidad?term=1

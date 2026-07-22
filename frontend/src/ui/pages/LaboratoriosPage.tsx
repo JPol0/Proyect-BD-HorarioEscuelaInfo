@@ -65,7 +65,7 @@ export default function LaboratoriosPage () {
     await saveLaboratorioUseCase.execute(laboratorio)
   }
 
-  const handleEliminar = async (id: string) => {
+  const handleEliminar = async (id: number) => {
     const estadoPrevio = [...laboratorios]
     setLaboratorios((prev) => prev.filter((l) => l.id !== id))
     try {
@@ -104,7 +104,7 @@ export default function LaboratoriosPage () {
           )}
 
           {/* Buscador */}
-          <div className="w-full sm:w-80 flex flex-col gap-1.5">
+          <div className="w-full sm:w-60 flex flex-col gap-1.5">
             <span className="text-xs font-semibold text-slate-500">Buscar</span>
             <div className="relative w-full flex items-center">
               <span className="absolute left-3 z-10 pointer-events-none flex items-center">

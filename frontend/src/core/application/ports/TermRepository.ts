@@ -1,7 +1,8 @@
 import { type Term } from '../../domain/Term'
 
 export interface CreateTermInput {
-  name: string
+  id: string
+  descripcion: string
   startDate: string
   endDate: string
 }

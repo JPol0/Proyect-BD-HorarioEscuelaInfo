@@ -27,7 +27,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
     try {
       setCargando(true)
       const payload: Laboratorio = {
-        id: laboratorio?.id ?? String(Date.now()),
+        id: laboratorio?.id ?? 0,
         name: nombre.trim()
       }
       await onGuardar(payload)

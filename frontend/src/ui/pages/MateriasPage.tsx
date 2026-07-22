@@ -11,6 +11,10 @@ import { DeleteMateria } from '../../core/application/useCases/Materias/DeleteMa
 import { ValidateAssignHours } from '../../core/application/useCases/Materias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
+import { HttpSeccionRepository } from '../../core/infrastructure/adapters/HttpSeccionRepository'
+import { SaveSeccion } from '../../core/application/useCases/Secciones/SaveSeccion'
+import { DeleteSeccion } from '../../core/application/useCases/Secciones/DeleteSeccion'
+
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
@@ -25,6 +29,10 @@ const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
 const deleteMateriaUseCase = new DeleteMateria(repository)
 const validateAssignHoursUseCase = new ValidateAssignHours()
+
+const seccionRepository = new HttpSeccionRepository()
+const saveSeccionUseCase = new SaveSeccion(seccionRepository)
+const deleteSeccionUseCase = new DeleteSeccion(seccionRepository)
 
 // Helper para convertir números a romanos
 const convertirARomano = (num: number): string => {
@@ -121,6 +129,33 @@ export function MateriasPage () {
     }
   }
 
+  const handleAddSection = async (materia: Materia) => {
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: m.nroSecciones + 1 } : m)
+    )
+    try {
+      await saveSeccionUseCase.execute({ codMateria: materia.codMateria, nroSeccion: materia.nroSecciones + 1 }, termId)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo agregar la sección en el servidor')
+    }
+  }
+
+  const handleRemoveSection = async (materia: Materia) => {
+    if (materia.nroSecciones <= 0) return
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: Math.max(0, m.nroSecciones - 1) } : m)
+    )
+    try {
+      await deleteSeccionUseCase.execute(termId, materia.codMateria, materia.nroSecciones)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo eliminar la sección en el servidor')
+    }
+  }
+
   const materiasFiltradas = materias.filter((materia) => {
     const matchesSemestre = selectedSemestre === 'todos' || materia.semestre.toString() === selectedSemestre
     const matchesNombre = materia.nombre.toLowerCase().includes(searchQuery.toLowerCase())
@@ -139,32 +174,14 @@ export function MateriasPage () {
   const opcionesSemestres = Array.from({ length: semestreMaximo }, (_, i) => i + 1)
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <Title
-          title="Gestión de Materias"
-          subtitle={obtenerSubtitulo()}
-        />
-
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-stretch sm:items-end pb-4">
-          {/* Botón Crear Materia */}
-          {currentUser?.rol !== 'lector' && (
-            <div className="w-full sm:w-auto flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500 hidden sm:inline-block">&nbsp;</span>
-              <Modal>
-                <Button
-                  variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-11 sm:h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 shrink-0" />
-                  Crear Materia
-                </Button>
-                <MateriaCrearModal
-                  onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
-                />
-              </Modal>
-            </div>
-          )}
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+        {/* Contenedor Izquierdo: Título y Selector de Semestre */}
+        <div className="flex flex-col gap-4">
+          <Title
+            title="Gestión de Materias"
+            subtitle={obtenerSubtitulo()}
+          />
 
           {/* Selector de Semestre */}
           <div className="w-full sm:w-48 flex flex-col gap-1.5">
@@ -204,23 +221,47 @@ export function MateriasPage () {
               </Select.Popover>
             </Select>
           </div>
+        </div>
 
-          {/* Buscador por Nombre */}
-          <div className="w-full sm:w-80 flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500">Buscar</span>
-            <div className="relative w-full flex items-center">
-              <span className="absolute left-3 z-10 pointer-events-none flex items-center">
-                <Magnifier className="text-slate-400 w-4 h-4" />
-              </span>
-              <Input
-                type="text"
-                placeholder="Buscar por nombre de materia..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                variant="primary"
-                className="w-full pl-9 pr-3 text-sm h-11 sm:h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
-              />
+        {/* Contenedor Derecho: Buscador y Botón Crear Materia */}
+        <div className="flex flex-col gap-4 w-full md:w-auto items-end pb-8">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end justify-end">
+            {/* Buscador por Nombre */}
+            <div className="w-full sm:w-80 flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500">Buscar</span>
+              <div className="relative w-full flex items-center">
+                <span className="absolute left-3 z-10 pointer-events-none flex items-center">
+                  <Magnifier className="text-slate-400 w-4 h-4" />
+                </span>
+                <Input
+                  type="text"
+                  placeholder="Buscar por nombre de materia..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  variant="primary" // <-- Corregido a 'primary' según tu documentación
+                  className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                />
+              </div>
             </div>
+
+            {/* Botón Crear Materia */}
+            {currentUser?.rol !== 'lector' && (
+              <div className="w-full sm:w-auto flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+                <Modal>
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto whitespace-nowrap"
+                  >
+                    <Plus className="w-4 h-4 shrink-0" />
+                    Crear Materia
+                  </Button>
+                  <MateriaCrearModal
+                    onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
+                  />
+                </Modal>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -249,6 +290,8 @@ export function MateriasPage () {
                     materia={materia}
                     onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
                     onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
+                    onAddSection={(materia) => { void handleAddSection(materia) }}
+                    onRemoveSection={(materia) => { void handleRemoveSection(materia) }}
                     onAssignHours={(materiaParaAsignar, manualHours) => {
                       try {
                         validateAssignHoursUseCase.execute(materiaParaAsignar)

@@ -108,3 +108,51 @@ REVOKE EXECUTE ON PROCEDURE upsert_warning(INT, VARCHAR, TIMESTAMP, dom_estado_w
 -- Conceder permisos de ejecución únicamente a rol_administrador
 GRANT EXECUTE ON PROCEDURE upsert_warning(INT, VARCHAR, TIMESTAMP, dom_estado_warning, VARCHAR, VARCHAR) TO rol_administrador;
 
+
+-- Procedimiento almacenado para guardar (upsert) una relación en Imparten
+CREATE OR REPLACE PROCEDURE upsert_imparten(
+    p_CedulaP VARCHAR(10),
+    p_CodAsig VARCHAR(40),
+    p_CodTerm VARCHAR(80),
+    p_NroSeccion dom_num_seccion,
+    p_HorasLab dom_horas,
+    p_HorasTeo dom_horas,
+    p_Asignada BOOLEAN
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO Imparten (
+        cedulaP,
+        CodAsig,
+        CodTerm,
+        NroSeccion,
+        HorasLab,
+        HorasTeo,
+        Asignada
+    )
+    VALUES (
+        p_CedulaP,
+        p_CodAsig,
+        p_CodTerm,
+        p_NroSeccion,
+        p_HorasLab,
+        p_HorasTeo,
+        p_Asignada
+    )
+    ON CONFLICT (cedulaP, CodAsig, CodTerm, NroSeccion)
+    DO UPDATE SET
+        HorasLab = EXCLUDED.HorasLab,
+        HorasTeo = EXCLUDED.HorasTeo,
+        Asignada = EXCLUDED.Asignada;
+END;
+$$;
+
+-- Revocar permisos de ejecución a todos los usuarios (PUBLIC) por defecto
+REVOKE EXECUTE ON PROCEDURE upsert_imparten(VARCHAR, VARCHAR, VARCHAR, dom_num_seccion, dom_horas, dom_horas, BOOLEAN) FROM PUBLIC;
+
+-- Otorgar permiso de ejecución únicamente al rol de administrador
+GRANT EXECUTE ON PROCEDURE upsert_imparten(VARCHAR, VARCHAR, VARCHAR, dom_num_seccion, dom_horas, dom_horas, BOOLEAN) TO rol_administrador;
+
+
+

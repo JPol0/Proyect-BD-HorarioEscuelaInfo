@@ -21,9 +21,13 @@ CREATE DOMAIN dom_horas AS SMALLINT
 CREATE DOMAIN dom_num_secciones AS SMALLINT
     CONSTRAINT chk_dom_num_secciones CHECK (VALUE BETWEEN 1 AND 20);
 
+CREATE DOMAIN dom_num_seccion AS SMALLINT
+    CONSTRAINT chk_dom_num_seccion CHECK (VALUE > 0);
+
+
 --Dominios para tabla Profesores
-CREATE DOMAIN dom_status_profesor AS VARCHAR(1)
-    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'P', 'R'));
+CREATE DOMAIN dom_status_profesor AS VARCHAR(2)
+    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'ER', 'R'));
 
 --Dominios para tabla Warnings
 CREATE DOMAIN dom_estado_warning AS VARCHAR(1)
@@ -75,14 +79,17 @@ CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     NroSeccionesPE dom_num_secciones NOT NULL,
     
     PRIMARY KEY (CodTerm,CodAsig),
-    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT uq_plan_de_estudio_nombre UNIQUE (CodTerm, NombrePE),
+    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT chk_plan_de_estudio_horas CHECK (HoraPractica + HoraTeorica + HoraLaboratorio BETWEEN 2 AND 6)
 );
 
 -- Creación de Tabla Profesores
 CREATE TABLE IF NOT EXISTS Profesores(
     CedulaP VARCHAR(10) NOT NULL,
     NombreP VARCHAR(100) NOT NULL,
-    StatusP dom_status_profesor NOT NULL, -- Activo, Pausado, Reposo
+    StatusP dom_status_profesor NOT NULL, -- Activo, En Reposo, Retirado
     
     PRIMARY KEY (CedulaP)
 );
@@ -125,7 +132,7 @@ CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
 
 -- Creación de Tabla Secciones
 CREATE TABLE IF NOT EXISTS Secciones(
-    NroSeccion SERIAL NOT NULL,
+    NroSeccion dom_num_seccion NOT NULL,
     CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     
@@ -135,7 +142,7 @@ CREATE TABLE IF NOT EXISTS Secciones(
 
 -- Creación de Tabla Horarios
 CREATE TABLE IF NOT EXISTS Horarios(
-    NroSeccion SERIAL NOT NULL,
+    NroSeccion dom_num_seccion NOT NULL,
     CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     DiaH dom_dia_horario NOT NULL,
@@ -144,7 +151,9 @@ CREATE TABLE IF NOT EXISTS Horarios(
 
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH)
 );
 
 -- Creación de Tabla Disponibilidad_Horaria
@@ -169,13 +178,14 @@ CREATE TABLE IF NOT EXISTS Imparten(
     cedulaP Varchar(10) NOT NULL,
     CodAsig Varchar(40) NOT NULL,
     CodTerm Varchar(80) NOT NULL,
-    NroSeccion SERIAL NOT NUlL,
+    NroSeccion dom_num_seccion NOT NULL,
 
     HorasLab dom_horas NOT NULL,
     HorasTeo dom_horas NOT NULL,
     Asignada BOOLEAN not null,
 
     primary key(cedulaP,CodAsig,CodTerm,NroSeccion),
+
 
     CONSTRAINT fk_imparten_profesores FOREIGN key(cedulaP) references Profesores(cedulaP) ON UPDATE CASCADE ON DELETE NO ACTION,
     CONSTRAINT fk_imparten_secciones foreign key (CodTerm,CodAsig,NroSeccion) references Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE NO ACTION

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { type DisponibilidadRepository } from '../../../application/ports/DisponibilidadRepository.js'
 import { type ProfesorRepository } from '../../../application/ports/ProfesorRepository.js'
+import { type TransactionManager } from '../../../application/ports/TransactionManager.js'
 import { ObtenerDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria.js'
 import { GuardarDisponibilidadHoraria } from '../../../application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria.js'
 import { ObtenerProfesorActivo } from '../../../application/useCases/DisponibilidadHoraria/ObtenerProfesorActivo.js'
@@ -12,12 +13,13 @@ import { requireAdmin } from '../middlewares/authMiddleware.js'
 
 export default function createDisponibilidadRouter (
   disponibilidadRepository: DisponibilidadRepository,
-  profesorRepository: ProfesorRepository
+  profesorRepository: ProfesorRepository,
+  transactionManager: TransactionManager
 ): Router {
   const router = Router()
 
   const obtenerUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
-  const guardarUseCase = new GuardarDisponibilidadHoraria(disponibilidadRepository)
+  const guardarUseCase = new GuardarDisponibilidadHoraria(disponibilidadRepository, transactionManager)
   const obtenerProfesorUseCase = new ObtenerProfesorActivo(profesorRepository)
   const getProfesoresUseCase = new GetProfesores(profesorRepository)
   const crearProfesorUseCase = new CrearProfesor(profesorRepository)

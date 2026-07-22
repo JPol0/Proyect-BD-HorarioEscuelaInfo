@@ -1,11 +1,12 @@
 import { type JSX, type KeyboardEvent, useCallback, useRef, useState } from 'react'
-import type { DiaSemana, DisponibilidadHoraria } from '../../../core/domain/DisponibilidadHoraria'
+import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../../core/domain/DisponibilidadHoraria'
 import { DIAS_SEMANA, MODULOS_HORARIO } from '../../../core/domain/DisponibilidadHoraria'
 import { DisponibilidadCell } from './DisponibilidadCell'
 
 interface DisponibilidadGridProps {
   grilla: DisponibilidadHoraria[]
   onCeldaClick: (dia: DiaSemana, numeroModulo: number) => void
+  onCeldaValueChange: (dia: DiaSemana, numeroModulo: number, valor: NivelDisponibilidad) => void
 }
 
 interface CeldaSeleccionada {
@@ -13,7 +14,7 @@ interface CeldaSeleccionada {
   moduloIndex: number
 }
 
-export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGridProps): JSX.Element {
+export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }: DisponibilidadGridProps): JSX.Element {
   const [seleccionada, setSeleccionada] = useState<CeldaSeleccionada | null>(null)
   const [activeMobileDia, setActiveMobileDia] = useState<DiaSemana>('Lunes')
   const tableRef = useRef<HTMLTableElement>(null)
@@ -47,6 +48,18 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
     let nextModulo = moduloIndex
 
     switch (event.key) {
+      case '0':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 0)
+        return
+      case '1':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 1)
+        return
+      case '2':
+        event.preventDefault()
+        onCeldaValueChange(dia, numeroModulo, 2)
+        return
       case 'ArrowRight':
         event.preventDefault()
         nextDia = Math.min(diaIndex + 1, DIAS_SEMANA.length - 1)
@@ -93,62 +106,43 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick }: DisponibilidadGrid
 
     setSeleccionada({ diaIndex: nextDia, moduloIndex: nextModulo })
     focusCelda(nextDia, nextModulo)
-  }, [onCeldaClick, focusCelda])
+  }, [onCeldaClick, onCeldaValueChange, focusCelda])
 
   return (
-    <div className="space-y-3">
-      {/* Selector de Día en Móvil (< sm) */}
-      <div className="flex sm:hidden overflow-x-auto gap-1.5 pb-1 no-scrollbar">
-        {DIAS_SEMANA.map((dia) => (
-          <button
-            key={dia}
-            type="button"
-            onClick={() => setActiveMobileDia(dia)}
-            className={[
-              'px-3 py-2 text-xs font-semibold rounded-lg shrink-0 transition-colors min-h-[40px]',
-              activeMobileDia === dia
-                ? 'bg-button-primary text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            ].join(' ')}
-          >
-            {dia}
-          </button>
-        ))}
-      </div>
-
-      {/* Leyenda de colores */}
-      <div className="flex flex-wrap items-center gap-4 text-xs font-hanken text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-        <span className="font-semibold text-slate-700">Nivel de preferencia:</span>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 bg-white border border-slate-300 rounded inline-block" />
-          <span>0 (No disponible)</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 bg-emerald-200 border border-emerald-300 rounded inline-block" />
-          <span>1 (Alta preferencia)</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 bg-amber-200 border border-amber-300 rounded inline-block" />
-          <span>2 (Baja preferencia)</span>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table ref={tableRef} className="min-w-full text-sm" role="grid">
-          <thead className="bg-slate-50 text-slate-700">
-            <tr>
-              <th className="border border-slate-200 px-3 py-2.5 text-left font-bold text-xs uppercase tracking-wider text-slate-500">HORA</th>
-              {DIAS_SEMANA.map((dia) => (
-                <th
-                  key={dia}
-                  className={[
-                    'border border-slate-200 px-3 py-2.5 text-center font-bold text-xs uppercase tracking-wider text-slate-500',
-                    dia === activeMobileDia ? 'table-cell' : 'hidden sm:table-cell'
-                  ].join(' ')}
-                >
-                  {dia}
-                </th>
-              ))}
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <table ref={tableRef} className="min-w-full text-sm" role="grid">
+        <thead className="bg-slate-50 text-slate-700">
+          <tr>
+            <th className="border border-slate-200 px-3 py-2 text-left w-px">HORA</th>
+            {DIAS_SEMANA.map((dia) => (
+              <th key={dia} className="border border-slate-200 px-3 py-2 text-center w-[20%]">{dia}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {MODULOS_HORARIO.map((modulo, moduloIndex) => (
+            <tr key={modulo.numeroModulo}>
+              <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-medium text-slate-600 whitespace-nowrap w-px">
+                {`${modulo.horaInicio} - ${modulo.horaInicio.split(':')[0]}:59`}
+              </td>
+              {DIAS_SEMANA.map((dia, diaIndex) => {
+                const celda = grilla.find((item) => item.dia === dia && item.numeroModulo === modulo.numeroModulo)
+                const estaSeleccionada =
+                  seleccionada != null &&
+                  seleccionada.diaIndex === diaIndex &&
+                  seleccionada.moduloIndex === moduloIndex
+                return celda != null
+                  ? (
+                  <DisponibilidadCell
+                    key={`${dia}-${modulo.numeroModulo}`}
+                    celda={celda}
+                    isSelected={estaSeleccionada}
+                    onClick={handleClick}
+                    onKeyDown={handleKeyDown}
+                  />
+                    )
+                  : null
+              })}
             </tr>
           </thead>
           <tbody>

@@ -55,10 +55,18 @@ export class MockMateriaRepository implements MateriaRepository {
   }
 
   /**
+   * Retorna una materia específica por su código y término.
+   */
+  async getById (term: string, codMateria: string, tx?: any): Promise<Materia | null> {
+    const materias = this.almacen.get(term) ?? []
+    return materias.find((m) => m.codMateria === codMateria) ?? null
+  }
+
+  /**
    * Guarda una materia. Si ya existe el código lo actualiza (Upsert),
    * en caso contrario, registra la nueva entidad en el array del term.
    */
-  async save (term: string, materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia, tx?: any): Promise<void> {
     if (materia.codMateria === undefined || materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
@@ -98,7 +106,7 @@ export class MockMateriaRepository implements MateriaRepository {
   /**
    * Elimina todas las materias asociadas a un término (borrado en cascada).
    */
-  clearTerm (term: string): void {
+  async deleteByTerm (term: string, tx?: any): Promise<void> {
     this.almacen.delete(term)
   }
 }

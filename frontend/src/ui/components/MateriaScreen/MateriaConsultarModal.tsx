@@ -139,7 +139,8 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                   {/* Selector Modalidad */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">Modalidad</span>
-                    {isLector ? (
+                    {isLector
+                      ? (
                       <Input
                         type="text"
                         value={modalidad === 'PRE' ? 'Presencial (PRE)' : 'Virtual (VIT)'}
@@ -147,7 +148,8 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                         variant="primary"
                         className="w-full text-sm opacity-70"
                       />
-                    ) : (
+                        )
+                      : (
                       <Select
                         variant="primary"
                         value={modalidad}
@@ -169,13 +171,14 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                           </ListBox>
                         </Select.Popover>
                       </Select>
-                    )}
+                        )}
                   </div>
 
                   {/* Selector Materia Común */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-slate-500">¿Es Materia Comun?</span>
-                    {isLector ? (
+                    {isLector
+                      ? (
                       <Input
                         type="text"
                         value={esComun === 'si' ? 'Sí' : 'No'}
@@ -183,7 +186,8 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                         variant="primary"
                         className="w-full text-sm opacity-70"
                       />
-                    ) : (
+                        )
+                      : (
                       <Select
                         variant="primary"
                         value={esComun}
@@ -205,7 +209,7 @@ export function MateriaConsultarModal ({ materia, onSave }: MateriaConsultarModa
                           </ListBox>
                         </Select.Popover>
                       </Select>
-                    )}
+                        )}
                   </div>
 
                 </div>

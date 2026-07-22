@@ -6,35 +6,49 @@ export interface ContextoChoques {
   dia: DaysOfWeek
   hora: string
   materia: Materia
+  nroSeccion: number
   termId: string
   cedulaProfesor?: string
-  laboratorioPrincipal?: string
-  laboratorioSecundario?: string
+  laboratorioPrincipal?: number
+  laboratoriosSecundarios?: number[]
   tuplasActualesYTemporales: Horario[]
   profesorAssignments: Record<string, Record<number, string>>
   profesorLabAssignments?: Record<string, Record<number, string>>
   disponibilidad: DisponibilidadHoraria[]
   soloPrioridad1: boolean
+  prereqCodes?: Set<string>
 }
 
 export interface ResultadoChoque {
   estaOcupado: boolean
-  labAAsignar?: string
+  labAAsignar?: number
 }
 
-export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): ResultadoChoque {
+export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): ResultadoChoque {
   let estaOcupado = false
-  let labAAsignar: string | undefined = undefined
+  let labAAsignar: number | undefined
 
   // 1. Choque del Mismo Semestre
-  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => t.dia === ctx.dia && t.hora === ctx.hora && t.semestre === ctx.materia.semestre)
+  estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
+    if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
+    if (t.semestre === ctx.materia.semestre) {
+      if (t.codAsig === ctx.materia.codMateria) {
+        // Es la misma materia. Solo choca si es la MISMA sección.
+        // Si son secciones distintas, pueden darse a la misma hora (el choque de profe se valida en regla 2).
+        return t.nroSeccion === ctx.nroSeccion
+      }
+      // Es una materia distinta del mismo semestre. Chocan SIEMPRE.
+      return true
+    }
+    return false
+  })
 
   // 2. Choque de Profesor
   if (!estaOcupado && ctx.cedulaProfesor) {
     estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
-      if (t.dia !== ctx.dia || t.hora !== ctx.hora || t.codTerm !== ctx.termId) return false
+      if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
       const hasLab = !!t.laboratorio || !!(t as any).codLaboratorio
-      const profeAsignado = hasLab 
+      const profeAsignado = hasLab
         ? ctx.profesorLabAssignments?.[t.codAsig]?.[t.nroSeccion]
         : ctx.profesorAssignments[t.codAsig]?.[t.nroSeccion]
       return profeAsignado === ctx.cedulaProfesor
@@ -46,10 +60,11 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
     estaOcupado = ctx.tuplasActualesYTemporales.some((t) => {
       if (t.dia !== ctx.dia || t.hora !== ctx.hora) return false
       if (t.semestre === undefined) return false
+      if (t.nroSeccion !== ctx.nroSeccion) return false // Solo evita choques de semestres si son para la misma cohorte (sección)
 
       const esAdyacente = Math.abs(t.semestre - ctx.materia.semestre) === 1
       if (esAdyacente) {
-        const materiaChocandoEsPrerrequisito = ctx.materia.prerrequisitos?.some(p => p.codMateria === t.codAsig)
+        const materiaChocandoEsPrerrequisito = ctx.prereqCodes?.has(t.codAsig)
         if (materiaChocandoEsPrerrequisito) {
           return false
         }
@@ -60,29 +75,33 @@ export function verificarChoquesYDisponibilidad(ctx: ContextoChoques): Resultado
   }
 
   // 4. Choque de Laboratorio
-  const isLab = !!(ctx.laboratorioPrincipal || ctx.laboratorioSecundario)
+  const isLab = !!(ctx.laboratorioPrincipal || (ctx.laboratoriosSecundarios && ctx.laboratoriosSecundarios.length > 0))
   if (!estaOcupado && isLab && ctx.laboratorioPrincipal) {
     const choquePrincipal = ctx.tuplasActualesYTemporales.some((t) =>
       t.dia === ctx.dia &&
       t.hora === ctx.hora &&
-      (t.laboratorio?.id === ctx.laboratorioPrincipal || (t as any).codLaboratorio === ctx.laboratorioPrincipal)
+      t.laboratorio?.id === ctx.laboratorioPrincipal
     )
 
     if (!choquePrincipal) {
       labAAsignar = ctx.laboratorioPrincipal
-    } else if (ctx.laboratorioSecundario) {
-      const choqueSecundario = ctx.tuplasActualesYTemporales.some((t) =>
-        t.dia === ctx.dia &&
-        t.hora === ctx.hora &&
-        (t.laboratorio?.id === ctx.laboratorioSecundario || (t as any).codLaboratorio === ctx.laboratorioSecundario)
-      )
-      if (!choqueSecundario) {
-        labAAsignar = ctx.laboratorioSecundario
-      } else {
-        estaOcupado = true // Ambos ocupados
+    } else if (ctx.laboratoriosSecundarios && ctx.laboratoriosSecundarios.length > 0) {
+      for (const secId of ctx.laboratoriosSecundarios) {
+        const choqueSecundario = ctx.tuplasActualesYTemporales.some((t) =>
+          t.dia === ctx.dia &&
+          t.hora === ctx.hora &&
+          t.laboratorio?.id === secId
+        )
+        if (!choqueSecundario) {
+          labAAsignar = secId
+          break
+        }
+      }
+      if (!labAAsignar) {
+        estaOcupado = true // Todos ocupados
       }
     } else {
-      estaOcupado = true // Principal ocupado y no hay secundario
+      estaOcupado = true // Principal ocupado y no hay secundarios
     }
   }
 

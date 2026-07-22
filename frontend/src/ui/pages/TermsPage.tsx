@@ -8,9 +8,10 @@ import { type CreateTermInput } from '../../core/application/ports/TermRepositor
 import Title from '../components/common/TitlePage'
 import TermModal from '../components/TermScreen/TermModal'
 import DeleteTermModal from '../components/TermScreen/DeleteTermModal'
+import UploadPlanModal from '../components/Materias/UploadPlanModal'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
-import { TrashBin } from '@gravity-ui/icons'
+import { TrashBin, FileArrowDown } from '@gravity-ui/icons'
 
 const termRepository = new HttpTermRepository()
 const getTermsUseCase = new GetTerms(termRepository)
@@ -46,6 +47,7 @@ export default function TermsPage () {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const [termToDelete, setTermToDelete] = useState<Term | null>(null)
 
   const cargarTerms = async () => {
@@ -95,7 +97,15 @@ export default function TermsPage () {
           subtitle="Selecciona un term para trabajar sobre él, o crea un nuevo term para configurar su horario."
         />
         {!isLector && (
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex items-center gap-3 shrink-0 mt-1">
+            {/* Botón Cargar Plan de Estudio */}
+            <button
+              onClick={() => { setShowUploadModal(true) }}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm"
+            >
+              <FileArrowDown className="w-4 h-4" /> Cargar Plan de Estudio
+            </button>
+            {/* Botón New Term */}
             <button
               onClick={() => { setShowModal(true) }}
               className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
@@ -120,21 +130,19 @@ export default function TermsPage () {
           )
         : (
           <section className="mb-8">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-slate-700 font-hanken mb-4">
-              <span>📅</span> Terms Académicos
-            </h2>
+
             {terms.length === 0
               ? (
-              <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
+                <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
                 )
               : (
-              <TermsTable
-                terms={terms}
-                activeTermId={activeTerm?.id ?? null}
-                onSelect={handleSelectTerm}
-                onDelete={!isLector ? handleDeleteClick : undefined}
-                isLector={isLector}
-              />
+                <TermsTable
+                  terms={terms}
+                  activeTermId={activeTerm?.id ?? null}
+                  onSelect={handleSelectTerm}
+                  onDelete={!isLector ? handleDeleteClick : undefined}
+                  isLector={isLector}
+                />
                 )}
           </section>
           )}
@@ -155,6 +163,13 @@ export default function TermsPage () {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* Modal de carga del Plan de Estudio */}
+      <UploadPlanModal
+        isOpen={showUploadModal}
+        onClose={() => { setShowUploadModal(false) }}
+        termId={activeTerm?.id ?? ''}
+      />
     </div>
   )
 }
@@ -169,93 +184,71 @@ interface TermsTableProps {
 
 function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
   const showActions = !isLector && onDelete !== undefined
-  const gridColsClass = showActions ? 'grid-cols-[1fr_200px_60px]' : 'grid-cols-[1fr_200px]'
+  const gridColsClass = showActions ? 'grid-cols-[180px_1fr_200px_60px]' : 'grid-cols-[180px_1fr_200px]'
 
   return (
-    <>
-      {/* Vista Escritorio (lg) */}
-      <div className="hidden lg:block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden font-hanken">
-        <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100`}>
-          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Term</span>
-          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase">Periodo</span>
-          {showActions && (
-            <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase text-right">
-              Acción
-            </span>
-          )}
-        </div>
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* Encabezado de tabla */}
+      <div className={`grid ${gridColsClass} px-6 py-3 bg-white border-b border-slate-100`}>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">term</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Descripción</span>
+        <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken">Periodo</span>
+        {showActions && (
+          <span className="text-xs font-semibold text-slate-400 tracking-widest uppercase font-hanken text-right">
+            Acción
+          </span>
+        )}
+      </div>
 
-        {terms.map((term, index) => {
-          const isActive = term.id === activeTermId
-          return (
-            <div
-              key={term.id}
-              onClick={() => { onSelect(term) }}
-              className={[
-                `grid ${gridColsClass} px-6 py-4 items-center transition-colors cursor-pointer`,
-                index !== 0 ? 'border-t border-slate-50' : '',
-                isActive
-                  ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
-                  : 'hover:bg-slate-50'
-              ].join(' ')}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-800">{term.name}</span>
-                {isActive && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5">
-                    ✓ Trabajando
-                  </span>
-                )}
-              </div>
-
-              <span className="text-sm text-slate-400 tracking-wide">
-                {formatPeriodo(term.startDate, term.endDate)}
-              </span>
-
-              {showActions && (
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={(e) => { onDelete(term, e) }}
-                    title="Eliminar período"
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-                  >
-                    <TrashBin className="w-4 h-4" />
-                  </button>
-                </div>
+      {/* Filas */}
+      {terms.map((term, index) => {
+        const isActive = term.id === activeTermId
+        return (
+          <div
+            key={term.id}
+            onClick={() => { onSelect(term) }}
+            className={[
+              `grid ${gridColsClass} px-6 py-4 items-center transition-colors cursor-pointer`,
+              index !== 0 ? 'border-t border-slate-50' : '',
+              isActive
+                ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
+                : 'hover:bg-slate-50'
+            ].join(' ')}
+          >
+            {/* Código del term académico + badge "Activo" */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-800 font-hanken">{term.id}</span>
+              {isActive && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5 shrink-0">
+                  ✓ Trabajando
+                </span>
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Vista Móvil (< lg): Tarjetas apiladas */}
-      <div className="flex lg:hidden flex-col gap-3 font-hanken">
-        {terms.map((term) => {
-          const isActive = term.id === activeTermId
-          return (
-            <div
-              key={term.id}
-              onClick={() => { onSelect(term) }}
-              className={[
-                'p-4 rounded-xl border shadow-sm transition-all cursor-pointer flex flex-col gap-3 relative',
-                isActive
-                  ? 'bg-[#eaf4fb] border-[#1A5F7A] ring-1 ring-[#1A5F7A]'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
-              ].join(' ')}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-base font-bold text-slate-800">{term.name}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {formatPeriodo(term.startDate, term.endDate)}
-                  </p>
-                </div>
-                {isActive && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2.5 py-1 shrink-0">
-                    ✓ Trabajando
-                  </span>
-                )}
+            {/* Descripción del semestre */}
+            <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
+              {term.descripcion}
+            </span>
+
+            {/* Periodo */}
+            <span className="text-sm text-slate-400 font-hanken tracking-wide">
+              {formatPeriodo(term.startDate, term.endDate)}
+            </span>
+
+            {/* Botón de eliminar */}
+            {showActions && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={(e) => { onDelete(term, e) }}
+                  title="Eliminar período"
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  <TrashBin className="w-4 h-4" />
+                </button>
               </div>
 
               {showActions && (

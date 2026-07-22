@@ -1,0 +1,19 @@
+### recuperar todas las relaciones de un TERM
+GET http://localhost:3000/api/relacion-son-ejercidos?term=1
+
+### recuperar las relaciones de una materia específica en un TERM
+GET http://localhost:3000/api/relacion-son-ejercidos?term=1&codAsig=BDD-3011
+
+### guardar/actualizar una relacion son-ejercidos
+POST http://localhost:3000/api/relacion-son-ejercidos
+Content-Type: application/json
+
+{
+  "codLab": 1,
+  "codAsig": "EDO-1121",
+  "codTerm": "1",
+  "prioridad": 2
+}
+
+### eliminar una relacion son-ejercidos
+DELETE http://localhost:3000/api/relacion-son-ejercidos?codLab=1&codAsig=EDO-1121&term=1

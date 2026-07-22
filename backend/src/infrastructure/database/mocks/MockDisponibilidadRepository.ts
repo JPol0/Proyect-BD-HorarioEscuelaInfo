@@ -18,7 +18,7 @@ export class MockDisponibilidadRepository implements DisponibilidadRepository {
     )
   }
 
-  async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[]): Promise<void> {
+  async guardar (cedulaProfesor: string, codTerm: string, disponibilidad: DisponibilidadHoraria[], tx?: any): Promise<void> {
     const clave = `${cedulaProfesor}|${codTerm}`
     this.almacen.set(clave, disponibilidad)
   }

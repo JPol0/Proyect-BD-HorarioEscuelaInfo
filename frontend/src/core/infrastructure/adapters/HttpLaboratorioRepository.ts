@@ -31,7 +31,7 @@ export class HttpLaboratorioRepository implements LaboratorioRepository {
     }
   }
 
-  async delete (id: string): Promise<void> {
+  async delete (id: number): Promise<void> {
     const response = await fetch(`${this.apiUrl}/${id}`, { method: 'DELETE' })
     if (!response.ok) {
       let errorMessage = 'Error al eliminar el laboratorio en el servidor'

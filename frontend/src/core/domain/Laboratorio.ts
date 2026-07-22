@@ -1,4 +1,4 @@
 export interface Laboratorio {
-  id: string
+  id: number
   name: string
 }

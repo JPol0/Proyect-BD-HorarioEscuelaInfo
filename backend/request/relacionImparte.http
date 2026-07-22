@@ -1,0 +1,23 @@
+
+### recuperar todas las relaciones de un TERM
+GET http://localhost:3000/api/relacion-imparte?term=1
+
+### recuperar las relaciones de una materia específica en un TERM
+GET http://localhost:3000/api/relacion-imparte?term=1&codAsig=EDO-1121
+
+### guardar/actualizar una relacion imparte
+POST http://localhost:3000/api/relacion-imparte
+Content-Type: application/json
+
+{
+  "cedulaP": "V-12345678",
+  "codAsig": "EDO-1121",
+  "codTerm": "1",
+  "nroSeccion": 2,
+  "horasLab": 0,
+  "horasTeo": 6,
+  "asignada": true
+}
+
+### eliminar una relacion imparte
+DELETE http://localhost:3000/api/relacion-imparte?cedulaP=V-12345678&codAsig=EDO-1121&term=1&nroSeccion=2

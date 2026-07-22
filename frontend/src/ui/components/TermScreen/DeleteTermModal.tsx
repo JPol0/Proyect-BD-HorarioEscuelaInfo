@@ -54,7 +54,7 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
         <div className="my-5 p-4 bg-slate-50 rounded-xl border border-slate-100">
           <p className="text-sm text-slate-700 font-hanken">
             ¿Estás seguro de que deseas eliminar el período académico{' '}
-            <strong className="text-slate-900 font-bold">"{term.name}"</strong>?
+            <strong className="text-slate-900 font-bold">"{term.id}"</strong>?
           </p>
         </div>
 
@@ -82,12 +82,14 @@ export default function DeleteTermModal ({ term, onClose, onConfirm }: DeleteTer
             disabled={cargando}
             className="px-5 py-3 sm:py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 shadow-sm min-h-[44px] sm:min-h-0 cursor-pointer"
           >
-            {cargando ? 'Eliminando...' : (
-              <>
-                <TrashBin className="w-4 h-4" />
-                Eliminar Term
-              </>
-            )}
+            {cargando
+              ? 'Eliminando...'
+              : (
+                <>
+                  <TrashBin className="w-4 h-4" />
+                  Eliminar Term
+                </>
+                )}
           </button>
         </div>
       </div>

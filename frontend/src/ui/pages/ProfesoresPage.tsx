@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Magnifier, Plus } from '@gravity-ui/icons'
-import { Input, Modal, Button, Select, ListBox } from '@heroui/react'
+import { Input, Select, ListBox, Modal, Button, Tooltip } from '@heroui/react'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -16,13 +16,13 @@ const actualizarStatusUseCase = new ActualizarStatusProfesor(repository)
 
 const STATUS_CONFIG = {
   A: { label: 'Activo', color: 'bg-emerald-100 text-emerald-700' },
-  P: { label: 'Pendiente', color: 'bg-amber-100 text-amber-700' },
+  ER: { label: 'En Reposo', color: 'bg-amber-100 text-amber-700' },
   R: { label: 'Retirado', color: 'bg-red-100 text-red-600' }
 }
 
-const STATUS_OPTIONS: Array<{ id: Profesor['status'], label: string }> = [
+const STATUS_OPTIONS = [
   { id: 'A', label: 'Activo' },
-  { id: 'P', label: 'Pendiente' },
+  { id: 'ER', label: 'En Reposo' },
   { id: 'R', label: 'Retirado' }
 ]
 
@@ -31,7 +31,7 @@ export function ProfesoresPage () {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
-  const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [filtroEstado, setFiltroEstado] = useState<'todos' | Profesor['status']>('todos')
   const navigate = useNavigate()
   const { currentUser } = useUser()
   const isLector = currentUser?.rol === 'lector'
@@ -51,7 +51,7 @@ export function ProfesoresPage () {
     void cargar()
   }, [])
 
-  const handleStatusChange = async (cedula: string, status: Profesor['status']) => {
+  const handleStatusChange = async (cedula: string, status: Profesor['status']): Promise<void> => {
     setError(null)
     const previous = [...profesores]
     setProfesores((prev) => prev.map((p) =>
@@ -72,7 +72,7 @@ export function ProfesoresPage () {
 
   const profesoresFiltrados = profesores.filter((p) => {
     const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                             p.cedula.toLowerCase().includes(busqueda.toLowerCase())
+      p.cedula.toLowerCase().includes(busqueda.toLowerCase())
     const coincideEstado = filtroEstado === 'todos' || p.status === filtroEstado
     return coincideBusqueda && coincideEstado
   })
@@ -119,7 +119,6 @@ export function ProfesoresPage () {
           </div>
         </div>
 
-        {/* Filtro por estado */}
         <div className="w-full sm:w-48 flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-text-muted">Estado</span>
           <Select
@@ -128,7 +127,7 @@ export function ProfesoresPage () {
             variant="primary"
             value={filtroEstado}
             onChange={(valor) => {
-              if (valor) setFiltroEstado(String(valor))
+              if (valor) setFiltroEstado(String(valor) as 'todos' | Profesor['status'])
             }}
             className="w-full text-xs"
           >
@@ -144,8 +143,8 @@ export function ProfesoresPage () {
                 <ListBox.Item id="A" textValue="Activo" className="px-3 py-2 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer min-h-[44px] flex items-center">
                   Activo
                 </ListBox.Item>
-                <ListBox.Item id="P" textValue="Pendiente" className="px-3 py-2 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer min-h-[44px] flex items-center">
-                  Pendiente
+                <ListBox.Item id="ER" textValue="En Reposo" className="px-3 py-1.5 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer block">
+                  En Reposo
                 </ListBox.Item>
                 <ListBox.Item id="R" textValue="Retirado" className="px-3 py-2 text-xs text-text-primary rounded-md hover:bg-surface-alt cursor-pointer min-h-[44px] flex items-center">
                   Retirado
@@ -165,13 +164,13 @@ export function ProfesoresPage () {
       {cargando
         ? (
           <p className="text-subtitlePage italic animate-pulse font-hanken">Cargando profesores...</p>
-        )
+          )
         : profesoresFiltrados.length === 0
           ? (
             <div className="text-center py-12 text-text-muted bg-surface-alt rounded-xl border border-dashed border-border font-hanken">
               No se encontraron profesores con ese criterio.
             </div>
-          )
+            )
           : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {profesoresFiltrados.map((profesor) => {
@@ -183,7 +182,16 @@ export function ProfesoresPage () {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-titlePage font-hanken truncate">{profesor.nombre}</h3>
+                        <Tooltip>
+                          <Tooltip.Trigger className="block min-w-0 w-full text-left cursor-default">
+                            <h3 className="text-base font-bold text-titlePage font-hanken truncate">
+                              {profesor.nombre}
+                            </h3>
+                          </Tooltip.Trigger>
+                          <Tooltip.Content className="bg-surface border border-border text-titlePage text-xs font-hanken px-2.5 py-1.5 rounded-md shadow-md z-50">
+                            {profesor.nombre}
+                          </Tooltip.Content>
+                        </Tooltip>
                         <p className="text-xs text-subtitlePage font-hanken mt-0.5">{profesor.cedula}</p>
                       </div>
                       <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>
@@ -197,7 +205,8 @@ export function ProfesoresPage () {
                         <div className="flex justify-between items-center w-full border border-border rounded-lg px-3 bg-surface-alt text-xs text-text-primary h-11 sm:h-9 font-hanken">
                           {cfg.label}
                         </div>
-                      ) : (
+                          )
+                        : (
                         <Select
                           variant="primary"
                           value={profesor.status}
@@ -223,7 +232,7 @@ export function ProfesoresPage () {
                             </ListBox>
                           </Select.Popover>
                         </Select>
-                      )}
+                          )}
                     </div>
 
                     <button
@@ -237,7 +246,7 @@ export function ProfesoresPage () {
                 )
               })}
             </div>
-          )}
+            )}
     </div>
   )
 }
