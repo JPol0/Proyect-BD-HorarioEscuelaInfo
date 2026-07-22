@@ -1,3 +1,4 @@
+import { useState, type SVGProps, type ComponentType } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useActiveTerm } from '../store/activeTermStore'
 import { useUser } from '../store/userStore'
@@ -10,9 +11,10 @@ import {
   Calendar,
   TriangleExclamation,
   LayoutHeaderSideContent,
-  Persons
+  Persons,
+  Bars,
+  Xmark
 } from '@gravity-ui/icons'
-import type { SVGProps, ComponentType } from 'react'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
 
@@ -46,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
 export default function Layout () {
   const { activeTerm } = useActiveTerm()
   const { currentUser, clearCurrentUser } = useUser()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -60,52 +63,107 @@ export default function Layout () {
     }
   }
 
+  const navFiltered = NAV_ITEMS
+    .filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector'))
+    .filter(item => !(item.id === 'usuarios' && currentUser?.rol !== 'administrador'))
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-bgmain">
-      <aside className="w-72 bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden">
-        <div className="px-6 pt-8 pb-6">
-          <h2 className="text-2xl font-bold tracking-wide text-white">SGBD HORARIOS</h2>
-          <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
+    <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-bgmain">
+      {/* Header móvil para pantallas pequeñas (< lg) */}
+      <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-sidebar text-white shrink-0 border-b border-slate-800 z-30">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold tracking-wide text-white">SGBD HORARIOS</h2>
           {activeTerm !== null
             ? (
-              <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.name}>
+              <span className="text-xs text-[#57a8c8] font-hanken font-bold truncate max-w-[200px]" title={activeTerm.name}>
                 {'Term: ' + activeTerm.name}
-              </p>
+              </span>
               )
             : (
-              <p className="text-sm text-slate-500 font-hanken italic mt-3.5">
-                Ningún term activo
-              </p>
+              <span className="text-xs text-slate-400 font-hanken italic">
+                Sin Term activo
+              </span>
               )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-slate-300 hover:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-700 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+          aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+        >
+          {isMobileMenuOpen ? <Xmark className="h-6 w-6" /> : <Bars className="h-6 w-6" />}
+        </button>
+      </header>
+
+      {/* Overlay backdrop del Drawer en móvil */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar (Drawer en móvil, Fijo en escritorio lg) */}
+      <aside
+        className={[
+          'bg-sidebar text-white flex flex-col shrink-0 select-none overflow-hidden transition-transform duration-300 ease-in-out z-50',
+          'fixed inset-y-0 left-0 w-72 lg:static lg:translate-x-0',
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        ].join(' ')}
+      >
+        <div className="px-6 pt-8 pb-6 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-wide text-white">SGBD HORARIOS</h2>
+            <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
+            {activeTerm !== null
+              ? (
+                <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.name}>
+                  {'Term: ' + activeTerm.name}
+                </p>
+                )
+              : (
+                <p className="text-sm text-slate-500 font-hanken italic mt-3.5">
+                  Ningún term activo
+                </p>
+                )}
+          </div>
+          {/* Botón para cerrar drawer dentro del sidebar en móvil */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+            aria-label="Cerrar menú lateral"
+          >
+            <Xmark className="h-5 w-5" />
+          </button>
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
-          {NAV_ITEMS
-            .filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector'))
-            .filter(item => !(item.id === 'usuarios' && currentUser?.rol !== 'administrador'))
-            .map((item) => {
-              const Icon = item.Icon
-              if (!item.disponible) {
-                return (
+          {navFiltered.map((item) => {
+            const Icon = item.Icon
+            if (!item.disponible) {
+              return (
                 <button
                   key={item.id}
                   disabled
-                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors min-h-[44px]"
                   title="Próximamente"
                 >
                   <Icon className="h-5 w-5 shrink-0" />
                   <span>{item.label}</span>
                 </button>
-                )
-              }
+              )
+            }
 
-              return (
+            return (
               <NavLink
                 key={item.id}
                 to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   [
-                    'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
+                    'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors min-h-[44px]',
                     isActive
                       ? 'bg-button-primary text-white font-semibold shadow-md'
                       : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
@@ -115,8 +173,8 @@ export default function Layout () {
                 <Icon className="h-5 w-5 shrink-0" />
                 <span>{item.label}</span>
               </NavLink>
-              )
-            })}
+            )
+          })}
         </nav>
 
         {/* Sección de Usuario en la parte inferior */}
@@ -130,15 +188,19 @@ export default function Layout () {
             </span>
           </div>
           <button
-            onClick={() => { void handleLogout() }}
-            className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 hover:border-slate-600"
+            onClick={() => {
+              setIsMobileMenuOpen(false)
+              void handleLogout()
+            }}
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-3 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 hover:border-slate-600 min-h-[44px]"
           >
             Cerrar sesión
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 p-10 overflow-y-auto bg-bgmain">
+      {/* Contenido principal */}
+      <main className="flex-1 overflow-y-auto bg-bgmain">
         <Outlet />
       </main>
     </div>

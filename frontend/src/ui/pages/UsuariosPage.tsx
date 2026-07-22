@@ -47,7 +47,7 @@ export function UsuariosPage () {
   const handleCreateUser = async (nombre: string, rol: 'administrador' | 'lector', password?: string) => {
     try {
       await saveUserUseCase.execute({
-        id: 0, // El backend mock creará el ID
+        id: 0,
         nombre,
         rol,
         password
@@ -90,7 +90,6 @@ export function UsuariosPage () {
     u.nombre.toLowerCase().includes(busqueda.toLowerCase())
   )
 
-  // Ordenar: Administradores primero, luego lectores. Dentro del rol, ordenar alfabéticamente
   const usuariosOrdenados = [...usuariosFiltrados].sort((a, b) => {
     if (a.rol === 'administrador' && b.rol !== 'administrador') return -1
     if (a.rol !== 'administrador' && b.rol === 'administrador') return 1
@@ -98,21 +97,21 @@ export function UsuariosPage () {
   })
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
           title="Gestión de Usuarios"
           subtitle="Administra las cuentas y permisos de los usuarios del sistema."
         />
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-stretch sm:items-end pb-4">
           {/* Botón Nuevo Usuario */}
           <div className="w-full sm:w-auto flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+            <span className="text-xs font-semibold text-slate-500 hidden sm:inline-block">&nbsp;</span>
             <Modal>
               <Button
                 variant="primary"
-                className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-11 sm:h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 Nuevo Usuario
@@ -137,7 +136,7 @@ export function UsuariosPage () {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 variant="primary"
-                className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                className="w-full pl-9 pr-3 text-sm h-11 sm:h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -161,65 +160,119 @@ export function UsuariosPage () {
         </div>
               )
             : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.04)] overflow-hidden font-sans">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-slate-600 border-collapse">
-              <thead className="bg-slate-50/75 border-b border-slate-200 text-xs font-bold text-slate-400 tracking-wider uppercase">
-                <tr>
-                  <th className="px-6 py-4">Nombre</th>
-                  <th className="px-6 py-4">Rol</th>
-                  <th className="px-6 py-4 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {usuariosOrdenados.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-slate-50/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-medium text-slate-800">
-                      {user.nombre}
-                    </td>
-                    <td className="px-6 py-4 text-xs font-semibold text-slate-500 capitalize">
-                      {user.rol}
-                    </td>
-                    <td className="px-6 py-4 text-right flex justify-end items-center gap-2">
-                      <Modal>
-                        <div title="Modificar Usuario">
-                          <Button
-                            variant="secondary"
-                            className="p-2 h-8 w-8 min-w-0 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center cursor-pointer"
-                            aria-label="Modificar Usuario"
-                          >
-                            <Gear className="w-4 h-4 shrink-0" />
-                          </Button>
-                        </div>
-                        <UserModal
-                          user={user}
-                          onSave={async (nombre, rol, password) => await handleUpdateUser(user, nombre, rol, password)}
-                        />
-                      </Modal>
-
-                      {user.nombre !== currentUser?.nombre && (
-                        <DeleteConfirmButton
-                          title="¿Eliminar Usuario?"
-                          description={
-                            <span>
-                              ¿Estás seguro de que deseas eliminar al usuario <strong>{user.nombre}</strong>? Esta acción no se puede deshacer.
-                            </span>
-                          }
-                          onConfirm={async () => await handleDeleteUser(user)}
-                          buttonClassName="p-2 h-8 w-8 min-w-0 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center cursor-pointer border border-red-100/50"
-                          ariaLabel="Eliminar Usuario"
-                        />
-                      )}
-                    </td>
+        <>
+          {/* Vista Escritorio (lg): Tabla HTML */}
+          <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-[0_2px_10px_rgba(0,0,0,0.04)] overflow-hidden font-sans">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-slate-600 border-collapse">
+                <thead className="bg-slate-50/75 border-b border-slate-200 text-xs font-bold text-slate-400 tracking-wider uppercase">
+                  <tr>
+                    <th className="px-6 py-4">Nombre</th>
+                    <th className="px-6 py-4">Rol</th>
+                    <th className="px-6 py-4 text-right">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {usuariosOrdenados.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-slate-800">
+                        {user.nombre}
+                      </td>
+                      <td className="px-6 py-4 text-xs font-semibold text-slate-500 capitalize">
+                        {user.rol}
+                      </td>
+                      <td className="px-6 py-4 text-right flex justify-end items-center gap-2">
+                        <Modal>
+                          <div title="Modificar Usuario">
+                            <Button
+                              variant="secondary"
+                              className="p-2 h-8 w-8 min-w-0 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center cursor-pointer"
+                              aria-label="Modificar Usuario"
+                            >
+                              <Gear className="w-4 h-4 shrink-0" />
+                            </Button>
+                          </div>
+                          <UserModal
+                            user={user}
+                            onSave={async (nombre, rol, password) => await handleUpdateUser(user, nombre, rol, password)}
+                          />
+                        </Modal>
+
+                        {user.nombre !== currentUser?.nombre && (
+                          <DeleteConfirmButton
+                            title="¿Eliminar Usuario?"
+                            description={
+                              <span>
+                                ¿Estás seguro de que deseas eliminar al usuario <strong>{user.nombre}</strong>? Esta acción no se puede deshacer.
+                              </span>
+                            }
+                            onConfirm={async () => await handleDeleteUser(user)}
+                            buttonClassName="p-2 h-8 w-8 min-w-0 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center cursor-pointer border border-red-100/50"
+                            ariaLabel="Eliminar Usuario"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Vista Móvil (< lg): Tarjetas apiladas */}
+          <div className="flex lg:hidden flex-col gap-3 font-sans">
+            {usuariosOrdenados.map((user) => (
+              <div
+                key={user.id}
+                className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800">{user.nombre}</h3>
+                    <span className="inline-block text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5 bg-slate-100 px-2 py-0.5 rounded">
+                      {user.rol}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end items-center gap-2 pt-2 border-t border-slate-100">
+                  <Modal>
+                    <div>
+                      <Button
+                        variant="secondary"
+                        className="px-3 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1.5 cursor-pointer min-h-[44px]"
+                      >
+                        <Gear className="w-4 h-4 shrink-0" />
+                        Modificar
+                      </Button>
+                    </div>
+                    <UserModal
+                      user={user}
+                      onSave={async (nombre, rol, password) => await handleUpdateUser(user, nombre, rol, password)}
+                    />
+                  </Modal>
+
+                  {user.nombre !== currentUser?.nombre && (
+                    <DeleteConfirmButton
+                      title="¿Eliminar Usuario?"
+                      description={
+                        <span>
+                          ¿Estás seguro de que deseas eliminar al usuario <strong>{user.nombre}</strong>? Esta acción no se puede deshacer.
+                        </span>
+                      }
+                      onConfirm={async () => await handleDeleteUser(user)}
+                      buttonClassName="px-3 py-2 text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer border border-red-100 min-h-[44px]"
+                      ariaLabel="Eliminar Usuario"
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
               )}
     </div>
   )

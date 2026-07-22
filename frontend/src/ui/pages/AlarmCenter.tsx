@@ -9,7 +9,6 @@ import { Select, ListBox } from '@heroui/react'
 import { Clock, Check, EyeSlash } from '@gravity-ui/icons'
 import { useActiveTerm } from '../store/activeTermStore'
 
-// Instanciación manual de dependencias
 const alertaRepository = new HttpAlertRepository()
 const obtenerUseCase = new ObtenerTodasLasAlertas(alertaRepository)
 const guardarUseCase = new GuardarEstadoAlerta(alertaRepository)
@@ -53,7 +52,6 @@ export default function AlarmCenter () {
       estado: nuevoEstado,
       motivoCambio: motivo
     })
-    // Al procesar la alerta, recargamos.
     await cargarAlertas()
   }
 
@@ -63,18 +61,18 @@ export default function AlarmCenter () {
   })
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       <Title
         title="Centro de Alarmas"
         subtitle="Conflictos detectados durante la generación del horario."
       />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 border-b border-slate-100 pb-3">
-        <h2 className="text-lg font-bold text-slate-700 tracking-wide font-hanken uppercase">
+        <h2 className="text-base sm:text-lg font-bold text-slate-700 tracking-wide font-hanken uppercase">
           Listado de Conflictos
         </h2>
 
-        <div className="w-56 shrink-0 z-40">
+        <div className="w-full sm:w-56 shrink-0 z-40">
           <Select
             aria-label="Filtrar por estado"
             placeholder="Filtrar por estado"
@@ -86,8 +84,7 @@ export default function AlarmCenter () {
             }}
             className="w-full text-xs"
           >
-            {/* Gatillo/Botón */}
-            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200/80 rounded-lg px-3 py-1.5 bg-white hover:bg-slate-50 transition-colors text-xs text-slate-700 h-8 font-medium shadow-sm">
+            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200/80 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-xs text-slate-700 h-11 sm:h-9 font-medium shadow-sm">
               <Select.Value>
                 <div className="flex items-center gap-1.5">
                   {filtro === 'PENDIENTE' && <Clock className="w-3.5 h-3.5 text-amber-500" />}
@@ -104,13 +101,12 @@ export default function AlarmCenter () {
               <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
             </Select.Trigger>
 
-            {/* Popover y ListBox */}
             <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-50 z-50">
               <ListBox>
                 <ListBox.Item
                   id="PENDIENTE"
                   textValue="Pendientes"
-                  className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                  className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2 min-h-[44px]"
                 >
                   <Clock className="w-3.5 h-3.5 text-amber-500" />
                   Pendientes
@@ -119,7 +115,7 @@ export default function AlarmCenter () {
                 <ListBox.Item
                   id="RESUELTA"
                   textValue="Resueltas"
-                  className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                  className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2 min-h-[44px]"
                 >
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
                   Resueltas
@@ -128,7 +124,7 @@ export default function AlarmCenter () {
                 <ListBox.Item
                   id="IGNORADA"
                   textValue="Ignoradas"
-                  className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                  className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2 min-h-[44px]"
                 >
                   <EyeSlash className="w-3.5 h-3.5 text-slate-400" />
                   Ignoradas
@@ -137,7 +133,7 @@ export default function AlarmCenter () {
                 <ListBox.Item
                   id="TODAS"
                   textValue="Todas las alertas"
-                  className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2 font-semibold border-t border-slate-100 mt-1"
+                  className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-2 font-semibold border-t border-slate-100 mt-1 min-h-[44px]"
                 >
                   Todas las alertas
                 </ListBox.Item>
@@ -161,7 +157,7 @@ export default function AlarmCenter () {
             </div>
             )
           : (
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-4">
               {alertasFiltradas.map((alerta) => (
                 <AlertCard
                   key={alerta.id}

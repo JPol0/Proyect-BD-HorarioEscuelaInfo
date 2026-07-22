@@ -24,7 +24,7 @@ interface ModalStateClosed {
 
 interface ModalStateOpen {
   open: true
-  laboratorio: Laboratorio | null // null = creación, Laboratorio = edición
+  laboratorio: Laboratorio | null
 }
 
 type ModalState = ModalStateClosed | ModalStateOpen
@@ -38,7 +38,6 @@ export default function LaboratoriosPage () {
   const [busqueda, setBusqueda] = useState('')
   const [modal, setModal] = useState<ModalState>({ open: false })
 
-  // ─── Carga inicial ────────────────────────────────────────────────────────────
   const cargarLaboratorios = async () => {
     try {
       setError(null)
@@ -55,9 +54,7 @@ export default function LaboratoriosPage () {
     void cargarLaboratorios()
   }, [])
 
-  // ─── Handlers ─────────────────────────────────────────────────────────────────
   const handleGuardar = async (laboratorio: Laboratorio) => {
-    // Actualización optimista
     setLaboratorios((prev) => {
       const index = prev.findIndex((l) => l.id === laboratorio.id)
       if (index !== -1) {
@@ -70,24 +67,21 @@ export default function LaboratoriosPage () {
 
   const handleEliminar = async (id: string) => {
     const estadoPrevio = [...laboratorios]
-    // Actualización optimista
     setLaboratorios((prev) => prev.filter((l) => l.id !== id))
     try {
       await deleteLaboratorioUseCase.execute(id)
     } catch (err) {
-      // Rollback si falla
       setLaboratorios(estadoPrevio)
       setError(err instanceof Error ? err.message : 'Error al eliminar el laboratorio')
     }
   }
 
-  // ─── Filtrado reactivo ─────────────────────────────────────────────────────────
   const laboratoriosFiltrados = laboratorios.filter((l) =>
     l.name.toLowerCase().includes(busqueda.toLowerCase())
   )
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       {/* Header: Título + Buscador + Botón */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <Title
@@ -95,14 +89,14 @@ export default function LaboratoriosPage () {
           subtitle="Administra los laboratorios y salas disponibles para la planificación de horarios."
         />
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-stretch sm:items-end pb-4">
           {/* Botón Añadir Laboratorio */}
           {!isLector && (
             <div className="w-full sm:w-auto flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+              <span className="text-xs font-semibold text-slate-500 hidden sm:inline-block">&nbsp;</span>
               <button
                 onClick={() => { setModal({ open: true, laboratorio: null }) }}
-                className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm h-9 cursor-pointer w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm h-11 sm:h-9 cursor-pointer w-full sm:w-auto min-h-[44px] sm:min-h-0"
               >
                 + Añadir Laboratorio
               </button>
@@ -122,7 +116,7 @@ export default function LaboratoriosPage () {
                 value={busqueda}
                 onChange={(e) => { setBusqueda(e.target.value) }}
                 variant="primary"
-                className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                className="w-full pl-9 pr-3 text-sm h-11 sm:h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
               />
             </div>
           </div>
@@ -176,7 +170,6 @@ export default function LaboratoriosPage () {
   )
 }
 
-// ─── Sub-componente: tarjeta de laboratorio ────────────────────────────────────
 interface LaboratorioCardProps {
   laboratorio: Laboratorio
   laboratorios: Laboratorio[]
@@ -188,40 +181,36 @@ interface LaboratorioCardProps {
 function LaboratorioCard ({ laboratorio, laboratorios, onModificar, onEliminar, isLector = false }: LaboratorioCardProps) {
   return (
     <div className="relative bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-200">
-      {/* Botón eliminar flotante y elegante (se muestra al hacer hover) */}
       {!isLector && (
         <button
           onClick={onEliminar}
-          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm cursor-pointer"
+          className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 p-2.5 text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 rounded-lg border border-slate-100 shadow-sm cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
           aria-label={`Eliminar ${laboratorio.name}`}
         >
           <TrashBin className="w-4 h-4" />
         </button>
       )}
 
-      {/* Nombre del laboratorio */}
       <div className="p-6 pt-8 pb-7 flex-1 flex flex-col justify-center min-h-[110px]">
         <h3 className="text-xl font-bold text-slate-800 font-hanken leading-snug tracking-tight">
           {laboratorio.name}
         </h3>
       </div>
 
-      {/* Separador */}
       <div className="border-t border-slate-100" />
 
-      {/* Acciones */}
-      <div className="py-4 px-6 flex justify-center gap-2 bg-white">
+      <div className="py-4 px-6 flex flex-wrap sm:flex-nowrap justify-center gap-2 bg-white">
         {!isLector && (
           <button
             onClick={onModificar}
-            className="px-4 py-2 text-[11px] font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase"
+            className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-[11px] font-bold text-[#14233f] border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors font-hanken tracking-wider uppercase min-h-[44px] sm:min-h-0 flex items-center justify-center"
           >
             Modificar
           </button>
         )}
 
         <Modal>
-          <Button className="px-4 py-2 text-[11px] h-auto min-w-0 font-bold text-white bg-[#1A5F7A] rounded-lg hover:bg-[#14495e] transition-colors font-hanken tracking-wider uppercase cursor-pointer">
+          <Button className="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 text-[11px] h-11 sm:h-auto min-w-0 font-bold text-white bg-[#1A5F7A] rounded-lg hover:bg-[#14495e] transition-colors font-hanken tracking-wider uppercase cursor-pointer min-h-[44px] sm:min-h-0">
             Disponibilidad
           </Button>
           <LaboratorioDisponibilidadModal laboratorios={laboratorios} initialLabId={laboratorio.id} />

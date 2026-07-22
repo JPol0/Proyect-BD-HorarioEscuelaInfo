@@ -21,7 +21,7 @@ export function DisponibilidadCell ({ celda, isSelected, onClick, onKeyDown }: D
 
   if (celda.ocupado) {
     return (
-      <td className="border border-slate-200 bg-slate-100 px-2 py-2 text-sm text-slate-600">
+      <td className="border border-slate-200 bg-slate-100 px-2 py-3 sm:py-2 text-xs sm:text-sm text-slate-600 text-center">
         {celda.materiaAsignada ?? '-'}
       </td>
     )
@@ -33,7 +33,7 @@ export function DisponibilidadCell ({ celda, isSelected, onClick, onKeyDown }: D
   return (
     <td
       id={`cell-${celda.dia}-${celda.numeroModulo}`}
-      className={`${cursorStyle} border border-slate-200 px-2 py-2 text-center text-sm font-mono transition select-none ${ESTILO_POR_NIVEL[celda.disponibilidad]} ${seleccionado}`}
+      className={`${cursorStyle} border border-slate-200 px-2 py-3 sm:py-2 text-center text-xs sm:text-sm font-mono transition select-none ${ESTILO_POR_NIVEL[celda.disponibilidad]} ${seleccionado}`}
       onClick={() => { if (!isLector) onClick(celda.dia, celda.numeroModulo) }}
       onKeyDown={(event) => { if (!isLector) onKeyDown(event, celda.dia, celda.numeroModulo) }}
       role="gridcell"

@@ -79,7 +79,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                     value={cedula}
                     onChange={(e) => { setCedula(e.target.value) }}
                     variant="primary"
-                    className="w-full text-sm h-9 border border-border rounded-lg bg-surface-alt"
+                    className="w-full text-sm h-11 sm:h-9 border border-border rounded-lg bg-surface-alt"
                   />
                 </div>
 
@@ -91,7 +91,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                     value={nombre}
                     onChange={(e) => { setNombre(e.target.value) }}
                     variant="primary"
-                    className="w-full text-sm h-9 border border-border rounded-lg bg-surface-alt"
+                    className="w-full text-sm h-11 sm:h-9 border border-border rounded-lg bg-surface-alt"
                   />
                 </div>
               </Modal.Body>
@@ -99,7 +99,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
               <Modal.Footer className="px-6 py-4 border-t border-border bg-surface-alt flex justify-end gap-3">
                 <Button
                   variant="secondary"
-                  className="bg-surface-alt hover:bg-border text-text-secondary text-xs px-5 h-9 cursor-pointer"
+                  className="bg-surface-alt hover:bg-border text-text-secondary text-xs px-5 h-11 sm:h-9 cursor-pointer"
                   onPress={close}
                   isDisabled={guardando}
                 >
@@ -107,7 +107,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                 </Button>
                 <Button
                   variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white text-xs px-5 h-9 cursor-pointer"
+                  className="bg-button-primary hover:bg-button-primary-hover text-white text-xs px-5 h-11 sm:h-9 cursor-pointer"
                   onPress={() => { void handleGuardar(close) }}
                   isDisabled={guardando}
                 >

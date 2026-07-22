@@ -69,17 +69,17 @@ export function DisponibilidadProfesorPage (): JSX.Element {
   }, [cedulaProfesor, grilla])
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       <button
         onClick={() => { void navigate('/profesores') }}
-        className="text-sm text-button-primary hover:underline font-hanken mb-2 flex items-center gap-1"
+        className="text-sm text-button-primary hover:underline font-hanken mb-2 inline-flex items-center gap-1 min-h-[44px] cursor-pointer font-medium"
       >
         ← Volver a Profesores
       </button>
       <DisponibilidadHeader profesor={profesor} codTerm={TERM_ACTIVO} guardando={guardando} onGuardar={() => { void onGuardar() }} />
       {cargando ? <p className="text-subtitlePage font-hanken">Cargando disponibilidad...</p> : null}
-      {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-      {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{mensajeExito}</p> : null}
+      {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 font-hanken">{error}</p> : null}
+      {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700 font-hanken">{mensajeExito}</p> : null}
       {!cargando ? <DisponibilidadGrid grilla={grilla} onCeldaClick={onCeldaClick} /> : null}
     </div>
   )

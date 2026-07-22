@@ -14,7 +14,7 @@ export function DeleteConfirmButton ({
   title,
   description,
   onConfirm,
-  buttonClassName = 'p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer min-w-0 w-6 h-6 flex items-center justify-center bg-transparent',
+  buttonClassName = 'p-2 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer min-w-0 w-8 h-8 flex items-center justify-center bg-transparent min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0',
   ariaLabel = 'Eliminar'
 }: DeleteConfirmButtonProps) {
   return (
@@ -40,15 +40,15 @@ export function DeleteConfirmButton ({
                 <AlertDialog.Body className="text-sm text-slate-500">
                   {description}
                 </AlertDialog.Body>
-                <AlertDialog.Footer className="flex justify-end gap-3 pt-2">
+                <AlertDialog.Footer className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
                   <Button
                     slot="close"
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs h-9 px-4 rounded-lg cursor-pointer"
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs h-11 sm:h-9 px-4 rounded-lg cursor-pointer min-h-[44px] sm:min-h-0"
                   >
                     Cancelar
                   </Button>
                   <Button
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs h-9 px-4 rounded-lg cursor-pointer animate-fade-in"
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold text-xs h-11 sm:h-9 px-4 rounded-lg cursor-pointer animate-fade-in min-h-[44px] sm:min-h-0"
                     onPress={() => {
                       void onConfirm()
                       close()

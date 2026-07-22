@@ -47,8 +47,6 @@ export default function HorariosPage () {
     }
   }
   const [materias, setMaterias] = useState<Materia[]>([])
-  // Usamos el id del term activo como punto de partida; cuando el backend real
-  // esté conectado, este id se enviará directamente para consultar la BD.
   const [selectedTerm] = useState<string | null>(activeTerm?.id ?? null)
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
@@ -146,10 +144,8 @@ export default function HorariosPage () {
 
         if (materiaFromState != null && manualHours != null) {
           try {
-            // Sabemos qué sección estamos asignando porque ahora el modal manda solo esa sección
             const secToOverwrite = manualHours.length > 0 ? manualHours[0].nroSeccion : 1
 
-            // Limpiamos las horas previas SOLO para esa sección
             currentTuplas = currentTuplas.filter(
               (t) => !(t.codAsig === materiaFromState.codMateria && t.codTerm === term && t.nroSeccion === secToOverwrite)
             )
@@ -169,7 +165,6 @@ export default function HorariosPage () {
                 if (startIndex + i >= horasDisponiblesBase.length) break
                 const horaAsignar = horasDisponiblesBase[startIndex + i]
 
-                // Chequeamos si ya hay un horario reservado para ese día y hora en la MISMA sección
                 const estaOcupado = currentTuplas.some(
                   t => t.semestre === materiaFromState.semestre && t.dia === block.dia && t.hora === horaAsignar && t.nroSeccion === block.nroSeccion
                 )
@@ -222,15 +217,12 @@ export default function HorariosPage () {
             currentTuplas = [...currentTuplas, ...nuevasTuplas]
             setSelectedSemester(materiaFromState.semestre)
 
-            // Guardamos automáticamente en la base de datos para no perderlo
             await saveWeeklyScheduleUseCase.execute(term, currentTuplas)
             sessionStorage.removeItem(`draft_horario_${term}`)
 
-            // Limpiamos el state para que si recarga no se vuelva a autogenerar
             window.history.replaceState({}, document.title)
           } catch (e) {
             setAssignmentErrors([e instanceof Error ? e.message : 'Error al asignar y guardar'])
-            // Si hubo error de choque, no agregamos las nuevas tuplas, se mantiene currentTuplas intacto
           }
         }
         setTuplas(currentTuplas)
@@ -257,7 +249,6 @@ export default function HorariosPage () {
       for (const day of days) {
         const asigs = tuplas.filter(t => t.dia === day && t.hora === hour && t.semestre === selectedSemester)
         if (asigs.length > 0) {
-          // Agrupamos por materia para combinar las secciones
           const agrupadoPorMateria: Record<string, number[]> = {}
           for (const asig of asigs) {
             if (!agrupadoPorMateria[asig.codAsig]) agrupadoPorMateria[asig.codAsig] = []
@@ -311,7 +302,7 @@ export default function HorariosPage () {
   }
 
   return (
-    <div className="px-10 py-9 max-w-[1200px]">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       {/* Banner: si no hay term activo, pedimos que seleccione uno */}
       {activeTerm === null && (
         <div className="mb-6 flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
@@ -348,15 +339,15 @@ export default function HorariosPage () {
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-6 mb-7">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-7">
         <Title
           title="Horario Semanal"
           subtitle="Vista general del horario."
         />
 
-        <div className="flex items-end gap-3 shrink-0">
-          <div className="min-w-[150px]">
-            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em] mb-2 block">
+        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto shrink-0">
+          <div className="w-full sm:w-44">
+            <label className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.2em] mb-1.5 block">
               Semestre
             </label>
             <Select
@@ -367,9 +358,9 @@ export default function HorariosPage () {
               onChange={(valor) => {
                 if (valor) setSelectedSemester(Number(valor))
               }}
-              className="w-full h-12"
+              className="w-full h-11 sm:h-12"
             >
-              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-xl px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors text-sm font-medium text-slate-700 h-12">
+              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-xl px-4 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors text-sm font-medium text-slate-700 h-11 sm:h-12">
                 <Select.Value />
                 <Select.Indicator className="text-slate-400">
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -385,7 +376,7 @@ export default function HorariosPage () {
                       key={semestre.toString()}
                       id={semestre.toString()}
                       textValue={`Semestre ${convertirARomano(semestre)}`}
-                      className="px-4 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                      className="px-4 py-2 text-sm text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center"
                     >
                       Semestre {convertirARomano(semestre)}
                     </ListBox.Item>
@@ -396,7 +387,7 @@ export default function HorariosPage () {
           </div>
 
           {!isLector && (
-            <>
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
               <button
                 type="button"
                 onClick={() => {
@@ -407,12 +398,12 @@ export default function HorariosPage () {
                     void handleGenerarHorario(false)
                   }
                 }}
-                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 sm:h-12 px-4 sm:px-5 rounded-xl border border-slate-200 bg-white text-slate-800 text-xs sm:text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 min-h-[44px] cursor-pointer"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Generar Horario
+                Generar
               </button>
 
               <button
@@ -439,13 +430,14 @@ export default function HorariosPage () {
                     })()
                   }
                 }}
-                className="flex items-center gap-2 h-12 px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-11 sm:h-12 px-4 sm:px-5 rounded-xl border border-slate-200 bg-white text-red-600 text-xs sm:text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-red-50 min-h-[44px] cursor-pointer"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Eliminar Horario
+                Eliminar
               </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -461,7 +453,7 @@ export default function HorariosPage () {
                     }
                   })()
                 }}
-                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-button-primary text-white text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 h-11 sm:h-12 px-6 rounded-xl bg-button-primary text-white text-xs sm:text-sm font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover min-h-[44px] cursor-pointer"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M6 4h9l3 3v13H6V4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -470,7 +462,7 @@ export default function HorariosPage () {
                 </svg>
                 Guardar
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -481,7 +473,7 @@ export default function HorariosPage () {
         </div>
       )}
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
         {loading
           ? (
             <div className="flex justify-center py-12">
@@ -493,14 +485,14 @@ export default function HorariosPage () {
               <table className="w-full border-collapse min-w-[760px]">
                 <thead>
                   <tr className="bg-white border-b border-slate-200">
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Hora</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Lunes</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Martes</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Miércoles</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Jueves</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Viernes</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Sábado</th>
-                    <th className="px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Domingo</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Hora</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Lunes</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Martes</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Miércoles</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Jueves</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Viernes</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Sábado</th>
+                    <th className="px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">Domingo</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -509,7 +501,7 @@ export default function HorariosPage () {
                       key={row.hour}
                       className="hover:bg-slate-50/50 transition-colors"
                     >
-                      <td className="px-4 py-4 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center">
+                      <td className="px-3 py-3 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center">
                         {parseInt(row.hour.split(':')[0], 10)}:00 - {parseInt(row.hour.split(':')[0], 10)}:50
                       </td>
                       {['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'].map((dayStr) => {
@@ -520,7 +512,7 @@ export default function HorariosPage () {
                         return (
                           <td 
                             key={day} 
-                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 transition-colors' : ''}`}
+                            className={`px-3 py-3 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 transition-colors' : ''}`}
                             onClick={() => !isEmpty && handleCellClick(day, row.hour)}
                           >
                             {isEmpty ? <span className="text-slate-300">—</span> : content}
@@ -549,14 +541,14 @@ export default function HorariosPage () {
                 <Modal.Footer className="flex justify-center gap-3">
                   <Button
                     variant="secondary"
-                    className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs px-5 h-9 cursor-pointer border border-slate-200"
+                    className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs px-5 h-11 sm:h-9 cursor-pointer border border-slate-200"
                     onPress={() => { setIsConfirmGenerateOpen(false) }}
                   >
                     No
                   </Button>
                   <Button
                     variant="primary"
-                    className="bg-button-primary hover:bg-button-primary-hover text-white font-medium text-xs px-5 h-9 cursor-pointer"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-medium text-xs px-5 h-11 sm:h-9 cursor-pointer"
                     onPress={() => {
                       setIsConfirmGenerateOpen(false)
                       void handleGenerarHorario(true)
