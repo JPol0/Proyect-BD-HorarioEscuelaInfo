@@ -24,6 +24,13 @@ import { type Prerequito } from '../../core/domain/Prerequito'
 import { HttpPrerequitoRepository } from '../../core/infrastructure/adapters/HttpPrerequitoRepository'
 import { ObtenerPrerequitosPorTerm } from '../../core/application/useCases/Prerequito/ObtenerPrerequitosPorTerm'
 import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAlertRepository'
+import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
+import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
+import { type Profesor } from '../../core/domain/Profesor'
+import { ExportarHorarioModal } from '../components/MateriaScreen/ExportarHorarioModal'
+import { ExportarHorario } from '../../core/application/useCases/Horarios/ExportarHorario'
+import { HttpHorarioExporter } from '../../core/infrastructure/adapters/HttpHorarioExporter'
+import type { ScheduleExportConfig } from '../../core/domain/ScheduleExport'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -39,6 +46,10 @@ const getRelacionesSonEjercidosUseCase = new GetRelacionesSonEjercidos(sonEjerci
 const prerequitoRepository = new HttpPrerequitoRepository()
 const getPrerequitosUseCase = new ObtenerPrerequitosPorTerm(prerequitoRepository)
 const alertRepository = new HttpAlertRepository()
+const profesorRepository = new HttpProfesorRepository()
+const getProfesoresUseCase = new GetProfesores(profesorRepository)
+const httpExporterAdapter = new HttpHorarioExporter()
+const exportarHorarioUseCase = new ExportarHorario(httpExporterAdapter)
 
 export default function HorariosPage () {
   const { currentUser } = useUser()
@@ -84,9 +95,11 @@ export default function HorariosPage () {
   }
   const [materias, setMaterias] = useState<Materia[]>([])
   const [prerequitos, setPrerequitos] = useState<Prerequito[]>([])
+  const [profesores, setProfesores] = useState<Profesor[]>([])
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [selectedBlockModal, setSelectedBlockModal] = useState<{
     dia: DaysOfWeek
     horaStr: string
@@ -101,6 +114,24 @@ export default function HorariosPage () {
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
   const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
   const [selectedSemester, setSelectedSemester] = useState<number>(1)
+
+  const handleConfirmExport = async (config: ScheduleExportConfig) => {
+    try {
+      await exportarHorarioUseCase.execute(
+        tuplas,
+        materias,
+        relaciones,
+        profesores,
+        {
+          ...config,
+          termName: activeTerm?.descripcion || activeTerm?.id || '202625'
+        }
+      )
+    } catch (err) {
+      console.error('Error al exportar horario:', err)
+      alert('Ocurrió un error al exportar el horario.')
+    }
+  }
 
   const convertirARomano = (num: number): string => {
     const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
@@ -192,17 +223,19 @@ export default function HorariosPage () {
       setLoading(true)
       setError(null)
       try {
-        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload, prerequitosPayload] = await Promise.all([
+        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload, prerequitosPayload, profesoresPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(term),
           getMateriasUseCase.execute(term),
           getRelacionesImparteUseCase.execute(term),
           getRelacionesSonEjercidosUseCase.execute(term),
-          getPrerequitosUseCase.execute(term)
+          getPrerequitosUseCase.execute(term),
+          getProfesoresUseCase.execute()
         ])
 
         setMaterias(materiasPayload)
         setRelaciones(relacionesPayload)
         setPrerequitos(prerequitosPayload)
+        setProfesores(profesoresPayload)
 
         const mappedLabs: Record<string, { principal: number, secundarios: number[] }> = {}
         sonEjercidosPayload.forEach((r) => {
@@ -513,7 +546,18 @@ export default function HorariosPage () {
         </div>
 
         {/* Contenedor Derecho: Botones de Acción */}
-        <div className="flex items-center shrink-0 w-full md:w-auto mt-2 md:mt-0">
+        <div className="flex items-center shrink-0 w-full md:w-auto mt-2 md:mt-0 gap-2">
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-slate-600">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Exportar Horario
+          </button>
+
           {!isLector && (
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
               <button
@@ -703,6 +747,12 @@ export default function HorariosPage () {
           asigs={selectedBlockModal.asigs}
         />
       )}
+      <ExportarHorarioModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        selectedSemester={selectedSemester}
+        onConfirmExport={handleConfirmExport}
+      />
     </div>
   )
 }
