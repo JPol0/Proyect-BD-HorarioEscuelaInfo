@@ -224,9 +224,6 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                 </span>
               )}
             </div>
-          )
-        })}
-      </div>
 
             {/* Descripción del semestre */}
             <span className="text-sm text-slate-600 font-hanken truncate" title={term.descripcion}>
@@ -250,23 +247,10 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                   <TrashBin className="w-4 h-4" />
                 </button>
               </div>
-
-              {showActions && (
-                <div className="flex justify-end pt-2 border-t border-slate-100/80">
-                  <button
-                    type="button"
-                    onClick={(e) => { onDelete(term, e) }}
-                    className="flex items-center gap-1.5 text-xs text-red-600 font-semibold px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors min-h-[44px]"
-                  >
-                    <TrashBin className="w-3.5 h-3.5" />
-                    Eliminar
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </>
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }

@@ -166,8 +166,6 @@ export function LaboratorioDisponibilidadModal ({ laboratorios, initialLabId }: 
   return (
     <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
       <Modal.Container className="flex items-center justify-center p-2 sm:p-4">
-        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden font-sans border border-slate-100">
-      <Modal.Container className="flex items-center justify-center p-4">
         <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden font-sans border border-slate-100">
           {() => (
             <LaboratorioDisponibilidadInner laboratorios={laboratorios} initialLabId={initialLabId} />

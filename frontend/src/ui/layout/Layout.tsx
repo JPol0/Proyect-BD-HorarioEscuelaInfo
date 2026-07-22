@@ -15,7 +15,6 @@ import {
   Bars,
   Xmark
 } from '@gravity-ui/icons'
-import type { SVGProps, ComponentType } from 'react'
 import OdsCarousel from '../components/common/OdsCarousel'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
@@ -121,8 +120,8 @@ export default function Layout () {
             <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
             {activeTerm !== null
               ? (
-                <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.name}>
-                  {'Term: ' + activeTerm.name}
+                <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.descripcion}>
+                  {'Term: ' + activeTerm.descripcion}
                 </p>
                 )
               : (
@@ -134,19 +133,15 @@ export default function Layout () {
           {/* Botón para cerrar drawer dentro del sidebar en móvil */}
           <button
             type="button"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
-            aria-label="Cerrar menú lateral"
+            onClick={() => { setIsMobileMenuOpen(false) }}
+            className="text-slate-400 hover:text-white p-1"
           >
             <Xmark className="h-5 w-5" />
           </button>
         </div>
 
         <nav className="flex flex-col gap-1.5 px-3 flex-1 overflow-y-auto">
-          {NAV_ITEMS
-            .filter(item => !(item.id === 'peligros' && currentUser?.rol === 'lector'))
-            .filter(item => !(item.id === 'usuarios' && currentUser?.rol !== 'administrador'))
-            .map((item) => {
+          {navFiltered.map((item) => {
               const Icon = item.Icon
               if (!item.disponible) {
                 return (

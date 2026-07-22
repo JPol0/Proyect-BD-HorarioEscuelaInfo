@@ -786,7 +786,7 @@ export default function HorariosPage () {
                           <td
                             key={day}
                             draggable={canDrag}
-                            onDragStart={(e) => {
+                            onDragStart={() => {
                               if (canDrag) {
                                 setDraggedBlock({ dia: day, hora: row.hour })
                               }

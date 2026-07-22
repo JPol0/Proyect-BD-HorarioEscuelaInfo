@@ -16,7 +16,7 @@ interface CeldaSeleccionada {
 
 export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }: DisponibilidadGridProps): JSX.Element {
   const [seleccionada, setSeleccionada] = useState<CeldaSeleccionada | null>(null)
-  const [activeMobileDia, setActiveMobileDia] = useState<DiaSemana>('Lunes')
+  const [activeMobileDia] = useState<DiaSemana>('Lunes')
   const tableRef = useRef<HTMLTableElement>(null)
 
   const focusCelda = useCallback((diaIndex: number, moduloIndex: number): void => {
@@ -121,32 +121,6 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }
         </thead>
         <tbody>
           {MODULOS_HORARIO.map((modulo, moduloIndex) => (
-            <tr key={modulo.numeroModulo}>
-              <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-medium text-slate-600 whitespace-nowrap w-px">
-                {`${modulo.horaInicio} - ${modulo.horaInicio.split(':')[0]}:59`}
-              </td>
-              {DIAS_SEMANA.map((dia, diaIndex) => {
-                const celda = grilla.find((item) => item.dia === dia && item.numeroModulo === modulo.numeroModulo)
-                const estaSeleccionada =
-                  seleccionada != null &&
-                  seleccionada.diaIndex === diaIndex &&
-                  seleccionada.moduloIndex === moduloIndex
-                return celda != null
-                  ? (
-                  <DisponibilidadCell
-                    key={`${dia}-${modulo.numeroModulo}`}
-                    celda={celda}
-                    isSelected={estaSeleccionada}
-                    onClick={handleClick}
-                    onKeyDown={handleKeyDown}
-                  />
-                    )
-                  : null
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {MODULOS_HORARIO.map((modulo, moduloIndex) => (
               <tr key={modulo.numeroModulo}>
                 <td className="border border-slate-200 bg-slate-50 px-3 py-2 font-bold text-xs text-slate-600 whitespace-nowrap">
                   {modulo.horaInicio}
@@ -180,6 +154,5 @@ export function DisponibilidadGrid ({ grilla, onCeldaClick, onCeldaValueChange }
           </tbody>
         </table>
       </div>
-    </div>
-  )
-}
+    )
+  }
