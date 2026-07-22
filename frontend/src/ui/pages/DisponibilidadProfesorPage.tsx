@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../core/domain/DisponibilidadHoraria'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpDisponibilidadRepository } from '../../core/infrastructure/adapters/HttpDisponibilidadRepository'
+import { parseDisponibilidadExcel } from '../../core/infrastructure/adapters/ExcelDisponibilidadParser'
+
 import { ObtenerDisponibilidadHoraria } from '../../core/application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria'
 import { ActualizarCeldaDisponibilidad } from '../../core/application/useCases/DisponibilidadHoraria/ActualizarCeldaDisponibilidad'
 import { GuardarDisponibilidadHoraria } from '../../core/application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria'
@@ -67,6 +69,35 @@ export function DisponibilidadProfesorPage (): JSX.Element {
     }))
   }, [])
 
+  const onCargarExcel = useCallback((arrayBuffer: ArrayBuffer): void => {
+    try {
+      setError(null)
+      setMensajeExito(null)
+      const items = parseDisponibilidadExcel(arrayBuffer)
+
+      const mapExcel = new Map<string, NivelDisponibilidad>()
+      items.forEach((item) => {
+        mapExcel.set(`${item.dia}-${item.numeroModulo}`, item.disponibilidad)
+      })
+
+      setGrilla((actual) => actual.map((celda) => {
+        if (celda.ocupado) return celda
+        const key = `${celda.dia}-${celda.numeroModulo}`
+        if (mapExcel.has(key)) {
+          return {
+            ...celda,
+            disponibilidad: mapExcel.get(key)!
+          }
+        }
+        return celda
+      }))
+
+      setMensajeExito('Disponibilidad cargada desde Excel. Haz clic en "Guardar Disponibilidad" para aplicar los cambios.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al procesar el archivo Excel.')
+    }
+  }, [])
+
   const onGuardar = useCallback(async (): Promise<void> => {
     try {
       setGuardando(true)
@@ -89,7 +120,13 @@ export function DisponibilidadProfesorPage (): JSX.Element {
       >
         ← Volver a Profesores
       </button>
-      <DisponibilidadHeader profesor={profesor} codTerm={termId} guardando={guardando} onGuardar={() => { void onGuardar() }} />
+      <DisponibilidadHeader
+        profesor={profesor}
+        codTerm={termId}
+        guardando={guardando}
+        onGuardar={() => { void onGuardar() }}
+        onCargarExcel={onCargarExcel}
+      />
       {cargando ? <p className="text-subtitlePage font-hanken">Cargando disponibilidad...</p> : null}
       {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{mensajeExito}</p> : null}
