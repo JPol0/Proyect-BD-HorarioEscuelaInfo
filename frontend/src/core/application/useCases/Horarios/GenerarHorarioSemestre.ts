@@ -70,6 +70,10 @@ export class GenerarHorarioSemestre {
     }
 
     // FASE 2: MOTOR DE ASIGNACIÓN
+    const materiasComunesCodes = new Set(
+      materias.filter(m => m.esComun).map(m => m.codMateria)
+    )
+
     for (const materia of materiasDelSemestre) {
       if (materia.esComun) continue // Ya asignadas manualmente
 
@@ -82,6 +86,7 @@ export class GenerarHorarioSemestre {
       const resultado = await asignarSeccionesDeMateria({
         materia,
         prereqCodes,
+        materiasComunesCodes,
         tuplasEnProceso,
         termId,
         profesorAssignments,

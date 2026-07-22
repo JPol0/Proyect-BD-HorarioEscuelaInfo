@@ -7,6 +7,7 @@ import { intentarAsignarBloque } from './BuscadorBloquesLibres'
 export interface AsignarSeccionesParams {
   materia: Materia
   prereqCodes?: Set<string>
+  materiasComunesCodes?: Set<string>
   tuplasEnProceso: Horario[]
   termId: string
   profesorAssignments: Record<string, Record<number, string>>
@@ -68,6 +69,7 @@ export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams)
       const ctxBase = {
         materia,
         prereqCodes,
+        materiasComunesCodes: params.materiasComunesCodes,
         nroSeccion: sec,
         termId,
         cedulaProfesor,
