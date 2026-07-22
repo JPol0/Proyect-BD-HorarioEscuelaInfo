@@ -9,7 +9,7 @@ export interface ExportarHorarioModalProps {
   onConfirmExport: (config: ScheduleExportConfig) => void
 }
 
-function convertirARomano(num: number): string {
+function convertirARomano (num: number): string {
   const valoresRomanos: Record<string, number> = { X: 10, IX: 9, V: 5, IV: 4, I: 1 }
   let resultado = ''
   let valorRestante = num
@@ -22,7 +22,7 @@ function convertirARomano(num: number): string {
   return resultado
 }
 
-export function ExportarHorarioModal({
+export function ExportarHorarioModal ({
   isOpen,
   onClose,
   selectedSemester,

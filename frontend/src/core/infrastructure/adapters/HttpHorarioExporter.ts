@@ -5,6 +5,7 @@ import type { Materia } from '../../domain/Materia'
 import type { Imparte } from '../../domain/Imparte'
 import type { Profesor } from '../../domain/Profesor'
 import type { ScheduleExportConfig } from '../../domain/ScheduleExport'
+import type { Laboratorio } from '../../domain/Laboratorio'
 
 // Paleta de colores neutra alternando Azul suave y Gris (Hexadecimal sin '#')
 const blueTheme = { bg: 'F0F9FF', text: '0369A1', semBg: 'BAE6FD' } // Azul suave
@@ -27,7 +28,8 @@ export class HttpHorarioExporter implements HorarioExporterPort {
     materias: Materia[],
     relaciones: Imparte[],
     profesores: Profesor[],
-    config: ScheduleExportConfig
+    config: ScheduleExportConfig,
+    laboratorios: Laboratorio[] = []
   ): void {
     const profMap = new Map<string, string>()
     profesores.forEach(p => profMap.set(p.cedula, p.nombre))
@@ -40,7 +42,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
 
     const dias: DaysOfWeek[] = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
 
-    const dataRows: Array<Array<string>> = []
+    const dataRows: string[][] = []
     const rowSemestres: number[] = []
     const merges: XLSX.Range[] = [
       { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } } // Fila 0: Título principal (A1:J1)
@@ -109,7 +111,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
 
           for (const dia of dias) {
             const tuplasDia = group.tuplasMatSec.filter(t => t.dia === dia)
-            row.push(formatTuplasDayText(tuplasDia))
+            row.push(formatTuplasDayText(tuplasDia, laboratorios))
           }
 
           dataRows.push(row)
@@ -134,7 +136,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
 
     // Definir anchos de columna
     worksheet['!cols'] = [
-      { wch: 8 },  // SEM
+      { wch: 8 }, // SEM
       { wch: 32 }, // PROFESOR
       { wch: 36 }, // ASIGNATURA
       { wch: 22 }, // LUNES
@@ -143,7 +145,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
       { wch: 22 }, // JUEVES
       { wch: 22 }, // VIERNES
       { wch: 22 }, // SÁBADO
-      { wch: 22 }  // DOMINGO
+      { wch: 22 } // DOMINGO
     ]
 
     // Aplicar Estilos CSS a cada celda de la hoja Excel
@@ -235,7 +237,8 @@ export class HttpHorarioExporter implements HorarioExporterPort {
     materias: Materia[],
     relaciones: Imparte[],
     profesores: Profesor[],
-    config: ScheduleExportConfig
+    config: ScheduleExportConfig,
+    laboratorios: Laboratorio[] = []
   ): void {
     const profMap = new Map<string, string>()
     profesores.forEach(p => profMap.set(p.cedula, p.nombre))
@@ -284,7 +287,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
 
           const matchTuplas = tuplasSem.filter(t => t.dia === d && t.hora === h)
           if (matchTuplas.length === 0) {
-            pagesHtml += `<td class="empty-cell"></td>`
+            pagesHtml += '<td class="empty-cell"></td>'
           } else {
             const codsAsigUnicos = Array.from(new Set(matchTuplas.map(t => t.codAsig)))
             let maxSpan = 1
@@ -299,7 +302,14 @@ export class HttpHorarioExporter implements HorarioExporterPort {
               const profNameStr = formatProfessorsWithSections(secciones, codAsig, relaciones, profMap)
 
               // Obtener nombres de laboratorios involucrados
-              const labsList = Array.from(new Set(tuplasMat.map(t => t.laboratorio?.name).filter(Boolean)))
+              const labsList = Array.from(new Set(tuplasMat.map(t => {
+                if (t.laboratorio?.name) return t.laboratorio.name
+                if (t.laboratorio?.id) {
+                  const foundLab = laboratorios.find(l => l.id === t.laboratorio!.id)
+                  if (foundLab?.name) return foundLab.name
+                }
+                return t.laboratorio ? 'P/A' : null
+              }).filter(Boolean)))
               const labStr = labsList.length > 0 ? ` [${labsList.join(', ')}]` : ''
 
               const isManual = tuplasMat.some(t => t.isManual)
@@ -348,7 +358,7 @@ export class HttpHorarioExporter implements HorarioExporterPort {
           }
         })
 
-        pagesHtml += `</tr>`
+        pagesHtml += '</tr>'
       })
 
       pagesHtml += `
@@ -461,7 +471,7 @@ function formatProfessorsWithSections (
   return parts.join(', ')
 }
 
-function formatTuplasDayText (tuplasDia: Horario[]): string {
+function formatTuplasDayText (tuplasDia: Horario[], laboratorios: Laboratorio[] = []): string {
   if (tuplasDia.length === 0) return ''
 
   const sorted = [...tuplasDia].sort((a, b) => a.hora.localeCompare(b.hora))
@@ -472,7 +482,15 @@ function formatTuplasDayText (tuplasDia: Horario[]): string {
   let currentLab = ''
 
   for (const t of sorted) {
-    const labCode = t.laboratorio?.name || 'P/A'
+    let labCode = 'P/A'
+    if (t.laboratorio?.name) {
+      labCode = t.laboratorio.name
+    } else if (t.laboratorio?.id) {
+      const foundLab = laboratorios.find(l => l.id === t.laboratorio!.id)
+      if (foundLab?.name) {
+        labCode = foundLab.name
+      }
+    }
 
     if (!currentStart) {
       currentStart = t.hora

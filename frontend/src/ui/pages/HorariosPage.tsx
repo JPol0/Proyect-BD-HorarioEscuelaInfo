@@ -27,6 +27,9 @@ import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAler
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
 import { type Profesor } from '../../core/domain/Profesor'
+import { HttpLaboratorioRepository } from '../../core/infrastructure/adapters/HttpLaboratorioRepository'
+import { GetLaboratorios } from '../../core/application/useCases/Laboratorios/GetLaboratorios'
+import type { Laboratorio } from '../../core/domain/Laboratorio'
 import { ExportarHorarioModal } from '../components/MateriaScreen/ExportarHorarioModal'
 import { ExportarHorario } from '../../core/application/useCases/Horarios/ExportarHorario'
 import { HttpHorarioExporter } from '../../core/infrastructure/adapters/HttpHorarioExporter'
@@ -48,6 +51,8 @@ const getPrerequitosUseCase = new ObtenerPrerequitosPorTerm(prerequitoRepository
 const alertRepository = new HttpAlertRepository()
 const profesorRepository = new HttpProfesorRepository()
 const getProfesoresUseCase = new GetProfesores(profesorRepository)
+const laboratorioRepository = new HttpLaboratorioRepository()
+const getLaboratoriosUseCase = new GetLaboratorios(laboratorioRepository)
 const httpExporterAdapter = new HttpHorarioExporter()
 const exportarHorarioUseCase = new ExportarHorario(httpExporterAdapter)
 
@@ -84,6 +89,7 @@ export default function HorariosPage () {
   }, [relaciones, selectedTerm, activeTerm])
 
   const [loading, setLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tuplas, setTuplasState] = useState<Horario[]>([])
 
@@ -94,6 +100,7 @@ export default function HorariosPage () {
     }
   }
   const [materias, setMaterias] = useState<Materia[]>([])
+  const [laboratorios, setLaboratorios] = useState<Laboratorio[]>([])
   const [prerequitos, setPrerequitos] = useState<Prerequito[]>([])
   const [profesores, setProfesores] = useState<Profesor[]>([])
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
@@ -125,7 +132,8 @@ export default function HorariosPage () {
         {
           ...config,
           termName: activeTerm?.descripcion || activeTerm?.id || '202625'
-        }
+        },
+        laboratorios
       )
     } catch (err) {
       console.error('Error al exportar horario:', err)
@@ -164,7 +172,7 @@ export default function HorariosPage () {
 
     setAssignmentErrors([])
     setAssignmentWarnings([])
-    setLoading(true)
+    setIsGenerating(true)
 
     try {
       const response = await generarHorarioUseCase.execute({
@@ -209,7 +217,7 @@ export default function HorariosPage () {
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Ocurrió un error al generar el horario.')
     } finally {
-      setLoading(false)
+      setIsGenerating(false)
     }
   }
 
@@ -223,19 +231,21 @@ export default function HorariosPage () {
       setLoading(true)
       setError(null)
       try {
-        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload, prerequitosPayload, profesoresPayload] = await Promise.all([
+        const [payload, materiasPayload, relacionesPayload, sonEjercidosPayload, prerequitosPayload, profesoresPayload, laboratoriosPayload] = await Promise.all([
           getWeeklyScheduleUseCase.execute(term),
           getMateriasUseCase.execute(term),
           getRelacionesImparteUseCase.execute(term),
           getRelacionesSonEjercidosUseCase.execute(term),
           getPrerequitosUseCase.execute(term),
-          getProfesoresUseCase.execute()
+          getProfesoresUseCase.execute(),
+          getLaboratoriosUseCase.execute()
         ])
 
         setMaterias(materiasPayload)
         setRelaciones(relacionesPayload)
         setPrerequitos(prerequitosPayload)
         setProfesores(profesoresPayload)
+        setLaboratorios(laboratoriosPayload)
 
         const mappedLabs: Record<string, { principal: number, secundarios: number[] }> = {}
         sonEjercidosPayload.forEach((r) => {
@@ -465,13 +475,13 @@ export default function HorariosPage () {
               <Alert color="danger" title="Problema de Asignación">
                 <div className="pr-8 text-sm leading-relaxed">{err}</div>
               </Alert>
-              <button 
-                className="absolute top-3 right-3 text-red-700 hover:text-red-900 hover:bg-red-100 rounded-lg p-1.5 cursor-pointer z-10 transition-colors" 
+              <button
+                className="absolute top-3 right-3 text-red-700 hover:text-red-900 hover:bg-red-100 rounded-lg p-1.5 cursor-pointer z-10 transition-colors"
                 onClick={() => setAssignmentErrors((prev) => prev.filter((_, i) => i !== idx))}
                 aria-label="Cerrar alerta"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                 </svg>
               </button>
             </div>
@@ -481,13 +491,13 @@ export default function HorariosPage () {
               <Alert color="warning" title="Advertencia">
                 <div className="pr-8 text-sm leading-relaxed">{warn}</div>
               </Alert>
-              <button 
-                className="absolute top-3 right-3 text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 rounded-lg p-1.5 cursor-pointer z-10 transition-colors" 
+              <button
+                className="absolute top-3 right-3 text-amber-700 hover:text-amber-900 hover:bg-amber-200/50 rounded-lg p-1.5 cursor-pointer z-10 transition-colors"
                 onClick={() => setAssignmentWarnings((prev) => prev.filter((_, i) => i !== idx))}
                 aria-label="Cerrar alerta"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                 </svg>
               </button>
             </div>
@@ -562,6 +572,7 @@ export default function HorariosPage () {
             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
               <button
                 type="button"
+                disabled={isGenerating}
                 onClick={() => {
                   const hasAutoBlocks = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
                   if (hasAutoBlocks) {
@@ -570,12 +581,18 @@ export default function HorariosPage () {
                     void handleGenerarHorario(false)
                   }
                 }}
-                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-slate-50 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
-                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Generar Horario
+                {isGenerating
+                  ? (
+                    <div className="w-4 h-4 border-2 border-slate-300 border-t-button-primary rounded-full animate-spin shrink-0" />
+                    )
+                  : (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                      <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    )}
+                {isGenerating ? 'Generando...' : 'Generar Horario'}
               </button>
 
               <button
@@ -590,11 +607,11 @@ export default function HorariosPage () {
                   }
 
                   if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
-                  const remainingTuplas = tuplas.filter(t => {
-                    const mat = materias.find(m => m.codMateria === t.codAsig)
-                    const isCommon = mat ? mat.esComun : false
-                    return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
-                  })
+                    const remainingTuplas = tuplas.filter(t => {
+                      const mat = materias.find(m => m.codMateria === t.codAsig)
+                      const isCommon = mat ? mat.esComun : false
+                      return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
+                    })
                     setTuplas(remainingTuplas)
                     void (async () => {
                       try {
@@ -738,6 +755,26 @@ export default function HorariosPage () {
           </Modal.Backdrop>
         </Modal>
       )}
+      {isGenerating && (
+        <Modal isOpen={isGenerating} onOpenChange={() => { }}>
+          <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+            <Modal.Container className="flex items-center justify-center p-4">
+              <Modal.Dialog className="bg-white rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden font-sans border border-slate-100 p-6 text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
+                <div className="relative my-3 flex items-center justify-center">
+                  <div className="absolute w-14 h-14 rounded-full bg-button-primary/10 animate-ping" />
+                  <div className="w-10 h-10 border-3 border-slate-200 border-t-button-primary rounded-full animate-spin relative z-10" />
+                </div>
+                <h3 className="text-base font-bold text-slate-800 mb-1 mt-2">
+                  Generando horario
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Calculando asignaciones y disponibilidades...
+                </p>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+      )}
       {selectedBlockModal && (
         <DetalleHorarioModal
           isOpen={true}
@@ -751,7 +788,7 @@ export default function HorariosPage () {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         selectedSemester={selectedSemester}
-        onConfirmExport={handleConfirmExport}
+        onConfirmExport={(config) => { void handleConfirmExport(config) }}
       />
     </div>
   )

@@ -5,6 +5,8 @@ import type { Imparte } from '../../../domain/Imparte'
 import type { Profesor } from '../../../domain/Profesor'
 import type { ScheduleExportConfig } from '../../../domain/ScheduleExport'
 
+import type { Laboratorio } from '../../../domain/Laboratorio'
+
 export class ExportarHorario {
   private readonly exporterPort: HorarioExporterPort
 
@@ -17,7 +19,8 @@ export class ExportarHorario {
     materias: Materia[],
     relaciones: Imparte[],
     profesores: Profesor[],
-    config: ScheduleExportConfig
+    config: ScheduleExportConfig,
+    laboratorios?: Laboratorio[]
   ): Promise<void> {
     if (config.format === 'excel') {
       await this.exporterPort.exportarExcel(
@@ -25,7 +28,8 @@ export class ExportarHorario {
         materias,
         relaciones,
         profesores,
-        config
+        config,
+        laboratorios
       )
     } else {
       await this.exporterPort.exportarPdf(
@@ -33,7 +37,8 @@ export class ExportarHorario {
         materias,
         relaciones,
         profesores,
-        config
+        config,
+        laboratorios
       )
     }
   }
