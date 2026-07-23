@@ -73,7 +73,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
 
       <Modal.Header className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
         <Modal.Heading className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-[#2a6eea] shrink-0" />
+          <Clock className="w-5 h-5 text-button-primary shrink-0" />
           Disponibilidad de Laboratorios
         </Modal.Heading>
 
@@ -105,7 +105,7 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
         {loading
           ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-500">
-            <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2a6eea] rounded-full animate-spin mb-4" />
+            <div className="w-8 h-8 border-3 border-slate-200 border-t-button-primary rounded-full animate-spin mb-4" />
             Cargando disponibilidad...
           </div>
             )
