@@ -13,7 +13,7 @@ interface LaboratorioDisponibilidadModalProps {
   initialLabId: number
 }
 
-function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: number }) {
+function LaboratorioDisponibilidadInner({ laboratorios, initialLabId }: { laboratorios: Laboratorio[], initialLabId: number }) {
   const { activeTerm } = useActiveTerm()
   const [selectedLabId, setSelectedLabId] = useState<number>(initialLabId)
   const [disponibilidad, setDisponibilidad] = useState<DisponibilidadLaboratorio[]>([])
@@ -64,16 +64,16 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
 
   const Cell = ({ value }: { value: string }) => {
     if (value === '-') return <span className="text-slate-300">—</span>
-    return <span className="text-red-500 font-bold bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[10px] tracking-widest uppercase">{value}</span>
+    return <span className="text-red-500 font-bold bg-red-50 border border-red-200 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] tracking-wider uppercase">{value}</span>
   }
 
   return (
     <>
-      <Modal.CloseTrigger className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-sm p-1" />
+      <Modal.CloseTrigger className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer text-sm p-1 z-20" />
 
-      <Modal.Header className="px-4 sm:px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <Modal.Header className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0">
         <Modal.Heading className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-[#2a6eea] shrink-0" />
+          <Clock className="w-5 h-5 text-button-primary shrink-0" />
           Disponibilidad de Laboratorios
         </Modal.Heading>
 
@@ -84,14 +84,14 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
             onChange={(valor) => { if (valor) setSelectedLabId(Number(valor)) }}
             className="w-full text-sm"
           >
-            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-11 sm:h-10">
+            <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-9 sm:h-9">
               <Select.Value />
               <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
             </Select.Trigger>
-            <Select.Popover placement="bottom end" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50 max-h-60 overflow-y-auto">
+            <Select.Popover placement="bottom end" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-[90] max-h-60 overflow-y-auto">
               <ListBox>
                 {laboratorios.map(lab => (
-                  <ListBox.Item key={lab.id} id={lab.id} textValue={lab.name} className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center">
+                  <ListBox.Item key={lab.id} id={lab.id} textValue={lab.name} className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[38px] flex items-center">
                     {lab.name}
                   </ListBox.Item>
                 ))}
@@ -101,72 +101,72 @@ function LaboratorioDisponibilidadInner ({ laboratorios, initialLabId }: { labor
         </div>
       </Modal.Header>
 
-      <Modal.Body className="p-0 bg-white max-h-[75vh] overflow-y-auto">
+      <Modal.Body className="p-0 bg-white flex-1 min-h-0 overflow-y-auto">
         {loading
           ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-            <div className="w-8 h-8 border-3 border-slate-200 border-t-[#2a6eea] rounded-full animate-spin mb-4" />
-            Cargando disponibilidad...
-          </div>
-            )
+            <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+              <div className="w-8 h-8 border-3 border-slate-200 border-t-button-primary rounded-full animate-spin mb-4" />
+              Cargando disponibilidad...
+            </div>
+          )
           : (
-          <div className="overflow-x-auto w-full max-w-full">
-            <table className="w-full border-collapse min-w-[700px] sm:min-w-[760px]">
-              <thead className="sticky top-0 z-10">
-                <tr className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-slate-200">
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white w-px">Hora</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Lunes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Martes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Miércoles</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Jueves</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Viernes</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Sábado</th>
-                  <th className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Domingo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {scheduleRows.map((row) => (
-                  <tr key={row.hour} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-3 py-3 text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center w-px">
-                      {`${row.hour} - ${row.hour.split(':')[0]}:59`}
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Lunes} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Martes} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Miercoles} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Jueves} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Viernes} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Sabado} />
-                    </td>
-                    <td className="px-3 py-3 text-center text-[12px] border-l border-slate-100">
-                      <Cell value={row.Domingo} />
-                    </td>
+            <div className="overflow-x-auto w-full max-w-full">
+              <table className="w-full border-collapse min-w-[650px] sm:min-w-[760px]">
+                <thead className="sticky top-0 z-10 bg-white">
+                  <tr className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-slate-200">
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white w-px">Hora</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Lunes</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Martes</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Miércoles</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Jueves</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Viernes</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Sábado</th>
+                    <th className="px-2 py-2 sm:px-3 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-white border-l border-slate-100 w-[14.28%]">Domingo</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-            )}
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {scheduleRows.map((row) => (
+                    <tr key={row.hour} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-[12px] font-bold text-[#14233f] whitespace-nowrap bg-slate-50 text-center w-px">
+                        {`${row.hour} - ${row.hour.split(':')[0]}:59`}
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Lunes} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Martes} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Miercoles} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Jueves} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Viernes} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Sabado} />
+                      </td>
+                      <td className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-[11px] sm:text-[12px] border-l border-slate-100">
+                        <Cell value={row.Domingo} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
       </Modal.Body>
     </>
   )
 }
 
-export function LaboratorioDisponibilidadModal ({ laboratorios, initialLabId }: LaboratorioDisponibilidadModalProps) {
+export function LaboratorioDisponibilidadModal({ laboratorios, initialLabId }: LaboratorioDisponibilidadModalProps) {
   return (
-    <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+    <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-[80]">
       <Modal.Container className="flex items-center justify-center p-2 sm:p-4">
-        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden font-sans border border-slate-100">
+        <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden font-sans border border-slate-100 flex flex-col max-h-[85vh] sm:max-h-[90vh] my-auto">
           {() => (
             <LaboratorioDisponibilidadInner laboratorios={laboratorios} initialLabId={initialLabId} />
           )}

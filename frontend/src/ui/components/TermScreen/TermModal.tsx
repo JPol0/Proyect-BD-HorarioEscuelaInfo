@@ -6,7 +6,7 @@ interface TermModalProps {
   onCrear: (input: CreateTermInput) => Promise<void>
 }
 
-export default function TermModal ({ onClose, onCrear }: TermModalProps) {
+export default function TermModal({ onClose, onCrear }: TermModalProps) {
   const [id, setId] = useState('')
   const [nombre, setNombre] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -145,7 +145,7 @@ export default function TermModal ({ onClose, onCrear }: TermModalProps) {
             <button
               type="submit"
               disabled={cargando}
-              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-white bg-[#1A5F7A] hover:opacity-90 disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 cursor-pointer"
+              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-white bg-button-primary hover:bg-button-primary-hover disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               {cargando ? 'Creando...' : '+ Crear Term'}
             </button>

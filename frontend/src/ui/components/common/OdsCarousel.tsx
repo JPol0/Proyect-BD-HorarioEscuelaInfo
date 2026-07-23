@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 interface Slide {
   badge: string
@@ -50,7 +51,7 @@ const SLIDES: Slide[] = [
   }
 ]
 
-export default function OdsCarousel () {
+export default function OdsCarousel() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -109,15 +110,15 @@ export default function OdsCarousel () {
         <span className="truncate">ODS 9 • Innovación</span>
       </button>
 
-      {/* Modal Dialog */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      {/* Modal Dialog rendered via Portal at document.body level */}
+      {isOpen && createPortal(
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-sm animate-fade-in">
           {/* Backdrop click to close */}
           <div className="absolute inset-0 cursor-default" onClick={() => { setIsOpen(false) }} />
 
           {/* Modal Container */}
           <div
-            className="bg-[#0f1623] border border-slate-800 rounded-2xl p-6.5 max-w-md w-full shadow-2xl relative flex flex-col gap-5 z-10"
+            className="bg-[#0f1623] border border-slate-800 rounded-2xl p-6 sm:p-7 max-w-lg w-full shadow-2xl relative flex flex-col gap-5 sm:gap-6 z-10 mx-auto font-sans"
             onMouseEnter={stopTimer}
             onMouseLeave={startTimer}
           >
@@ -135,7 +136,7 @@ export default function OdsCarousel () {
               {/* Close Button */}
               <button
                 onClick={() => { setIsOpen(false) }}
-                className="text-slate-500 hover:text-white p-1.5 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                className="text-slate-400 hover:text-white p-2 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
                 aria-label="Cerrar modal"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -146,28 +147,29 @@ export default function OdsCarousel () {
 
             {/* Slide Content */}
             <div className={`flex flex-col gap-2.5 transition-all duration-300 ${animating ? 'opacity-0 scale-[0.98]' : 'opacity-100 scale-100'}`}>
-              <h3 className="text-xl font-bold text-white font-hanken tracking-wide">
+              <h3 className="text-xl sm:text-2xl font-bold text-white font-hanken tracking-wide">
                 {activeSlide.title}
               </h3>
-              <p className="text-base text-slate-300 font-hanken leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-300 font-hanken leading-relaxed">
                 {activeSlide.description}
               </p>
             </div>
 
             {/* Dots Indicator */}
-            <div className="flex gap-2 mt-1 justify-start">
+            <div className="flex gap-2.5 mt-1 justify-start">
               {SLIDES.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => { handleDotClick(index) }}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${index === activeIndex ? 'w-6 bg-[#57a8c8]' : 'w-2 bg-slate-700 hover:bg-slate-600'
+                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${index === activeIndex ? 'w-7 bg-[#57a8c8]' : 'w-2.5 bg-slate-700 hover:bg-slate-600'
                     }`}
                   aria-label={`Ir al slide ${index + 1}`}
                 />
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

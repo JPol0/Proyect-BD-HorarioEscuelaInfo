@@ -46,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'terms', label: 'Seleccionar Term', Icon: LayoutHeaderSideContent, disponible: true, path: '/terms' }
 ]
 
-export default function Layout () {
+export default function Layout() {
   const { activeTerm } = useActiveTerm()
   const { currentUser, clearCurrentUser } = useUser()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -80,12 +80,12 @@ export default function Layout () {
               <span className="text-xs text-[#57a8c8] font-hanken font-bold truncate max-w-[200px]" title={activeTerm.id}>
                 {'Term: ' + activeTerm.id}
               </span>
-              )
+            )
             : (
               <span className="text-xs text-slate-400 font-hanken italic">
                 Sin Term activo
               </span>
-              )}
+            )}
         </div>
         <button
           type="button"
@@ -120,15 +120,15 @@ export default function Layout () {
             <p className="text-xs text-slate-400 mt-2 font-hanken">Universidad Católica Andrés Bello</p>
             {activeTerm !== null
               ? (
-                <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.descripcion}>
-                  {'Term: ' + activeTerm.descripcion}
+                <p className="text-sm text-[#57a8c8] font-hanken font-bold mt-3.5 truncate tracking-wide" title={activeTerm.id}>
+                  {'Term: ' + activeTerm.id}
                 </p>
-                )
+              )
               : (
                 <p className="text-sm text-slate-500 font-hanken italic mt-3.5">
                   Ningún term activo
                 </p>
-                )}
+              )}
           </div>
           {/* Botón para cerrar drawer dentro del sidebar en móvil */}
           <button
@@ -145,35 +145,35 @@ export default function Layout () {
             const Icon = item.Icon
             if (!item.disponible) {
               return (
-                  <button
-                    key={item.id}
-                    disabled
-                    className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
-                    title="Próximamente"
-                  >
-                    <Icon className="h-5 w-5 shrink-0" />
-                    <span>{item.label}</span>
-                  </button>
+                <button
+                  key={item.id}
+                  disabled
+                  className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full text-slate-500 cursor-not-allowed transition-colors"
+                  title="Próximamente"
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span>{item.label}</span>
+                </button>
               )
             }
 
             return (
-                <NavLink
-                  key={item.id}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    [
-                      'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
-                      isActive
-                        ? 'bg-button-primary text-white font-semibold shadow-md'
-                        : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
-                    ].join(' ')
-                  }
-                >
-                  <Icon className="h-5 w-5 shrink-0" />
-                  <span>{item.label}</span>
-                </NavLink>
+              <NavLink
+                key={item.id}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={({ isActive }) =>
+                  [
+                    'flex items-center gap-3.5 px-3 py-3 rounded-xl text-sm font-hanken text-left w-full transition-colors',
+                    isActive
+                      ? 'bg-button-primary text-white font-semibold shadow-md'
+                      : 'text-slate-300 hover:bg-sidebar-hover hover:text-white'
+                  ].join(' ')
+                }
+              >
+                <Icon className="h-5 w-5 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
             )
           })}
         </nav>

@@ -18,7 +18,7 @@ const getTermsUseCase = new GetTerms(termRepository)
 const createTermUseCase = new CreateTerm(termRepository)
 const deleteTermUseCase = new DeleteTerm(termRepository)
 
-function formatPeriodo (startDate: string, endDate: string): string {
+function formatPeriodo(startDate: string, endDate: string): string {
   const meses: Record<string, string> = {
     '01': 'Ene',
     '02': 'Feb',
@@ -38,7 +38,7 @@ function formatPeriodo (startDate: string, endDate: string): string {
   return `${meses[startMonth]} ${startYear} - ${meses[endMonth]} ${endYear}`
 }
 
-export default function TermsPage () {
+export default function TermsPage() {
   const { activeTerm, setActiveTerm, clearActiveTerm } = useActiveTerm()
   const { currentUser } = useUser()
   const isLector = currentUser?.rol === 'lector'
@@ -101,14 +101,14 @@ export default function TermsPage () {
             {/* Botón Cargar Plan de Estudio */}
             <button
               onClick={() => { setShowUploadModal(true) }}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-[#1A5F7A] bg-white border border-[#1A5F7A] hover:bg-[#1A5F7A]/5 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-button-primary bg-white border border-button-primary hover:bg-button-primary/5 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               <FileArrowDown className="w-4 h-4" /> Cargar Plan de Estudio
             </button>
             {/* Botón New Term */}
             <button
               onClick={() => { setShowModal(true) }}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-[#1A5F7A] hover:opacity-90 rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 text-sm font-semibold text-white bg-button-primary hover:bg-button-primary-hover rounded-lg transition font-hanken shadow-sm w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               + Nuevo Term
             </button>
@@ -127,14 +127,14 @@ export default function TermsPage () {
       {cargando
         ? (
           <p className="text-slate-500 italic animate-pulse font-hanken mt-8">Cargando términos...</p>
-          )
+        )
         : (
           <section className="mb-8">
 
             {terms.length === 0
               ? (
                 <p className="text-slate-400 text-sm italic font-hanken">No hay términos creados.</p>
-                )
+              )
               : (
                 <TermsTable
                   terms={terms}
@@ -143,9 +143,9 @@ export default function TermsPage () {
                   onDelete={!isLector ? handleDeleteClick : undefined}
                   isLector={isLector}
                 />
-                )}
+              )}
           </section>
-          )}
+        )}
 
       {/* Modal */}
       {showModal && (
@@ -182,7 +182,7 @@ interface TermsTableProps {
   isLector?: boolean
 }
 
-function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
+function TermsTable({ terms, activeTermId, onSelect, onDelete, isLector = false }: TermsTableProps) {
   const showActions = !isLector && onDelete !== undefined
   const gridColsClass = showActions ? 'grid-cols-[180px_1fr_200px_60px]' : 'grid-cols-[180px_1fr_200px]'
 
@@ -213,7 +213,7 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                   `grid ${gridColsClass} px-6 py-4 items-center gap-2 transition-colors cursor-pointer`,
                   index !== 0 ? 'border-t border-slate-50' : '',
                   isActive
-                    ? 'bg-[#eaf4fb] border-l-4 border-l-[#1A5F7A]'
+                    ? 'bg-slate-100/60 border-l-4 border-l-button-primary'
                     : 'hover:bg-slate-50'
                 ].join(' ')}
               >
@@ -221,7 +221,7 @@ function TermsTable ({ terms, activeTermId, onSelect, onDelete, isLector = false
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-slate-800 font-hanken">{term.id}</span>
                   {isActive && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#1A5F7A] rounded-full px-2 py-0.5 shrink-0">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-button-primary rounded-full px-2.5 py-0.5 shrink-0">
                       ✓ Trabajando
                     </span>
                   )}
