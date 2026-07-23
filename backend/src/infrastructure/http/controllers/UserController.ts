@@ -35,7 +35,7 @@ export class UserController {
       }
 
       const userToSave: User = {
-        id: id !== undefined ? Number(id) : (undefined as any),
+        id: (id !== undefined && Number(id) > 0) ? Number(id) : (undefined as any),
         nombre: nombre.trim(),
         rol,
         password: password !== undefined && password.trim() !== '' ? password : undefined
