@@ -34,7 +34,7 @@ export class PgUserRepository implements UserRepository {
   }
 
   async save (user: User): Promise<void> {
-    if (user.id !== undefined && !isNaN(user.id)) {
+    if (user.id !== undefined && !isNaN(user.id) && user.id > 0) {
       if (user.password !== undefined && user.password !== '') {
         const query = 'UPDATE usuarios SET nombre = $1, rol = $2, password = $3 WHERE id = $4'
         await getPool().query(query, [user.nombre, user.rol, user.password, user.id])
