@@ -23,7 +23,6 @@ import { GetRelacionesSonEjercidos } from '../../core/application/useCases/relac
 import { type Prerequito } from '../../core/domain/Prerequito'
 import { HttpPrerequitoRepository } from '../../core/infrastructure/adapters/HttpPrerequitoRepository'
 import { ObtenerPrerequitosPorTerm } from '../../core/application/useCases/Prerequito/ObtenerPrerequitosPorTerm'
-import { verificarChoquesYDisponibilidad, type ContextoChoques } from '../../core/application/useCases/Horarios/AlgoritmoGeneracion/VerificadorChoques'
 import { HttpAlertRepository } from '../../core/infrastructure/adapters/HttpAlertRepository'
 import { HttpProfesorRepository } from '../../core/infrastructure/adapters/HttpProfesorRepository'
 import { GetProfesores } from '../../core/application/useCases/Profesores/GetProfesores'
@@ -35,6 +34,7 @@ import { ExportarHorarioModal } from '../components/MateriaScreen/ExportarHorari
 import { ExportarHorario } from '../../core/application/useCases/Horarios/ExportarHorario'
 import { HttpHorarioExporter } from '../../core/infrastructure/adapters/HttpHorarioExporter'
 import type { ScheduleExportConfig } from '../../core/domain/ScheduleExport'
+import { ValidarMovimientoHorario } from '../../core/application/useCases/Horarios/ValidarMovimientoHorario'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -43,6 +43,7 @@ const getWeeklyScheduleUseCase = new ObtenerHorario(repository)
 const getMateriasUseCase = new GetMaterias(materiaRepository)
 const generarHorarioUseCase = new GenerarHorarioSemestre(disponibilidadRepository)
 const saveWeeklyScheduleUseCase = new GuardarHorario(repository)
+const validarMovimientoHorarioUseCase = new ValidarMovimientoHorario(disponibilidadRepository)
 const imparteRepository = new HttpRImparteRepository()
 const getRelacionesImparteUseCase = new GetRelacionesImparte(imparteRepository)
 const sonEjercidosRepository = new HttpRSonEjercidosRepository()
@@ -457,63 +458,24 @@ export default function HorariosPage () {
       return
     }
 
-    // Fail-safe: No permitir mover materias comunes
-    const isComun = asigsToMove.some(a => materias.find(m => m.codMateria === a.codAsig)?.esComun)
-    if (isComun) {
-      setDragError('No se permite mover bloques de materias comunes.')
-      setDraggedBlock(null)
-      return
-    }
+    const res = await validarMovimientoHorarioUseCase.execute({
+      targetDay,
+      targetHour,
+      asigsToMove,
+      tuplas,
+      selectedTerm: selectedTerm || '',
+      selectedSemester,
+      materias,
+      prerequitos,
+      profesorAssignments: profesorAssignments[selectedTerm!] || {},
+      profesorLabAssignments: profesorLabAssignments?.[selectedTerm!],
+      laboratorioAssignments
+    })
 
-    const newTuplas = tuplas.filter(t => !(t.dia === draggedBlock.dia && t.hora === draggedBlock.hora && t.semestre === selectedSemester))
-
-    let hasConflict = false
-    let conflictMsg = ''
-
-    for (const asig of asigsToMove) {
-      const materia = materias.find(m => m.codMateria === asig.codAsig)
-      if (!materia) continue
-
-      const prereqCodes = new Set(prerequitos.filter(p => p.codigoAsignatura === materia.codMateria).map(p => p.codigoAsignaturaPrerequito))
-
-      const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
-      const cedulaProfesor = (hasLab
-        ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
-        : undefined) ||
-        profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion] ||
-        profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
-
-      const labObj = laboratorioAssignments[asig.codAsig]
-
-      const ctx: ContextoChoques = {
-        dia: targetDay,
-        hora: targetHour,
-        materia,
-        nroSeccion: asig.nroSeccion,
-        termId: selectedTerm || '',
-        cedulaProfesor,
-        laboratorioPrincipal: labObj?.principal,
-        laboratoriosSecundarios: labObj?.secundarios,
-        tuplasActualesYTemporales: newTuplas,
-        profesorAssignments: profesorAssignments[selectedTerm!] || {},
-        profesorLabAssignments: profesorLabAssignments?.[selectedTerm!] || {},
-        disponibilidad: [],
-        soloPrioridad1: false,
-        prereqCodes,
-        materiasComunesCodes: new Set(materias.filter(m => m.esComun).map(m => m.codMateria))
-      }
-
-      const { estaOcupado } = verificarChoquesYDisponibilidad(ctx)
-      if (estaOcupado) {
-        hasConflict = true
-        conflictMsg = 'No se puede asignar este bloque de hora para esta materia por choques de horario.'
-        break
-      }
-    }
-
-    if (hasConflict) {
-      setDragError(conflictMsg)
+    if (!res.esValido) {
+      setDragError(res.mensajeError || 'No se puede mover la materia a esta casilla por conflictos de horario o falta de disponibilidad.')
     } else {
+      const newTuplas = tuplas.filter(t => !(t.dia === draggedBlock.dia && t.hora === draggedBlock.hora && t.semestre === selectedSemester))
       const movedTuplas = asigsToMove.map(t => ({ ...t, dia: targetDay, hora: targetHour, isManual: true }))
       const finalTuplas = [...newTuplas, ...movedTuplas]
       setTuplas(finalTuplas)
@@ -796,7 +758,7 @@ export default function HorariosPage () {
                               e.preventDefault()
                               void handleDrop(day, row.hour)
                             }}
-                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'cursor-pointer hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200' : ''} ${canDrag ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200' : ''} ${canDrag ? 'cursor-grab active:cursor-grabbing' : (!isEmpty ? 'cursor-pointer' : '')}`}
                             onClick={() => !isEmpty && handleCellClick(day, row.hour)}
                           >
                             {isEmpty ? <span className="text-slate-300">—</span> : content}
