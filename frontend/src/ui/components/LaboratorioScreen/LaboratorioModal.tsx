@@ -41,7 +41,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-4 backdrop-blur-xs"
       style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       onClick={onClose}
     >
@@ -74,7 +74,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
               value={nombre}
               onChange={(e) => { setNombre(e.target.value) }}
               placeholder="Ej. Lab de Computación A"
-              className="border border-slate-200 rounded-lg px-4 py-3 sm:py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1A5F7A] focus:border-transparent transition font-hanken h-11 sm:h-auto"
+              className="border border-slate-200 rounded-lg px-4 py-3 sm:py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-button-primary focus:border-transparent transition font-hanken h-11 sm:h-auto"
               autoFocus
             />
           </div>
@@ -98,7 +98,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
             <button
               type="submit"
               disabled={cargando}
-              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-white bg-[#1A5F7A] hover:opacity-90 disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0"
+              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-white bg-button-primary hover:bg-button-primary-hover disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0 cursor-pointer"
             >
               {cargando ? 'Guardando...' : esEdicion ? 'Guardar Cambios' : '+ Crear Laboratorio'}
             </button>
