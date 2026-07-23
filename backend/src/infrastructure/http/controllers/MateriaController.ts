@@ -25,7 +25,11 @@ export class MateriaController {
    */
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const term = typeof req.query.term === 'string' ? req.query.term : '1'
+      const term = typeof req.query.term === 'string' ? req.query.term : ''
+      if (term.trim() === '') {
+        res.json([])
+        return
+      }
       const materias = await this.getUseCase.execute(term)
       res.json(materias)
     } catch (error) {

@@ -21,9 +21,13 @@ CREATE DOMAIN dom_horas AS SMALLINT
 CREATE DOMAIN dom_num_secciones AS SMALLINT
     CONSTRAINT chk_dom_num_secciones CHECK (VALUE BETWEEN 1 AND 20);
 
+CREATE DOMAIN dom_num_seccion AS SMALLINT
+    CONSTRAINT chk_dom_num_seccion CHECK (VALUE > 0);
+
+
 --Dominios para tabla Profesores
-CREATE DOMAIN dom_status_profesor AS VARCHAR(1)
-    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'P', 'R'));
+CREATE DOMAIN dom_status_profesor AS VARCHAR(2)
+    CONSTRAINT chk_dom_status_profesor CHECK (VALUE IN ('A', 'ER', 'R'));
 
 --Dominios para tabla Warnings
 CREATE DOMAIN dom_estado_warning AS VARCHAR(1)
@@ -54,7 +58,7 @@ CREATE TABLE IF NOT EXISTS Usuarios (
 
 -- Creación de Tabla Terms
 CREATE TABLE IF NOT EXISTS Terms(
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     DescripcionT VARCHAR(150) NOT NULL,
     StatusT dom_status_term NOT NULL,
     
@@ -64,7 +68,7 @@ CREATE TABLE IF NOT EXISTS Terms(
 -- Creación de Tabla Plan de Estudio
 CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     CodAsig VARCHAR(40) NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     NombrePE VARCHAR(100) NOT NULL,
     EsComunPE BOOLEAN NOT NULL,
     SemestrePE dom_semestre NOT NULL,
@@ -75,14 +79,17 @@ CREATE TABLE IF NOT EXISTS Plan_de_Estudio(
     NroSeccionesPE dom_num_secciones NOT NULL,
     
     PRIMARY KEY (CodTerm,CodAsig),
-    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT uq_plan_de_estudio_nombre UNIQUE (CodTerm, NombrePE),
+    CONSTRAINT fk_plan_de_estudio_terms FOREIGN KEY(CodTerm) REFERENCES Terms(CodTerm) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT chk_plan_de_estudio_horas CHECK (HoraPractica + HoraTeorica + HoraLaboratorio BETWEEN 2 AND 6)
 );
 
 -- Creación de Tabla Profesores
 CREATE TABLE IF NOT EXISTS Profesores(
     CedulaP VARCHAR(10) NOT NULL,
     NombreP VARCHAR(100) NOT NULL,
-    StatusP dom_status_profesor NOT NULL, -- Activo, Pausado, Reposo
+    StatusP dom_status_profesor NOT NULL, -- Activo, En Reposo, Retirado
     
     PRIMARY KEY (CedulaP)
 );
@@ -90,7 +97,7 @@ CREATE TABLE IF NOT EXISTS Profesores(
 -- Creación de Tabla Warnings
 CREATE TABLE IF NOT EXISTS Warnings(
     CodWarning SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     FechaW TIMESTAMP NOT NULL, 
     EstadoW dom_estado_warning NOT NULL, -- Ignorado, Pendiente, Resuelto
     DescripcionW VARCHAR(250) NOT NULL,
@@ -112,7 +119,7 @@ CREATE TABLE IF NOT EXISTS Laboratorios(
 
 CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
     CodLab SERIAL NOT NULL,
-    Codterm Varchar(30) NOT NULL,
+    Codterm Varchar(80) NOT NULL,
     Dia dom_dia_horario NOT NULL, 
     Hora dom_hora_horario NOT NULL,
     OcupadoD boolean NOT NULL,
@@ -125,8 +132,8 @@ CREATE TABLE IF NOT EXISTS Disponibilidad_Laboratorio(
 
 -- Creación de Tabla Secciones
 CREATE TABLE IF NOT EXISTS Secciones(
-    NroSeccion SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    NroSeccion dom_num_seccion NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion),
@@ -135,21 +142,23 @@ CREATE TABLE IF NOT EXISTS Secciones(
 
 -- Creación de Tabla Horarios
 CREATE TABLE IF NOT EXISTS Horarios(
-    NroSeccion SERIAL NOT NULL,
-    CodTerm VARCHAR(30) NOT NULL,
+    NroSeccion dom_num_seccion NOT NULL,
+    CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
     DiaH dom_dia_horario NOT NULL,
     HoraH dom_hora_horario NOT NULL,
-    CodLab SERIAL,
+    CodLab INT,
 
     PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH)
 );
 
 -- Creación de Tabla Disponibilidad_Horaria
 CREATE TABLE IF NOT EXISTS Disponibilidad_Horaria(
-    Codterm varchar(30) not null,
+    Codterm varchar(80) not null,
     CedulaP varchar(10) not null,
     Dia dom_dia_horario not null, 
     Hora dom_hora_horario not null,
@@ -168,14 +177,15 @@ CREATE TABLE IF NOT EXISTS Disponibilidad_Horaria(
 CREATE TABLE IF NOT EXISTS Imparten(
     cedulaP Varchar(10) NOT NULL,
     CodAsig Varchar(40) NOT NULL,
-    CodTerm Varchar(30) NOT NULL,
-    NroSeccion SERIAL NOT NUlL,
+    CodTerm Varchar(80) NOT NULL,
+    NroSeccion dom_num_seccion NOT NULL,
 
     HorasLab dom_horas NOT NULL,
     HorasTeo dom_horas NOT NULL,
     Asignada BOOLEAN not null,
 
     primary key(cedulaP,CodAsig,CodTerm,NroSeccion),
+
 
     CONSTRAINT fk_imparten_profesores FOREIGN key(cedulaP) references Profesores(cedulaP) ON UPDATE CASCADE ON DELETE NO ACTION,
     CONSTRAINT fk_imparten_secciones foreign key (CodTerm,CodAsig,NroSeccion) references Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE NO ACTION
@@ -184,7 +194,7 @@ CREATE TABLE IF NOT EXISTS Imparten(
 CREATE TABLE IF NOT EXISTS Son_ejercidos(
     CodLab SERIAL not null,
     CodAsig varchar(40) not null, 
-    CodTerm varchar(30) not null,
+    CodTerm varchar(80) not null,
     prioridad dom_prioridad_lab not null,
     primary key (CodTerm,CodAsig,CodLab),
     CONSTRAINT fk_son_ejercidos_laboratorios FOREIGN key(CodLab) references Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -194,9 +204,9 @@ CREATE TABLE IF NOT EXISTS Son_ejercidos(
 -- Creación de Tabla Prerrequisitos
 CREATE TABLE IF NOT EXISTS Prerequitos(
     CodAsig varchar(40) not null,
-    CodTerm varchar(30) not null,
+    CodTerm varchar(80) not null,
     CodAsigPreq varchar(40) not null,
-    CodTermPreq varchar(30) not null,
+    CodTermPreq varchar(80) not null,
     primary key (CodAsig,CodTerm,CodAsigPreq,CodTermPreq),
     CONSTRAINT fk_prerequitos_plan_de_estudio FOREIGN key (CodTerm,CodAsig) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_prerequitos_plan_de_estudio_preq FOREIGN key (CodTermPreq,CodAsigPreq) references Plan_de_Estudio(CodTerm,CodAsig) ON UPDATE CASCADE ON DELETE CASCADE

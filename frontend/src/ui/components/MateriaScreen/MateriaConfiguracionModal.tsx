@@ -58,16 +58,32 @@ export function MateriaConfiguracionModal ({ materia, onAssignHours }: MateriaCo
                   </p>
                 </div>
 
+                {materia.horasLab > 0 && (
+                  <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-3">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Configuración General</span>
+                    <Modal>
+                      <Button
+                        variant="secondary"
+                        className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 border border-slate-200"
+                      >
+                        <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        Asignar Laboratorio
+                      </Button>
+                      <MateriaLaboratorioModal materia={materia} />
+                    </Modal>
+                  </div>
+                )}
+
                 {maxSections > 0 && (
                   <div className="mb-2 p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-slate-500">Sección a configurar</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Configuración por Sección</span>
                     <Select
                       variant="primary"
                       value={String(currentSection)}
                       onChange={(valor) => { if (valor) setCurrentSection(Number(valor)) }}
                       className="w-full text-sm"
                     >
-                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10">
+                      <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg px-3 bg-white hover:bg-slate-50 transition-colors text-sm text-slate-700 h-10 mt-1">
                         <Select.Value />
                         <Select.Indicator className="text-slate-400 text-[10px] ml-2">▼</Select.Indicator>
                       </Select.Trigger>
@@ -93,19 +109,6 @@ export function MateriaConfiguracionModal ({ materia, onAssignHours }: MateriaCo
                         </Button>
                         <MateriaProfesorModal materia={materia} currentSection={currentSection} />
                       </Modal>
-
-                      {materia.horasLab > 0 && (
-                        <Modal>
-                          <Button
-                            variant="secondary"
-                            className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs h-9 cursor-pointer w-full flex items-center justify-center gap-2 border border-slate-200"
-                          >
-                            <Microscope className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                            Asignar Laboratorio
-                          </Button>
-                          <MateriaLaboratorioModal materia={materia} currentSection={currentSection} />
-                        </Modal>
-                      )}
 
                       {materia.esComun && (
                         <Modal>

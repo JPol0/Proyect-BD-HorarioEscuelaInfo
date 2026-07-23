@@ -11,6 +11,10 @@ import { DeleteMateria } from '../../core/application/useCases/Materias/DeleteMa
 import { ValidateAssignHours } from '../../core/application/useCases/Materias/ValidateAssignHours'
 import { type Materia } from '../../core/domain/Materia'
 
+import { HttpSeccionRepository } from '../../core/infrastructure/adapters/HttpSeccionRepository'
+import { SaveSeccion } from '../../core/application/useCases/Secciones/SaveSeccion'
+import { DeleteSeccion } from '../../core/application/useCases/Secciones/DeleteSeccion'
+
 import { calcularSemestreMaximo } from '../../core/domain/services/MateriaServices'
 
 // Sub-componentes reutilizables
@@ -25,6 +29,10 @@ const getMateriasUseCase = new GetMaterias(repository)
 const saveMateriaUseCase = new SaveMateria(repository)
 const deleteMateriaUseCase = new DeleteMateria(repository)
 const validateAssignHoursUseCase = new ValidateAssignHours()
+
+const seccionRepository = new HttpSeccionRepository()
+const saveSeccionUseCase = new SaveSeccion(seccionRepository)
+const deleteSeccionUseCase = new DeleteSeccion(seccionRepository)
 
 // Helper para convertir números a romanos
 const convertirARomano = (num: number): string => {
@@ -44,7 +52,7 @@ export function MateriasPage () {
   const navigate = useNavigate()
   const { activeTerm } = useActiveTerm()
   const { currentUser } = useUser()
-  const termId = activeTerm?.id ?? '1'
+  const termId = activeTerm?.id ?? ''
 
   const [materias, setMaterias] = useState<Materia[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -54,6 +62,11 @@ export function MateriasPage () {
   const [selectedSemestre, setSelectedSemestre] = useState<string>('todos')
 
   const cargarMaterias = async () => {
+    if (termId === '') {
+      setMaterias([])
+      setLoading(false)
+      return
+    }
     try {
       setLoading(true)
       const data = await getMateriasUseCase.execute(termId)
@@ -71,18 +84,13 @@ export function MateriasPage () {
   }, [termId])
 
   const handleSaveMateria = async (materiaActualizada: Materia) => {
-    // 1. Respaldamos el estado actual por si ocurre un error (Rollback)
     const estadoPrevio = [...materias]
-
-    // 2. ACTUALIZACIÓN OPTIMISTA: Modificamos la UI de inmediato en memoria
     setMaterias((prev) =>
       prev.map((m) => m.codMateria === materiaActualizada.codMateria ? materiaActualizada : m)
     )
     try {
-      // 3. Enviamos al backend en segundo plano (SIN cambiar el estado 'loading' global)
       await saveMateriaUseCase.execute(termId, materiaActualizada)
     } catch (err) {
-      // 4. Si el backend falla, restauramos el estado anterior y avisamos al usuario
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudieron guardar los cambios en el servidor')
     }
@@ -112,12 +120,39 @@ export function MateriasPage () {
     try {
       await saveMateriaUseCase.execute(termId, {
         ...nuevaMateriaProvisional,
-        codMateria: '' // Enviamos vacío para indicar que el backend debe generarlo
+        codMateria: ''
       })
       await cargarMaterias()
     } catch (err) {
       setMaterias(estadoPrevio)
       alert(err instanceof Error ? err.message : 'No se pudo crear la materia en el servidor')
+    }
+  }
+
+  const handleAddSection = async (materia: Materia) => {
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: m.nroSecciones + 1 } : m)
+    )
+    try {
+      await saveSeccionUseCase.execute({ codMateria: materia.codMateria, nroSeccion: materia.nroSecciones + 1 }, termId)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo agregar la sección en el servidor')
+    }
+  }
+
+  const handleRemoveSection = async (materia: Materia) => {
+    if (materia.nroSecciones <= 0) return
+    const estadoPrevio = [...materias]
+    setMaterias((prev) =>
+      prev.map((m) => m.codMateria === materia.codMateria ? { ...m, nroSecciones: Math.max(0, m.nroSecciones - 1) } : m)
+    )
+    try {
+      await deleteSeccionUseCase.execute(termId, materia.codMateria, materia.nroSecciones)
+    } catch (err) {
+      setMaterias(estadoPrevio)
+      alert(err instanceof Error ? err.message : 'No se pudo eliminar la sección en el servidor')
     }
   }
 
@@ -135,40 +170,18 @@ export function MateriasPage () {
     return `Gestionando las asignaturas correspondientes al Semestre ${convertirARomano(Number(selectedSemestre))}.`
   }
 
-  // --- Lógica del Estado Derivado ---
-  // Usamos la función pura para calcular dinámicamente los semestres
   const semestreMaximo = calcularSemestreMaximo(materias)
   const opcionesSemestres = Array.from({ length: semestreMaximo }, (_, i) => i + 1)
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-
-        <Title
-          title="Gestión de Materias"
-          subtitle={obtenerSubtitulo()}
-        />
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end pb-8">
-
-          {/* Botón Crear Materia */}
-          {currentUser?.rol !== 'lector' && (
-            <div className="w-full sm:w-auto flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
-              <Modal>
-                <Button
-                  variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 shrink-0" />
-                  Crear Materia
-                </Button>
-                <MateriaCrearModal
-                  onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
-                />
-              </Modal>
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+        {/* Contenedor Izquierdo: Título y Selector de Semestre */}
+        <div className="flex flex-col gap-4">
+          <Title
+            title="Gestión de Materias"
+            subtitle={obtenerSubtitulo()}
+          />
 
           {/* Selector de Semestre */}
           <div className="w-full sm:w-48 flex flex-col gap-1.5">
@@ -176,31 +189,30 @@ export function MateriasPage () {
             <Select
               aria-label="Filtrar por semestre"
               placeholder="Seleccionar semestre"
-              variant="primary" // <-- Corregido a 'primary' según tu documentación
-              value={selectedSemestre} // <-- Corregido a 'value'
-              onChange={(valor) => { // <-- Corregido a 'onChange'
+              variant="primary"
+              value={selectedSemestre}
+              onChange={(valor) => {
                 if (valor) setSelectedSemestre(String(valor))
               }}
               className="w-full text-xs"
             >
-              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-9">
+              <Select.Trigger className="flex justify-between items-center w-full border border-slate-200 rounded-lg p-2 bg-slate-50 hover:bg-slate-100 transition-colors text-sm text-slate-700 h-11 sm:h-9">
                 <Select.Value />
                 <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
               </Select.Trigger>
 
               <Select.Popover placement="bottom start" className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-45 z-50">
                 <ListBox>
-                  <ListBox.Item id="todos" textValue="Todos los semestres" className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block">
+                  <ListBox.Item id="todos" textValue="Todos los semestres" className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center">
                     Todos los semestres
                   </ListBox.Item>
 
-                  {/* --- Mapeo Dinámico --- */}
                   {opcionesSemestres.map((semestre) => (
                     <ListBox.Item
                       key={semestre.toString()}
                       id={semestre.toString()}
                       textValue={`Semestre ${convertirARomano(semestre)}`}
-                      className="px-3 py-1.5 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block"
+                      className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer block min-h-[44px] flex items-center"
                     >
                       Semestre {convertirARomano(semestre)}
                     </ListBox.Item>
@@ -209,25 +221,48 @@ export function MateriasPage () {
               </Select.Popover>
             </Select>
           </div>
+        </div>
 
-          {/* Buscador por Nombre */}
-          <div className="w-full sm:w-80 flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-slate-500">Buscar</span>
-            <div className="relative w-full flex items-center">
-              <span className="absolute left-3 z-10 pointer-events-none flex items-center">
-                <Magnifier className="text-slate-400 w-4 h-4" />
-              </span>
-              <Input
-                type="text"
-                placeholder="Buscar por nombre de materia..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                variant="primary" // <-- Corregido a 'primary' según tu documentación
-                className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
-              />
+        {/* Contenedor Derecho: Buscador y Botón Crear Materia */}
+        <div className="flex flex-col gap-4 w-full md:w-auto items-end pb-8">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-end justify-end">
+            {/* Buscador por Nombre */}
+            <div className="w-full sm:w-80 flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-slate-500">Buscar</span>
+              <div className="relative w-full flex items-center">
+                <span className="absolute left-3 z-10 pointer-events-none flex items-center">
+                  <Magnifier className="text-slate-400 w-4 h-4" />
+                </span>
+                <Input
+                  type="text"
+                  placeholder="Buscar por nombre de materia..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  variant="primary" // <-- Corregido a 'primary' según tu documentación
+                  className="w-full pl-9 pr-3 text-sm h-9 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white transition-colors"
+                />
+              </div>
             </div>
-          </div>
 
+            {/* Botón Crear Materia */}
+            {currentUser?.rol !== 'lector' && (
+              <div className="w-full sm:w-auto flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-slate-500 invisible sm:inline-block">&nbsp;</span>
+                <Modal>
+                  <Button
+                    variant="primary"
+                    className="bg-button-primary hover:bg-button-primary-hover text-white font-semibold text-sm h-9 px-4 rounded-lg flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto whitespace-nowrap"
+                  >
+                    <Plus className="w-4 h-4 shrink-0" />
+                    Crear Materia
+                  </Button>
+                  <MateriaCrearModal
+                    onSave={(nuevaMateria) => { void handleCreateMateria(nuevaMateria) }}
+                  />
+                </Modal>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -248,13 +283,15 @@ export function MateriasPage () {
               </div>
               )
             : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {materiasFiltradas.map((materia) => (
                   <MateriaCard
                     key={materia.codMateria}
                     materia={materia}
                     onSave={(materiaActualizada) => { void handleSaveMateria(materiaActualizada) }}
                     onDelete={(codMateria: string) => { void handleDeleteMateria(codMateria) }}
+                    onAddSection={(materia) => { void handleAddSection(materia) }}
+                    onRemoveSection={(materia) => { void handleRemoveSection(materia) }}
                     onAssignHours={(materiaParaAsignar, manualHours) => {
                       try {
                         validateAssignHoursUseCase.execute(materiaParaAsignar)

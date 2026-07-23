@@ -1,16 +1,17 @@
 import type { JSX } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import type { DiaSemana, DisponibilidadHoraria } from '../../core/domain/DisponibilidadHoraria'
+import type { DiaSemana, DisponibilidadHoraria, NivelDisponibilidad } from '../../core/domain/DisponibilidadHoraria'
 import type { Profesor } from '../../core/domain/Profesor'
 import { HttpDisponibilidadRepository } from '../../core/infrastructure/adapters/HttpDisponibilidadRepository'
+import { parseDisponibilidadExcel } from '../../core/infrastructure/adapters/ExcelDisponibilidadParser'
+
 import { ObtenerDisponibilidadHoraria } from '../../core/application/useCases/DisponibilidadHoraria/ObtenerDisponibilidadHoraria'
 import { ActualizarCeldaDisponibilidad } from '../../core/application/useCases/DisponibilidadHoraria/ActualizarCeldaDisponibilidad'
 import { GuardarDisponibilidadHoraria } from '../../core/application/useCases/DisponibilidadHoraria/GuardarDisponibilidadHoraria'
 import { DisponibilidadHeader } from '../components/disponibilidad/DisponibilidadHeader'
 import { DisponibilidadGrid } from '../components/disponibilidad/DisponibilidadGrid'
-
-const TERM_ACTIVO = '202615'
+import { useActiveTerm } from '../store/activeTermStore'
 
 const disponibilidadRepository = new HttpDisponibilidadRepository()
 const obtenerDisponibilidadUseCase = new ObtenerDisponibilidadHoraria(disponibilidadRepository)
@@ -20,6 +21,8 @@ const guardarDisponibilidadUseCase = new GuardarDisponibilidadHoraria(disponibil
 export function DisponibilidadProfesorPage (): JSX.Element {
   const { cedula } = useParams<{ cedula: string }>()
   const navigate = useNavigate()
+  const { activeTerm } = useActiveTerm()
+  const termId = activeTerm?.id ?? '2026-25'
   const cedulaProfesor = cedula ?? 'V-12345678'
 
   const [profesor, setProfesor] = useState<Profesor | null>(null)
@@ -29,13 +32,13 @@ export function DisponibilidadProfesorPage (): JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [mensajeExito, setMensajeExito] = useState<string | null>(null)
 
-  const cargarDatos = async (): Promise<void> => {
+  const cargarDatos = useCallback(async (): Promise<void> => {
     try {
       setCargando(true)
       setError(null)
       const [profesorData, disponibilidadData] = await Promise.all([
-        disponibilidadRepository.obtenerProfesor(cedulaProfesor, TERM_ACTIVO),
-        obtenerDisponibilidadUseCase.execute(cedulaProfesor, TERM_ACTIVO)
+        disponibilidadRepository.obtenerProfesor(cedulaProfesor, termId),
+        obtenerDisponibilidadUseCase.execute(cedulaProfesor, termId)
       ])
       setProfesor(profesorData)
       setGrilla(disponibilidadData)
@@ -44,14 +47,55 @@ export function DisponibilidadProfesorPage (): JSX.Element {
     } finally {
       setCargando(false)
     }
-  }
+  }, [cedulaProfesor, termId])
 
   useEffect(() => {
     void cargarDatos()
-  }, [cedulaProfesor])
+  }, [cargarDatos])
 
   const onCeldaClick = useCallback((dia: DiaSemana, numeroModulo: number): void => {
     setGrilla((actual) => actualizarCeldaUseCase.execute(actual, dia, numeroModulo))
+  }, [])
+
+  const onCeldaValueChange = useCallback((dia: DiaSemana, numeroModulo: number, valor: NivelDisponibilidad): void => {
+    setGrilla((actual) => actual.map((celda) => {
+      if (celda.dia !== dia || celda.numeroModulo !== numeroModulo || celda.ocupado) {
+        return celda
+      }
+      return {
+        ...celda,
+        disponibilidad: valor
+      }
+    }))
+  }, [])
+
+  const onCargarExcel = useCallback((arrayBuffer: ArrayBuffer): void => {
+    try {
+      setError(null)
+      setMensajeExito(null)
+      const items = parseDisponibilidadExcel(arrayBuffer)
+
+      const mapExcel = new Map<string, NivelDisponibilidad>()
+      items.forEach((item) => {
+        mapExcel.set(`${item.dia}-${item.numeroModulo}`, item.disponibilidad)
+      })
+
+      setGrilla((actual) => actual.map((celda) => {
+        if (celda.ocupado) return celda
+        const key = `${celda.dia}-${celda.numeroModulo}`
+        if (mapExcel.has(key)) {
+          return {
+            ...celda,
+            disponibilidad: mapExcel.get(key)!
+          }
+        }
+        return celda
+      }))
+
+      setMensajeExito('Disponibilidad cargada desde Excel. Haz clic en "Guardar Disponibilidad" para aplicar los cambios.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al procesar el archivo Excel.')
+    }
   }, [])
 
   const onGuardar = useCallback(async (): Promise<void> => {
@@ -59,28 +103,34 @@ export function DisponibilidadProfesorPage (): JSX.Element {
       setGuardando(true)
       setError(null)
       setMensajeExito(null)
-      await guardarDisponibilidadUseCase.execute(cedulaProfesor, TERM_ACTIVO, grilla)
+      await guardarDisponibilidadUseCase.execute(cedulaProfesor, termId, grilla)
       setMensajeExito('Disponibilidad guardada correctamente')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar la disponibilidad')
     } finally {
       setGuardando(false)
     }
-  }, [cedulaProfesor, grilla])
+  }, [cedulaProfesor, termId, grilla])
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-9 space-y-6">
       <button
         onClick={() => { void navigate('/profesores') }}
-        className="text-sm text-button-primary hover:underline font-hanken mb-2 flex items-center gap-1"
+        className="text-sm text-button-primary hover:underline font-hanken mb-2 inline-flex items-center gap-1 min-h-[44px] cursor-pointer font-medium"
       >
         ← Volver a Profesores
       </button>
-      <DisponibilidadHeader profesor={profesor} codTerm={TERM_ACTIVO} guardando={guardando} onGuardar={() => { void onGuardar() }} />
+      <DisponibilidadHeader
+        profesor={profesor}
+        codTerm={termId}
+        guardando={guardando}
+        onGuardar={() => { void onGuardar() }}
+        onCargarExcel={onCargarExcel}
+      />
       {cargando ? <p className="text-subtitlePage font-hanken">Cargando disponibilidad...</p> : null}
       {error != null ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
       {mensajeExito != null ? <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{mensajeExito}</p> : null}
-      {!cargando ? <DisponibilidadGrid grilla={grilla} onCeldaClick={onCeldaClick} /> : null}
+      {!cargando ? <DisponibilidadGrid grilla={grilla} onCeldaClick={onCeldaClick} onCeldaValueChange={onCeldaValueChange} /> : null}
     </div>
   )
 }

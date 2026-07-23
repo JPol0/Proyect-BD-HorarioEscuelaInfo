@@ -7,7 +7,6 @@ export class CrearProfesor {
   async execute (datos: Profesor): Promise<Profesor> {
     if (datos.cedula.trim() === '') throw new Error('La cédula es obligatoria')
     if (datos.nombre.trim() === '') throw new Error('El nombre es obligatorio')
-    if (datos.correo.trim() === '') throw new Error('El correo es obligatorio')
     return await this.repository.crear(datos)
   }
 }

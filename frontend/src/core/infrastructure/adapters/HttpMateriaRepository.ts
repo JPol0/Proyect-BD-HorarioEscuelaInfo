@@ -60,4 +60,29 @@ export class HttpMateriaRepository implements MateriaRepository {
       throw new Error(errorMessage)
     }
   }
+
+  async uploadPlanEstudioExcel (file: File, term: string): Promise<{ count: number, skipped: number }> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch(`${this.apiUrl}/upload-excel?term=${encodeURIComponent(term)}`, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Error al cargar el plan de estudios desde Excel'
+      try {
+        const errorData = await response.json() as Record<string, unknown>
+        if (errorData && typeof errorData.error === 'string') {
+          errorMessage = errorData.error
+        }
+      } catch {
+        // Usar mensaje por defecto
+      }
+      throw new Error(errorMessage)
+    }
+
+    return await response.json() as { count: number, skipped: number }
+  }
 }

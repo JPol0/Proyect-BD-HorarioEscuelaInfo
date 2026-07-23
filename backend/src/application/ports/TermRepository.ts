@@ -4,4 +4,5 @@ export interface TermRepository {
   getTerms: () => Promise<Term[]>
   createTerm: (term: Term) => Promise<void>
   toggleArchive: (id: string, archived: boolean) => Promise<void>
+  deleteTerm: (id: string) => Promise<void>
 }

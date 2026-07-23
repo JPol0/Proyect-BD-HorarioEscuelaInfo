@@ -35,19 +35,23 @@ export class LaboratorioController {
   /**
    * POST /api/laboratorios
    * Crea o actualiza un laboratorio.
+   * Para creación: no incluir `id` en el body (lo asigna la BD).
+   * Para edición: incluir `id` numérico.
    */
   save = async (req: Request, res: Response): Promise<void> => {
     try {
-      const data = req.body as Laboratorio
-      if (data.name === undefined || data.name === null || data.name.trim() === '') {
+      const data = req.body as Partial<Laboratorio>
+      if (data.name === undefined || data.name === null || (data.name).trim() === '') {
         res.status(400).json({ error: 'El nombre del laboratorio es obligatorio' })
         return
       }
-      // Generamos un id si no viene en el body (creación)
+
+      // Si viene un id numérico válido se trata como actualización, si no como creación
       const laboratorio: Laboratorio = {
-        id: data.id ?? String(Date.now()),
-        name: data.name.trim()
+        id: (data.id !== undefined && !isNaN(Number(data.id))) ? Number(data.id) : 0,
+        name: (data.name).trim()
       }
+
       await this.saveUseCase.execute(laboratorio)
       res.status(201).json(laboratorio)
     } catch (error) {
@@ -58,11 +62,15 @@ export class LaboratorioController {
 
   /**
    * DELETE /api/laboratorios/:id
-   * Elimina un laboratorio por id.
+   * Elimina un laboratorio por id numérico.
    */
   delete = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.params as { id: string }
+      const id = Number(req.params.id)
+      if (isNaN(id) || id <= 0) {
+        res.status(400).json({ error: 'El id del laboratorio debe ser un número válido' })
+        return
+      }
       await this.deleteUseCase.execute(id)
       res.json({ ok: true, message: 'Laboratorio eliminado correctamente' })
     } catch (error) {

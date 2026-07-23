@@ -5,9 +5,8 @@ import { type DisponibilidadHoraria, MODULOS_HORARIO } from '../DisponibilidadHo
 export const autoAsignarMateria = (
   materia: Materia,
   horarioActual: Horario[],
-  termId: string,
   seccion: number = 1,
-  laboratorioId?: string,
+  laboratorioId?: number,
   cedulaProfesor?: string,
   disponibilidad?: DisponibilidadHoraria[],
   profesoresAsignados?: Record<string, Record<number, string>>
@@ -19,7 +18,7 @@ export const autoAsignarMateria = (
   const maxHorasPorDia = totalHoras === 6 ? 2 : 3
 
   const horarioSinEstaMateria = horarioActual.filter(
-    (t) => !(t.codAsig === materia.codMateria && t.codTerm === termId && t.nroSeccion === seccion)
+    (t) => !(t.codAsig === materia.codMateria && t.nroSeccion === seccion)
   )
 
   const diasSemanasBase: DaysOfWeek[] = materia.modalidad === 'VIT'
@@ -57,7 +56,7 @@ export const autoAsignarMateria = (
         // 2. Choca profesor
         if (!estaOcupado && cedulaProfesor && profesoresAsignados) {
           estaOcupado = horarioSinEstaMateria.some((t) => {
-            if (t.dia !== dia || t.hora !== hora || t.codTerm !== termId) return false
+            if (t.dia !== dia || t.hora !== hora) return false
             return profesoresAsignados[t.codAsig]?.[t.nroSeccion] === cedulaProfesor
           })
         }
@@ -67,7 +66,7 @@ export const autoAsignarMateria = (
           estaOcupado = horarioSinEstaMateria.some((t) =>
             t.dia === dia &&
             t.hora === hora &&
-            (t.laboratorio?.id === laboratorioId || (t as any).codLaboratorio === laboratorioId)
+            t.laboratorio?.id === laboratorioId
           )
         }
 
@@ -108,7 +107,6 @@ export const autoAsignarMateria = (
         for (const hora of horasAAsignar) {
           tuplasTemporales.push({
             codAsig: materia.codMateria,
-            codTerm: termId,
             nroSeccion: seccion,
             dia,
             hora,
@@ -137,13 +135,15 @@ export const autoAsignarMateria = (
     }
 
     if (!exito) {
-      if (tipo === 'Laboratorio' && laboratorioId) {
-        throw new Error(`El laboratorio asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas.`)
+      if (tipo === 'Laboratorio') {
+        if (laboratorioId !== undefined) {
+          throw new Error(`El laboratorio asignado a ${materia.nombre} no tiene disponibilidad de horas o la sección presenta choques de horarios con otras materias.`)
+        } else {
+          throw new Error(`El profesor asignado a ${materia.nombre} no tiene disponibilidad de horas o la sección presenta choques de horarios con otras materias.`)
+        }
+      } else {
+        throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Considera las disponibilidades y cruces.`)
       }
-      if (cedulaProfesor) {
-        throw new Error(`El profesor asignado a ${materia.nombre} no tiene disponibilidad o presenta cruces para completar sus horas de ${tipo}.`)
-      }
-      throw new Error(`No hay suficiente espacio en el horario para asignar todas las horas de ${tipo} de ${materia.nombre}. Considera las disponibilidades y cruces.`)
     }
   }
 

@@ -26,7 +26,6 @@ const HORAS_INICIO = [
   '19:00', '20:00', '21:00'
 ]
 
-
 // Algoritmo para agrupar horas individuales (ej. 07:00 y 08:00) en un bloque (ej. 07:00, cantidad: 2)
 function agruparTuplasEnBloques (tuplas: Horario[]): ManualBlock[] {
   const bloques: ManualBlock[] = []

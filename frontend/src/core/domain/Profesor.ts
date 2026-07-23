@@ -1,8 +1,7 @@
-export type ProfesorStatus = 'A' | 'P' | 'R'
+export type ProfesorStatus = 'A' | 'ER' | 'R'
 
 export interface Profesor {
   cedula: string
   nombre: string
-  correo: string
   status: ProfesorStatus
 }

@@ -5,7 +5,7 @@ export class ActualizarStatusProfesor {
   constructor (private readonly repository: ProfesorRepository) {}
 
   async execute (cedula: string, status: Profesor['status']): Promise<Profesor> {
-    const validos: Profesor['status'][] = ['A', 'P', 'R']
+    const validos: Array<Profesor['status']> = ['A', 'ER', 'R']
     if (!validos.includes(status)) {
       throw new Error(`Status inválido: ${status}`)
     }

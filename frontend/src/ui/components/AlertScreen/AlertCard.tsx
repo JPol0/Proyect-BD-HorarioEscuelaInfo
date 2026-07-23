@@ -26,7 +26,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
 
   return (
     <Card className="mb-4 shadow-sm border border-slate-100 rounded-xl bg-white overflow-hidden">
-      <Card.Content className="px-4 py-3 flex flex-col md:flex-row gap-5 justify-between items-stretch">
+      <Card.Content className="p-4 sm:p-5 flex flex-col md:flex-row gap-5 justify-between items-stretch">
 
         {/* Lado Izquierdo: Información del Conflicto */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -55,9 +55,9 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
         <div className="hidden md:block w-px bg-slate-100 self-stretch"></div>
 
         {/* Lado Derecho: Controles de Gestión */}
-        <div className="w-full md:w-115 flex flex-col gap-2 shrink-0 justify-between">
-          <div className="flex items-center gap-2.5 w-full">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Gestión</span>
+        <div className="w-full md:w-115 flex flex-col gap-3 shrink-0 justify-between">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 hidden sm:inline">Gestión</span>
 
             <div className="flex-1 min-w-0">
               <Select
@@ -71,8 +71,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
                 }}
                 className="w-full text-xs"
               >
-                {/* Gatillo/Botón */}
-                <Select.Trigger className="flex justify-between items-center w-full border border-slate-200/80 rounded-lg px-2.5 py-1 bg-slate-50 hover:bg-slate-100 transition-colors text-xs text-slate-700 h-8 font-medium">
+                <Select.Trigger className="flex justify-between items-center w-full border border-slate-200/80 rounded-lg px-3 bg-slate-50 hover:bg-slate-100 transition-colors text-xs text-slate-700 h-11 sm:h-9 font-medium">
                   <Select.Value>
                     <div className="flex items-center gap-1.5">
                       {estadoSeleccionado === 'PENDIENTE' && <Clock className="w-3.5 h-3.5 text-amber-500" />}
@@ -88,13 +87,12 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
                   <Select.Indicator className="text-slate-400 text-[10px]">▼</Select.Indicator>
                 </Select.Trigger>
 
-                {/* Popover y ListBox */}
                 <Select.Popover className="bg-white border border-slate-100 shadow-lg rounded-lg p-1 min-w-37.5 z-50">
                   <ListBox>
                     <ListBox.Item
                       id="PENDIENTE"
                       textValue="Pendiente"
-                      className="px-2.5 py-1 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5 min-h-[44px]"
                     >
                       <Clock className="w-3.5 h-3.5 text-amber-500" />
                       Pendiente
@@ -103,7 +101,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
                     <ListBox.Item
                       id="RESUELTA"
                       textValue="Resuelta"
-                      className="px-2.5 py-1 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5 min-h-[44px]"
                     >
                       <Check className="w-3.5 h-3.5 text-emerald-500" />
                       Resuelta
@@ -112,7 +110,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
                     <ListBox.Item
                       id="IGNORADA"
                       textValue="Ignorado"
-                      className="px-2.5 py-1 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-2 text-xs text-slate-700 rounded-md hover:bg-slate-50 cursor-pointer flex items-center gap-1.5 min-h-[44px]"
                     >
                       <EyeSlash className="w-3.5 h-3.5 text-slate-400" />
                       Ignorado
@@ -123,7 +121,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
             </div>
 
             <Button
-              className="bg-[#1A5F7A] text-white font-semibold gap-1.5 px-3 py-1 text-xs h-8 rounded-md shadow-sm hover:opacity-90 active:scale-95 transition-all shrink-0"
+              className="bg-[#1A5F7A] text-white font-semibold flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs h-11 sm:h-9 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all shrink-0 w-full sm:w-auto cursor-pointer"
               isPending={cargando}
               onPress={() => { void manejarGuardar() }}
             >
@@ -138,7 +136,7 @@ export function AlertCard ({ alerta, onGuardar }: AlertCardProps) {
             rows={3}
             value={motivo}
             onChange={(e) => { setMotivo(e.target.value) }}
-            className="w-full text-xs border border-slate-200 rounded-lg p-2 bg-slate-50 hover:bg-slate-100 focus:bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-300/50 transition-all outline-none resize-none font-hanken"
+            className="w-full text-xs border border-slate-200 rounded-lg p-2.5 bg-slate-50 hover:bg-slate-100 focus:bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-300/50 transition-all outline-none resize-none font-hanken"
           />
         </div>
       </Card.Content>

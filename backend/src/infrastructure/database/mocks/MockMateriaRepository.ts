@@ -2,7 +2,7 @@ import { type MateriaRepository } from '../../../application/ports/MateriaReposi
 import { type Materia } from '../../../domain/Materia.js'
 
 // El mock con datos iniciales consistentes con la UI de Gestión de Materias
-const MOCK_MATERIAS: Materia[] = [
+const MOCK_MATERIAS_SEED: Materia[] = [
   {
     codMateria: 'ING-201',
     nombre: 'Matematicas Discreta',
@@ -39,46 +39,74 @@ const MOCK_MATERIAS: Materia[] = [
 ]
 
 export class MockMateriaRepository implements MateriaRepository {
+  private readonly almacen = new Map<string, Materia[]>()
+
+  constructor () {
+    // Inicializar los términos de prueba por defecto
+    this.almacen.set('1', [...MOCK_MATERIAS_SEED])
+    this.almacen.set('2', [...MOCK_MATERIAS_SEED])
+  }
+
   /**
-   * Retorna todo el universo de materias en memoria.
+   * Retorna todo el universo de materias en memoria para el term dado.
    */
   async getAll (term: string): Promise<Materia[]> {
-    return MOCK_MATERIAS
+    return this.almacen.get(term) ?? []
+  }
+
+  /**
+   * Retorna una materia específica por su código y término.
+   */
+  async getById (term: string, codMateria: string, tx?: any): Promise<Materia | null> {
+    const materias = this.almacen.get(term) ?? []
+    return materias.find((m) => m.codMateria === codMateria) ?? null
   }
 
   /**
    * Guarda una materia. Si ya existe el código lo actualiza (Upsert),
-   * en caso contrario, registra la nueva entidad en el array.
+   * en caso contrario, registra la nueva entidad en el array del term.
    */
-  async save (term: string, materia: Materia): Promise<void> {
+  async save (term: string, materia: Materia, tx?: any): Promise<void> {
     if (materia.codMateria === undefined || materia.codMateria.trim() === '') {
       throw new Error('El código de materia es requerido para guardar en el repositorio')
     }
 
-    const index = MOCK_MATERIAS.findIndex(
+    const materias = this.almacen.get(term) ?? []
+    const index = materias.findIndex(
       (m) => m.codMateria === materia.codMateria
     )
 
     if (index !== -1) {
       // Si existe, reemplazamos por completo con la nueva información del formulario/PDF
-      MOCK_MATERIAS[index] = materia
+      materias[index] = materia
     } else {
       // Si no existe, es una materia nueva
-      MOCK_MATERIAS.push(materia)
+      materias.push(materia)
     }
+
+    this.almacen.set(term, materias)
   }
 
   /**
    * Elimina una materia de la lista en memoria por su código.
    */
   async delete (term: string, codMateria: string): Promise<void> {
-    const index = MOCK_MATERIAS.findIndex(
+    const materias = this.almacen.get(term) ?? []
+    const index = materias.findIndex(
       (m) => m.codMateria === codMateria
     )
     if (index !== -1) {
-      MOCK_MATERIAS.splice(index, 1)
+      materias.splice(index, 1)
+      this.almacen.set(term, materias)
     } else {
       throw new Error(`No se encontró la materia con código ${codMateria}`)
     }
+  }
+
+  /**
+   * Elimina todas las materias asociadas a un término (borrado en cascada).
+   */
+  async deleteByTerm (term: string, tx?: any): Promise<void> {
+    this.almacen.delete(term)
   }
 }

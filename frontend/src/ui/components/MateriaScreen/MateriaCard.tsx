@@ -1,4 +1,4 @@
-﻿import { Card, Button, Modal } from '@heroui/react'
+import { Card, Button, Modal } from '@heroui/react'
 import { Minus, Plus, Magnifier, Gear } from '@gravity-ui/icons'
 import { type Materia } from '../../../core/domain/Materia'
 import { MateriaConsultarModal } from './MateriaConsultarModal'
@@ -11,6 +11,8 @@ interface MateriaCardProps {
   materia: Materia
   onSave: (materia: Materia) => void
   onDelete?: (codMateria: string) => void
+  onAddSection?: (materia: Materia) => void
+  onRemoveSection?: (materia: Materia) => void
   onAssignHours?: (materia: Materia, manualHours: Array<{ nroSeccion: number, dia: DaysOfWeek, hora: string, cantidad: number }>) => void
 }
 
@@ -18,6 +20,8 @@ export function MateriaCard ({
   materia,
   onSave,
   onDelete,
+  onAddSection,
+  onRemoveSection,
   onAssignHours
 }: MateriaCardProps) {
   const { currentUser } = useUser()
@@ -48,8 +52,9 @@ export function MateriaCard ({
               type="button"
               disabled={materia.nroSecciones <= 0 || isLector}
               onClick={() => {
-                const nuevoNro = Math.max(0, materia.nroSecciones - 1)
-                onSave({ ...materia, nroSecciones: nuevoNro })
+                if (onRemoveSection) {
+                  onRemoveSection(materia)
+                }
               }}
               className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
             >
@@ -62,7 +67,9 @@ export function MateriaCard ({
               type="button"
               disabled={isLector}
               onClick={() => {
-                onSave({ ...materia, nroSecciones: materia.nroSecciones + 1 })
+                if (onAddSection) {
+                  onAddSection(materia)
+                }
               }}
               className="px-3 h-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
             >

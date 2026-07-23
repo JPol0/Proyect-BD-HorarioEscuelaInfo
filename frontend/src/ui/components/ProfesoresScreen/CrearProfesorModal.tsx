@@ -12,18 +12,16 @@ const repository = new HttpProfesorRepository()
 export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
   const [cedula, setCedula] = useState('')
   const [nombre, setNombre] = useState('')
-  const [correo, setCorreo] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const CEDULA_REGEX = /^[VEve]-\d{6,8}$/
   const NOMBRE_REGEX = /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]{3,}$/
-  const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const handleGuardar = async (close: () => void) => {
     setError(null)
 
-    if (cedula.trim() === '' || nombre.trim() === '' || correo.trim() === '') {
+    if (cedula.trim() === '' || nombre.trim() === '') {
       setError('Todos los campos son obligatorios.')
       return
     }
@@ -35,23 +33,17 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
       setError('El nombre debe tener al menos 3 caracteres y solo puede contener letras y espacios.')
       return
     }
-    if (!CORREO_REGEX.test(correo.trim())) {
-      setError('El correo no tiene un formato válido (ej: usuario@dominio.com).')
-      return
-    }
 
     try {
       setGuardando(true)
       const nuevo = await repository.crearProfesor({
         cedula: cedula.trim().toUpperCase(),
         nombre: nombre.trim(),
-        correo: correo.trim().toLowerCase(),
         status: 'A'
       })
       onCreado(nuevo)
       setCedula('')
       setNombre('')
-      setCorreo('')
       close()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear el profesor')
@@ -87,7 +79,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                     value={cedula}
                     onChange={(e) => { setCedula(e.target.value) }}
                     variant="primary"
-                    className="w-full text-sm h-9 border border-border rounded-lg bg-surface-alt"
+                    className="w-full text-sm h-11 sm:h-9 border border-border rounded-lg bg-surface-alt"
                   />
                 </div>
 
@@ -99,19 +91,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                     value={nombre}
                     onChange={(e) => { setNombre(e.target.value) }}
                     variant="primary"
-                    className="w-full text-sm h-9 border border-border rounded-lg bg-surface-alt"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-subtitlePage uppercase tracking-wider">Correo institucional</label>
-                  <Input
-                    type="email"
-                    placeholder="Ej: mlopez@ucab.edu"
-                    value={correo}
-                    onChange={(e) => { setCorreo(e.target.value) }}
-                    variant="primary"
-                    className="w-full text-sm h-9 border border-border rounded-lg bg-surface-alt"
+                    className="w-full text-sm h-11 sm:h-9 border border-border rounded-lg bg-surface-alt"
                   />
                 </div>
               </Modal.Body>
@@ -119,7 +99,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
               <Modal.Footer className="px-6 py-4 border-t border-border bg-surface-alt flex justify-end gap-3">
                 <Button
                   variant="secondary"
-                  className="bg-surface-alt hover:bg-border text-text-secondary text-xs px-5 h-9 cursor-pointer"
+                  className="bg-surface-alt hover:bg-border text-text-secondary text-xs px-5 h-11 sm:h-9 cursor-pointer"
                   onPress={close}
                   isDisabled={guardando}
                 >
@@ -127,7 +107,7 @@ export function CrearProfesorModal ({ onCreado }: CrearProfesorModalProps) {
                 </Button>
                 <Button
                   variant="primary"
-                  className="bg-button-primary hover:bg-button-primary-hover text-white text-xs px-5 h-9 cursor-pointer"
+                  className="bg-button-primary hover:bg-button-primary-hover text-white text-xs px-5 h-11 sm:h-9 cursor-pointer"
                   onPress={() => { void handleGuardar(close) }}
                   isDisabled={guardando}
                 >

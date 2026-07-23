@@ -27,7 +27,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
     try {
       setCargando(true)
       const payload: Laboratorio = {
-        id: laboratorio?.id ?? String(Date.now()),
+        id: laboratorio?.id ?? 0,
         name: nombre.trim()
       }
       await onGuardar(payload)
@@ -41,12 +41,12 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 animate-fade-in"
         onClick={(e) => { e.stopPropagation() }}
       >
         {/* Encabezado */}
@@ -56,7 +56,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
           </h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 transition-colors text-2xl leading-none"
+            className="text-slate-400 hover:text-slate-700 transition-colors text-2xl leading-none p-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 flex items-center justify-center cursor-pointer"
             aria-label="Cerrar"
           >
             ×
@@ -74,7 +74,7 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
               value={nombre}
               onChange={(e) => { setNombre(e.target.value) }}
               placeholder="Ej. Lab de Computación A"
-              className="border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1A5F7A] focus:border-transparent transition font-hanken"
+              className="border border-slate-200 rounded-lg px-4 py-3 sm:py-2.5 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1A5F7A] focus:border-transparent transition font-hanken h-11 sm:h-auto"
               autoFocus
             />
           </div>
@@ -87,18 +87,18 @@ export default function LaboratorioModal ({ laboratorio, onClose, onGuardar }: L
           )}
 
           {/* Acciones */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition font-hanken"
+              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition font-hanken min-h-[44px] sm:min-h-0"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={cargando}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-[#1A5F7A] hover:opacity-90 disabled:opacity-50 rounded-lg transition font-hanken flex items-center gap-2"
+              className="px-5 py-3 sm:py-2.5 text-sm font-medium text-white bg-[#1A5F7A] hover:opacity-90 disabled:opacity-50 rounded-lg transition font-hanken flex items-center justify-center gap-2 min-h-[44px] sm:min-h-0"
             >
               {cargando ? 'Guardando...' : esEdicion ? 'Guardar Cambios' : '+ Crear Laboratorio'}
             </button>
