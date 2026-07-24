@@ -124,27 +124,27 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
   const hasAnyAssignment = selectedPrincipalId !== 'ninguno' || selectedSecundarioIds.length > 0
 
   return (
-    <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
-      <Modal.Container className="flex items-center justify-center p-4">
-        <Modal.Dialog className={`bg-surface rounded-xl shadow-2xl w-full transition-all duration-300 overflow-hidden border border-border flex flex-col ${hasAnyAssignment ? 'max-w-4xl' : 'max-w-3xl'}`}>
+    <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-[80]">
+      <Modal.Container className="flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <Modal.Dialog className={`bg-surface rounded-xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl ${hasAnyAssignment ? 'md:max-w-4xl' : 'md:max-w-3xl'} transition-all duration-300 overflow-hidden border border-border flex flex-col max-h-[90vh]`}>
           {({ close }) => (
             <>
-              <Modal.CloseTrigger className="absolute top-5 right-5 text-text-muted hover:text-text-secondary cursor-pointer z-10" />
+              <Modal.CloseTrigger className="absolute top-4 right-4 sm:top-5 sm:right-5 text-text-muted hover:text-text-secondary cursor-pointer z-10" />
 
               {/* Encabezado */}
-              <Modal.Header className="px-6 pt-6 pb-4 border-b border-border bg-surface-alt">
-                <Modal.Heading className="text-lg font-bold text-titlePage flex flex-col gap-0.5">
+              <Modal.Header className="px-4 sm:px-6 pt-5 pb-4 border-b border-border bg-surface-alt shrink-0">
+                <Modal.Heading className="text-base sm:text-lg font-bold text-titlePage flex flex-col gap-0.5 pr-8">
                   Asignar Laboratorios
-                  <span className="text-sm font-normal text-subtitlePage">{materia.nombre}</span>
+                  <span className="text-xs sm:text-sm font-normal text-subtitlePage truncate">{materia.nombre}</span>
                 </Modal.Heading>
               </Modal.Header>
 
               {/* Cuerpo del modal */}
-              <Modal.Body className="p-0 flex flex-row max-h-[65vh]">
+              <Modal.Body className="p-0 flex flex-col md:flex-row flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
                 {/* --- Columna Izquierda: Búsqueda y Selección --- */}
-                <div className={`flex flex-col flex-1 p-6 overflow-y-auto ${hasAnyAssignment ? 'border-r border-border' : ''}`}>
+                <div className={`flex flex-col flex-1 p-4 sm:p-6 overflow-y-auto min-h-0 ${hasAnyAssignment ? 'border-b md:border-b-0 md:border-r border-border' : ''}`}>
                   {error != null && (
-                    <p className="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100 mb-4">⚠️ {error}</p>
+                    <p className="text-xs text-red-500 bg-red-50 p-3 rounded-lg border border-red-100 mb-4 shrink-0">⚠️ {error}</p>
                   )}
 
                   <div className="relative w-full flex items-center mb-4 shrink-0 font-sans">
@@ -173,26 +173,26 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                             return (
                               <div
                                 key={lab.id}
-                                className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
+                                className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border p-3 transition-colors ${
                                   (isPrincipal || isSecundario)
                                     ? 'border-primary/40 bg-primary/5'
                                     : 'border-border bg-surface-alt hover:border-slate-300'
                                 }`}
                               >
-                                <div>
-                                  <p className="text-sm font-semibold text-text-primary">{lab.name}</p>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-semibold text-text-primary truncate">{lab.name}</p>
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2 shrink-0 w-full sm:w-auto justify-start sm:justify-end">
                                   {isPrincipal
                                     ? (
-                                    <span className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/10 rounded-lg">
+                                    <span className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/10 rounded-lg text-center">
                                       Principal Asignado
                                     </span>
                                       )
                                     : isSecundario
                                       ? (
-                                    <span className="text-xs font-semibold text-emerald-700 px-3 py-1.5 bg-emerald-50 rounded-lg">
+                                    <span className="text-xs font-semibold text-emerald-700 px-3 py-1.5 bg-emerald-50 rounded-lg text-center">
                                       Secundario Asignado
                                     </span>
                                         )
@@ -231,8 +231,8 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
 
                 {/* --- Columna Derecha: Laboratorios Asignados --- */}
                 {hasAnyAssignment && (
-                  <div className="w-[300px] bg-surface-alt p-6 flex flex-col shrink-0 overflow-y-auto">
-                    <h3 className="text-sm font-bold text-titlePage mb-5 flex items-center gap-2">
+                  <div className="w-full md:w-[300px] lg:w-[320px] bg-surface-alt p-4 sm:p-6 flex flex-col shrink-0 overflow-y-auto">
+                    <h3 className="text-sm font-bold text-titlePage mb-4 sm:mb-5 flex items-center gap-2">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="9" y1="3" x2="9" y2="21"></line>
@@ -240,7 +240,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                       Laboratorios Asignados
                     </h3>
 
-                    <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-4">
                       {/* Laboratorio Principal */}
                       <div className="flex flex-col gap-3">
                         <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-1 rounded uppercase tracking-wider text-center">
@@ -272,7 +272,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                               })()
                             )
                           : (
-                          <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
+                          <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[120px] md:min-h-[140px]">
                             Sin principal asignado
                           </div>
                             )}
@@ -312,7 +312,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
                             </div>
                               )
                             : (
-                            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[140px]">
+                            <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-text-muted italic flex items-center justify-center min-h-[120px] md:min-h-[140px]">
                               Sin secundarios asignados
                             </div>
                               )}
@@ -324,7 +324,7 @@ export function MateriaLaboratorioModal ({ materia }: MateriaLaboratorioModalPro
               </Modal.Body>
 
               {/* Botones de acción */}
-              <Modal.Footer className="px-6 py-4 border-t border-border bg-surface flex justify-end gap-3 z-10">
+              <Modal.Footer className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border bg-surface flex justify-end gap-3 shrink-0 z-10">
                 <Button
                   variant="secondary"
                   className="bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm px-6 h-10 cursor-pointer border border-slate-200 shadow-sm"

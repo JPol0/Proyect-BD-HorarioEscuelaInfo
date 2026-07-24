@@ -108,6 +108,7 @@ export default function HorariosPage () {
   const [assignmentErrors, setAssignmentErrors] = useState<string[]>([])
   const [assignmentWarnings, setAssignmentWarnings] = useState<string[]>([])
   const [isConfirmGenerateOpen, setIsConfirmGenerateOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [draggedBlock, setDraggedBlock] = useState<{ dia: DaysOfWeek, hora: string } | null>(null)
   const [dragError, setDragError] = useState<string | null>(null)
@@ -125,6 +126,50 @@ export default function HorariosPage () {
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
   const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
   const [selectedSemester, setSelectedSemester] = useState<number>(1)
+
+  const handleConfirmDelete = async () => {
+    setIsDeleteModalOpen(false)
+    if (selectedTerm === null) return
+    const term = selectedTerm
+
+    const tieneAsignacionesAuto = tuplas.some(t => {
+      const mat = materias.find(m => m.codMateria === t.codAsig)
+      const isCommon = mat ? mat.esComun : false
+      return !t.isManual && !isCommon
+    })
+
+    if (!tieneAsignacionesAuto) {
+      alert('No hay ningún horario generado automáticamente para eliminar.')
+      return
+    }
+
+    const remainingTuplas = tuplas.filter(t => {
+      const mat = materias.find(m => m.codMateria === t.codAsig)
+      const isCommon = mat ? mat.esComun : false
+      return t.isManual || isCommon
+    })
+
+    setTuplas(remainingTuplas)
+    try {
+      await saveWeeklyScheduleUseCase.execute(term, remainingTuplas)
+      sessionStorage.setItem(`draft_horario_${term}`, JSON.stringify(remainingTuplas))
+    } catch (e) {
+      console.error('Error al actualizar tras eliminar:', e)
+    }
+  }
+
+  const handleGuardarHorario = async () => {
+    if (selectedTerm === null) return
+    const term = selectedTerm
+
+    try {
+      await saveWeeklyScheduleUseCase.execute(term, tuplas)
+      sessionStorage.removeItem(`draft_horario_${term}`)
+      alert('Horario de todos los semestres guardado correctamente en la base de datos.')
+    } catch (e) {
+      alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
+    }
+  }
 
   const handleConfirmExport = async (config: ScheduleExportConfig) => {
     try {
@@ -170,7 +215,7 @@ export default function HorariosPage () {
       newTuplas = newTuplas.filter(t => {
         const mat = materias.find(m => m.codMateria === t.codAsig)
         const isCommon = mat ? mat.esComun : false
-        return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
+        return t.isManual || isCommon
       })
     }
 
@@ -612,7 +657,7 @@ export default function HorariosPage () {
                 type="button"
                 disabled={isGenerating}
                 onClick={() => {
-                  const hasAutoBlocks = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
+                  const hasAutoBlocks = tuplas.some(t => !t.isManual)
                   if (hasAutoBlocks) {
                     setIsConfirmGenerateOpen(true)
                   } else {
@@ -635,32 +680,7 @@ export default function HorariosPage () {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (selectedTerm === null) return
-                  const term = selectedTerm
-                  const tieneAsignacionesAuto = tuplas.some(t => t.semestre === selectedSemester && !t.isManual)
-                  if (!tieneAsignacionesAuto) {
-                    alert('No hay ningún horario generado automáticamente para eliminar en este semestre.')
-                    return
-                  }
-
-                  if (window.confirm(`¿Estás seguro de que deseas eliminar las asignaciones generadas automáticamente del semestre ${selectedSemester}? Los horarios manuales y profesores asignados se mantendrán intactos.`)) {
-                    const remainingTuplas = tuplas.filter(t => {
-                      const mat = materias.find(m => m.codMateria === t.codAsig)
-                      const isCommon = mat ? mat.esComun : false
-                      return !(t.semestre === selectedSemester && !t.isManual && !isCommon)
-                    })
-                    setTuplas(remainingTuplas)
-                    void (async () => {
-                      try {
-                        await saveWeeklyScheduleUseCase.execute(term, remainingTuplas)
-                        sessionStorage.setItem(`draft_horario_${term}`, JSON.stringify(remainingTuplas))
-                      } catch (e) {
-                        console.error('No se pudo borrar el JSON', e)
-                      }
-                    })()
-                  }
-                }}
+                onClick={() => setIsDeleteModalOpen(true)}
                 className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-3.5 rounded-lg border border-slate-200 bg-white text-red-600 text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-red-50 cursor-pointer whitespace-nowrap"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
@@ -671,19 +691,7 @@ export default function HorariosPage () {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (selectedTerm === null) return
-                  const term = selectedTerm
-                  void (async () => {
-                    try {
-                      await saveWeeklyScheduleUseCase.execute(term, tuplas)
-                      sessionStorage.removeItem(`draft_horario_${term}`)
-                      alert('Horario guardado correctamente')
-                    } catch (e) {
-                      alert('Error al guardar: ' + (e instanceof Error ? e.message : ''))
-                    }
-                  })()
-                }}
+                onClick={() => { void handleGuardarHorario() }}
                 className="flex flex-1 sm:flex-none items-center justify-center gap-2 h-9 px-4 rounded-lg bg-button-primary text-white text-xs font-sans font-semibold shadow-sm transition-colors hover:bg-button-primary-hover cursor-pointer whitespace-nowrap"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
@@ -798,6 +806,41 @@ export default function HorariosPage () {
                     onPress={() => {
                       setIsConfirmGenerateOpen(false)
                       void handleGenerarHorario(true)
+                    }}
+                  >
+                    Sí
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+      )}
+
+      {isDeleteModalOpen && (
+        <Modal isOpen={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+          <Modal.Backdrop className="bg-slate-900/40 backdrop-blur-sm z-50">
+            <Modal.Container className="flex items-center justify-center p-4">
+              <Modal.Dialog className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden font-sans border border-slate-100 p-6 text-center">
+                <Modal.Heading className="text-lg font-bold text-slate-800 mb-3">
+                  Confirmación de Eliminación
+                </Modal.Heading>
+                <Modal.Body className="text-sm text-slate-600 mb-6">
+                  Esto va a eliminar los horarios de todos los semestres. <strong>¿Estás seguro que deseas continuar?</strong>
+                </Modal.Body>
+                <Modal.Footer className="flex justify-center gap-3">
+                  <Button
+                    variant="secondary"
+                    className="bg-white hover:bg-slate-100 text-slate-700 font-medium text-xs px-5 h-11 sm:h-9 cursor-pointer border border-slate-200"
+                    onPress={() => { setIsDeleteModalOpen(false) }}
+                  >
+                    No
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="bg-red-600 hover:bg-red-700 text-white font-medium text-xs px-5 h-11 sm:h-9 cursor-pointer"
+                    onPress={() => {
+                      void handleConfirmDelete()
                     }}
                   >
                     Sí

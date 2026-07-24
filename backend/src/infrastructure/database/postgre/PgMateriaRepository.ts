@@ -8,11 +8,15 @@ export class PgMateriaRepository implements MateriaRepository {
    */
   async getAll (term: string): Promise<Materia[]> {
     const queryPlanEstudios =
-      `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE,
-      NroSeccionesPE
-      FROM Plan_de_Estudio
-      WHERE CodTerm = $1
-      ;`
+      `SELECT p.CodAsig, p.NombrePE, p.HoraPractica, p.HoraTeorica, p.HoraLaboratorio, p.SemestrePE, p.EsComunPE, p.ModalidadPE,
+              GREATEST(p.NroSeccionesPE, COALESCE(s.cant_sec, 0)) AS NroSeccionesPE
+       FROM Plan_de_Estudio p
+       LEFT JOIN (
+         SELECT CodTerm, CodAsig, COUNT(*)::int AS cant_sec
+         FROM Secciones
+         GROUP BY CodTerm, CodAsig
+       ) s ON p.CodTerm = s.CodTerm AND p.CodAsig = s.CodAsig
+       WHERE p.CodTerm = $1;`
 
     interface PlanEstudioRow {
       codasig: string
@@ -51,11 +55,16 @@ export class PgMateriaRepository implements MateriaRepository {
   async getById (term: string, codMateria: string, tx?: any): Promise<Materia | null> {
     const executor = tx ?? getPool()
     const query =
-      `SELECT CodAsig, NombrePE, HoraPractica, HoraTeorica, HoraLaboratorio, SemestrePE, EsComunPE, ModalidadPE,
-      NroSeccionesPE
-      FROM Plan_de_Estudio
-      WHERE CodTerm = $1 AND CodAsig = $2
-      ;`
+      `SELECT p.CodAsig, p.NombrePE, p.HoraPractica, p.HoraTeorica, p.HoraLaboratorio, p.SemestrePE, p.EsComunPE, p.ModalidadPE,
+              GREATEST(p.NroSeccionesPE, COALESCE(s.cant_sec, 0)) AS NroSeccionesPE
+       FROM Plan_de_Estudio p
+       LEFT JOIN (
+         SELECT CodTerm, CodAsig, COUNT(*)::int AS cant_sec
+         FROM Secciones
+         WHERE CodTerm = $1 AND CodAsig = $2
+         GROUP BY CodTerm, CodAsig
+       ) s ON p.CodTerm = s.CodTerm AND p.CodAsig = s.CodAsig
+       WHERE p.CodTerm = $1 AND p.CodAsig = $2;`
 
     interface PlanEstudioRow {
       codasig: string
