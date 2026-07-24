@@ -19,7 +19,7 @@ CREATE DOMAIN dom_horas AS SMALLINT
     CONSTRAINT chk_dom_horas CHECK (VALUE >= 0);
 
 CREATE DOMAIN dom_num_secciones AS SMALLINT
-    CONSTRAINT chk_dom_num_secciones CHECK (VALUE BETWEEN 1 AND 20);
+    CONSTRAINT chk_dom_num_secciones CHECK (VALUE BETWEEN 0 AND 20);
 
 CREATE DOMAIN dom_num_seccion AS SMALLINT
     CONSTRAINT chk_dom_num_seccion CHECK (VALUE > 0);
