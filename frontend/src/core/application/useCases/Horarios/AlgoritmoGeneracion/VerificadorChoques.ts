@@ -70,12 +70,6 @@ export function verificarChoquesYDisponibilidad (ctx: ContextoChoques): Resultad
           return false
         }
 
-        const esMateriaComun = ctx.materia.esComun
-        const materiaChocandoEsComun = ctx.materiasComunesCodes?.has(t.codAsig)
-        if (esMateriaComun || materiaChocandoEsComun) {
-          return false
-        }
-
         return true
       }
       return false

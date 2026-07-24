@@ -14,7 +14,7 @@ export interface GenerarHorarioRequest {
   prerequitos: Prerequito[]
   horarioActual: Horario[]
   termId: string
-  selectedSemester: number
+  selectedSemester?: number
   profesorAssignments: Record<string, Record<number, string>> // codMateria -> seccion -> cedulaProf
   profesorLabAssignments?: Record<string, Record<number, string>> // codMateria -> seccion -> cedulaProf
   laboratorioAssignments: Record<string, { principal: number, secundarios: number[] }> // codMateria -> asignacion
@@ -34,71 +34,75 @@ export class GenerarHorarioSemestre {
   }
 
   async execute (request: GenerarHorarioRequest): Promise<GenerarHorarioResponse> {
-    const { materias, prerequitos, horarioActual, termId, selectedSemester, profesorAssignments, profesorLabAssignments, laboratorioAssignments } = request
+    const { materias, prerequitos, horarioActual, termId, profesorAssignments, profesorLabAssignments, laboratorioAssignments } = request
     const advertencias: string[] = []
     let tuplasEnProceso = [...horarioActual]
 
-    const materiasDelSemestre = materias.filter(m => m.semestre === selectedSemester)
-
-    // FASE 1: VALIDACIONES PREVIAS
-    try {
-      validarAsignacionesPrevias(materiasDelSemestre, tuplasEnProceso, profesorAssignments, profesorLabAssignments, laboratorioAssignments)
-    } catch (e) {
-      throw new Error((e as Error).message)
-    }
-
-    // Cache de disponibilidades para no consultar múltiples veces por el mismo profesor
     const cacheDisponibilidad: Record<string, DisponibilidadHoraria[]> = {}
 
-    // FASE 1.5: Asignar laboratorios a materias comunes
-    for (const materia of materiasDelSemestre) {
-      if (!materia.esComun) continue
-      if (materia.horasLab === 0) continue
-
-      const labObj = laboratorioAssignments[materia.codMateria]
-      if (!labObj?.principal) continue
-
-      tuplasEnProceso = tuplasEnProceso.map(t => {
-        if (t.codAsig === materia.codMateria && !t.laboratorio) {
-          return {
-            ...t,
-            laboratorio: { id: labObj.principal, name: '' }
-          }
-        }
-        return t
-      })
-    }
-
-    // FASE 2: MOTOR DE ASIGNACIÓN
     const materiasComunesCodes = new Set(
       materias.filter(m => m.esComun).map(m => m.codMateria)
     )
 
-    for (const materia of materiasDelSemestre) {
-      if (materia.esComun) continue // Ya asignadas manualmente
+    const semestresUnicos = Array.from(new Set(materias.map(m => m.semestre))).sort((a, b) => a - b)
 
-      const prereqCodes = new Set(
-        prerequitos
-          .filter(p => p.codigoAsignatura === materia.codMateria)
-          .map(p => p.codigoAsignaturaPrerequito)
-      )
+    for (const sem of semestresUnicos) {
+      const materiasDelSemestre = materias.filter(m => m.semestre === sem)
+      if (materiasDelSemestre.length === 0) continue
 
-      const resultado = await asignarSeccionesDeMateria({
-        materia,
-        prereqCodes,
-        materiasComunesCodes,
-        tuplasEnProceso,
-        termId,
-        profesorAssignments,
-        profesorLabAssignments,
-        laboratorioAssignments,
-        cacheDisponibilidad,
-        disponibilidadRepo: this.disponibilidadRepo
-      })
+      // FASE 1: VALIDACIONES PREVIAS DEL SEMESTRE
+      try {
+        validarAsignacionesPrevias(materiasDelSemestre, tuplasEnProceso, profesorAssignments, profesorLabAssignments, laboratorioAssignments)
+      } catch (e) {
+        throw new Error(`[Semestre ${sem}] ${(e as Error).message}`)
+      }
 
-      tuplasEnProceso = resultado.tuplasActualizadas
-      if (resultado.advertencias.length > 0) {
-        advertencias.push(...resultado.advertencias)
+      // FASE 1.5: Asignar laboratorios a materias comunes del semestre
+      for (const materia of materiasDelSemestre) {
+        if (!materia.esComun) continue
+        if (materia.horasLab === 0) continue
+
+        const labObj = laboratorioAssignments[materia.codMateria]
+        if (!labObj?.principal) continue
+
+        tuplasEnProceso = tuplasEnProceso.map(t => {
+          if (t.codAsig === materia.codMateria && !t.laboratorio) {
+            return {
+              ...t,
+              laboratorio: { id: labObj.principal, name: '' }
+            }
+          }
+          return t
+        })
+      }
+
+      // FASE 2: MOTOR DE ASIGNACIÓN DEL SEMESTRE
+      for (const materia of materiasDelSemestre) {
+        if (materia.esComun) continue // Ya asignadas manualmente
+
+        const prereqCodes = new Set(
+          prerequitos
+            .filter(p => p.codigoAsignatura === materia.codMateria)
+            .map(p => p.codigoAsignaturaPrerequito)
+        )
+
+        const resultado = await asignarSeccionesDeMateria({
+          materia,
+          prereqCodes,
+          materiasComunesCodes,
+          tuplasEnProceso,
+          termId,
+          profesorAssignments,
+          profesorLabAssignments,
+          laboratorioAssignments,
+          cacheDisponibilidad,
+          disponibilidadRepo: this.disponibilidadRepo
+        })
+
+        tuplasEnProceso = resultado.tuplasActualizadas
+        if (resultado.advertencias.length > 0) {
+          advertencias.push(...resultado.advertencias)
+        }
       }
     }
 
