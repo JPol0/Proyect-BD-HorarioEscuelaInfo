@@ -14,7 +14,7 @@ const mapToDbHour = (frontendHora: string): string => {
 export class PgHorarioRepository implements HorarioRepository {
   async getScheduleByTerm (term: string): Promise<Horario[] | null> {
     const query = `
-      SELECT h.CodTerm, h.CodAsig, h.NroSeccion, h.DiaH, h.HoraH, h.CodLab,
+      SELECT h.CodTerm, h.CodAsig, h.NroSeccion, h.CedulaP, h.DiaH, h.HoraH, h.CodLab,
              l.NombreLab, p.SemestrePE
       FROM Horarios h
       LEFT JOIN Laboratorios l ON h.CodLab = l.CodLab
@@ -31,8 +31,9 @@ export class PgHorarioRepository implements HorarioRepository {
       codTerm: row.codterm,
       codAsig: row.codasig,
       nroSeccion: Number(row.nroseccion),
+      cedulaP: String(row.cedulap),
       dia: row.diah,
-      hora: mapToFrontendHour(row.horah),
+      hora: mapToFrontendHour(String(row.horah)),
       semestre: Number(row.semestrepe),
       laboratorio: (row.codlab !== null && row.codlab !== undefined) ? { id: Number(row.codlab), name: String(row.nombrelab) } : null
     }))
@@ -48,16 +49,11 @@ export class PgHorarioRepository implements HorarioRepository {
         UPDATE Disponibilidad_Horaria dh
         SET ocupadoDH = FALSE
         FROM Horarios h
-        JOIN Imparten i ON h.CodTerm = i.CodTerm AND h.CodAsig = i.CodAsig AND h.NroSeccion = i.NroSeccion
         WHERE h.CodTerm = $1
           AND dh.CodTerm = h.CodTerm
-          AND dh.CedulaP = i.cedulaP
+          AND dh.CedulaP = h.CedulaP
           AND dh.Dia = h.DiaH
           AND dh.Hora = h.HoraH
-          AND (
-            (h.CodLab IS NULL AND i.HorasTeo > 0) OR
-            (h.CodLab IS NOT NULL AND i.HorasLab > 0)
-          )
       `
       await client.query(releaseProfAvailabilityQuery, [term])
 
@@ -84,15 +80,38 @@ export class PgHorarioRepository implements HorarioRepository {
       // 3. Insertar los nuevos bloques (si la lista no está vacía)
       if (schedule.length > 0) {
         const insertQuery = `
-          INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, DiaH, HoraH, CodLab)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, CedulaP, DiaH, HoraH, CodLab)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
         `
         for (const bloque of schedule) {
           const codLab = (bloque.laboratorio !== null && bloque.laboratorio !== undefined) ? bloque.laboratorio.id : null
+          let cedulaP = bloque.cedulaP
+          if (cedulaP === undefined || cedulaP === null || cedulaP.trim() === '') {
+            const profRes = await client.query(
+              `SELECT cedulaP FROM Imparten 
+               WHERE CodTerm = $1 AND CodAsig = $2 AND NroSeccion = $3 
+                 AND (($4::int IS NOT NULL AND HorasLab > 0) OR ($4::int IS NULL AND HorasTeo > 0))
+               LIMIT 1`,
+              [term, bloque.codAsig, bloque.nroSeccion, codLab]
+            )
+            if (profRes.rowCount !== null && profRes.rowCount > 0) {
+              cedulaP = profRes.rows[0].cedulap
+            } else {
+              const fallbackProfRes = await client.query(
+                'SELECT cedulaP FROM Imparten WHERE CodTerm = $1 AND CodAsig = $2 AND NroSeccion = $3 LIMIT 1',
+                [term, bloque.codAsig, bloque.nroSeccion]
+              )
+              if (fallbackProfRes.rowCount !== null && fallbackProfRes.rowCount > 0) {
+                cedulaP = fallbackProfRes.rows[0].cedulap
+              }
+            }
+          }
+
           await client.query(insertQuery, [
             term,
             bloque.codAsig,
             bloque.nroSeccion,
+            cedulaP,
             bloque.dia,
             mapToDbHour(bloque.hora),
             codLab
@@ -104,16 +123,11 @@ export class PgHorarioRepository implements HorarioRepository {
           UPDATE Disponibilidad_Horaria dh
           SET ocupadoDH = TRUE
           FROM Horarios h
-          JOIN Imparten i ON h.CodTerm = i.CodTerm AND h.CodAsig = i.CodAsig AND h.NroSeccion = i.NroSeccion
           WHERE h.CodTerm = $1
             AND dh.CodTerm = h.CodTerm
-            AND dh.CedulaP = i.cedulaP
+            AND dh.CedulaP = h.CedulaP
             AND dh.Dia = h.DiaH
             AND dh.Hora = h.HoraH
-            AND (
-              (h.CodLab IS NULL AND i.HorasTeo > 0) OR
-              (h.CodLab IS NOT NULL AND i.HorasLab > 0)
-            )
         `
         await client.query(occupyProfAvailabilityQuery, [term])
 
@@ -139,10 +153,7 @@ export class PgHorarioRepository implements HorarioRepository {
               WHERE h.CodTerm = i.CodTerm
                 AND h.CodAsig = i.CodAsig
                 AND h.NroSeccion = i.NroSeccion
-                AND (
-                  (h.CodLab IS NULL AND i.HorasTeo > 0) OR
-                  (h.CodLab IS NOT NULL AND i.HorasLab > 0)
-                )
+                AND h.CedulaP = i.cedulaP
             )
         `
         await client.query(checkAsignadaQuery, [term])
