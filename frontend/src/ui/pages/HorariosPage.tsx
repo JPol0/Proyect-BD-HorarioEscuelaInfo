@@ -35,6 +35,7 @@ import { ExportarHorario } from '../../core/application/useCases/Horarios/Export
 import { HttpHorarioExporter } from '../../core/infrastructure/adapters/HttpHorarioExporter'
 import type { ScheduleExportConfig } from '../../core/domain/ScheduleExport'
 import { ValidarMovimientoHorario } from '../../core/application/useCases/Horarios/ValidarMovimientoHorario'
+import { AsignarCasillaModal } from '../components/MateriaScreen/AsignarCasillaModal'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -121,6 +122,10 @@ export default function HorariosPage () {
       cedulaProfesor?: string
       laboratorioId?: number
     }>
+  } | null>(null)
+  const [emptyCellModal, setEmptyCellModal] = useState<{
+    dia: DaysOfWeek
+    hora: string
   } | null>(null)
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
@@ -781,10 +786,20 @@ export default function HorariosPage () {
                               e.preventDefault()
                               void handleDrop(day, row.hour)
                             }}
-                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200' : ''} ${canDrag ? 'cursor-grab active:cursor-grabbing' : (!isEmpty ? 'cursor-pointer' : '')}`}
-                            onClick={() => !isEmpty && handleCellClick(day, row.hour)}
+                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200 cursor-grab active:cursor-grabbing' : 'hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer group'}`}
+                            onClick={() => {
+                              if (!isEmpty) {
+                                handleCellClick(day, row.hour)
+                              } else {
+                                setEmptyCellModal({ dia: day, hora: row.hour })
+                              }
+                            }}
                           >
-                            {isEmpty ? <span className="text-slate-300">—</span> : content}
+                            {isEmpty ? (
+                              <span className="text-slate-300 group-hover:text-slate-600 font-semibold transition-colors inline-block group-hover:scale-125">
+                                +
+                              </span>
+                            ) : content}
                           </td>
                         )
                       })}
@@ -893,6 +908,25 @@ export default function HorariosPage () {
           dia={selectedBlockModal.dia}
           horaStr={selectedBlockModal.horaStr}
           asigs={selectedBlockModal.asigs}
+        />
+      )}
+      {emptyCellModal && (
+        <AsignarCasillaModal
+          isOpen={true}
+          onClose={() => setEmptyCellModal(null)}
+          dia={emptyCellModal.dia}
+          hora={emptyCellModal.hora}
+          selectedSemester={selectedSemester}
+          selectedTerm={selectedTerm || ''}
+          materias={materias}
+          tuplas={tuplas}
+          prerequitos={prerequitos}
+          profesorAssignments={profesorAssignments[selectedTerm!] || {}}
+          profesorLabAssignments={profesorLabAssignments?.[selectedTerm!]}
+          laboratorioAssignments={laboratorioAssignments}
+          onAsignar={(nuevaTupla) => {
+            setTuplas([...tuplas, nuevaTupla])
+          }}
         />
       )}
       <ExportarHorarioModal
