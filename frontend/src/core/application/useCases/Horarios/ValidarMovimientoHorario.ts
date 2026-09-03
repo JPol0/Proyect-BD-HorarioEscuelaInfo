@@ -75,7 +75,7 @@ export class ValidarMovimientoHorario {
       )
 
       const hasLab = !asig.laboratorio || !(asig as any).codLaboratorio
-      const cedulaProfesor = (hasLab
+      const cedulaProfesor = asig.cedulaP || (hasLab
         ? profesorLabAssignments?.[asig.codAsig]?.[asig.nroSeccion]
         : undefined) ||
         profesorAssignments[asig.codAsig]?.[asig.nroSeccion] ||

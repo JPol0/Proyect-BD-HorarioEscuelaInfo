@@ -163,7 +163,19 @@ export default function HorariosPage () {
     const term = selectedTerm
 
     try {
-      await saveWeeklyScheduleUseCase.execute(term, tuplas)
+      const tuplasToSave = tuplas.map(t => {
+        if (t.cedulaP && t.cedulaP.trim() !== '') return t
+        const hasLab = !!t.laboratorio || !!(t as any).codLaboratorio
+        const profLab = profesorLabAssignments?.[term]?.[t.codAsig]?.[t.nroSeccion]
+        const profTeo = profesorAssignments[term]?.[t.codAsig]?.[t.nroSeccion]
+        const cedulaP = (hasLab && profLab) ? profLab : (profTeo || profLab || '')
+        return {
+          ...t,
+          cedulaP
+        }
+      })
+
+      await saveWeeklyScheduleUseCase.execute(term, tuplasToSave)
       sessionStorage.removeItem(`draft_horario_${term}`)
       alert('Horario de todos los semestres guardado correctamente en la base de datos.')
     } catch (e) {
@@ -380,6 +392,10 @@ export default function HorariosPage () {
                   }
                 }
 
+                const profLab = profesorLabAssignments?.[term]?.[materiaFromState.codMateria]?.[block.nroSeccion]
+                const profTeo = profesorAssignments[term]?.[materiaFromState.codMateria]?.[block.nroSeccion]
+                const cedulaProf = (labIdAsignar !== undefined && profLab) ? profLab : (profTeo || profLab || '')
+
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
                   nroSeccion: block.nroSeccion,
@@ -387,7 +403,8 @@ export default function HorariosPage () {
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
                   laboratorio: labIdAsignar !== undefined ? { id: labIdAsignar, name: 'Laboratorio' } : null,
-                  isManual: true
+                  isManual: true,
+                  cedulaP: cedulaProf
                 })
               }
             }
@@ -467,7 +484,7 @@ export default function HorariosPage () {
       if (!materia) return null
 
       const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
-      const cedulaProfesor = (hasLab
+      const cedulaProfesor = asig.cedulaP || (hasLab
         ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
         : undefined) ||
         profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion] ||

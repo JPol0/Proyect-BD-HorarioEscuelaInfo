@@ -8,7 +8,9 @@ export type ScheduleRow = {
 
 export interface Horario {
   codAsig: string
+  codTerm?: string
   nroSeccion: number
+  cedulaP?: string
   dia: DaysOfWeek
   hora: string // Ej: "07:00"
   semestre: number
