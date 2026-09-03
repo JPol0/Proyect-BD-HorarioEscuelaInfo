@@ -145,12 +145,14 @@ CREATE TABLE IF NOT EXISTS Horarios(
     NroSeccion dom_num_seccion NOT NULL,
     CodTerm VARCHAR(80) NOT NULL,
     CodAsig VARCHAR(40) NOT NULL,
+    CedulaP VARCHAR(10) NOT NULL,
     DiaH dom_dia_horario NOT NULL,
     HoraH dom_hora_horario NOT NULL,
     CodLab INT,
 
-    PRIMARY KEY(CodTerm,CodAsig,NroSeccion,DiaH,HoraH),
+    PRIMARY KEY(CodTerm,CodAsig,NroSeccion,CedulaP,DiaH,HoraH),
     CONSTRAINT fk_horarios_secciones FOREIGN KEY(CodTerm,CodAsig,NroSeccion) REFERENCES Secciones(CodTerm,CodAsig,NroSeccion) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_horarios_profesores FOREIGN KEY(CedulaP) REFERENCES Profesores(CedulaP) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_horarios_laboratorios FOREIGN KEY(CodLab) REFERENCES Laboratorios(CodLab) ON UPDATE CASCADE ON DELETE CASCADE,
 
     CONSTRAINT unique_horaLaboratorio UNIQUE (CodTerm,CodLab,DiaH,HoraH)
