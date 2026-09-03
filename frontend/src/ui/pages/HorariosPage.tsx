@@ -765,9 +765,7 @@ export default function HorariosPage () {
                         const content = row[day]
                         const isEmpty = content === '-' || !content
 
-                        const asigsCell = tuplas.filter(t => t.dia === day && t.hora === row.hour && t.semestre === selectedSemester)
-                        const isComun = asigsCell.some(a => materias.find(m => m.codMateria === a.codAsig)?.esComun)
-                        const canDrag = !isEmpty && !isComun
+                        const canDrag = !isEmpty
 
                         return (
                           <td
