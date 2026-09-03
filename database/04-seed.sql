@@ -194,140 +194,140 @@ INSERT INTO Secciones (CodTerm, CodAsig, NroSeccion) VALUES
 ON CONFLICT (CodTerm, CodAsig, NroSeccion) DO NOTHING;
 
 --Horarios Materias Comunes
-INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, DiaH, HoraH, CodLab) VALUES
+INSERT INTO Horarios (CodTerm, CodAsig, NroSeccion, CedulaP, DiaH, HoraH, CodLab) VALUES
 -- Fundamentos de Programación (FING-02008), Miercoles 9 a 12
-('2026-25', 'FING-02008', 1, 'Miercoles', '9', NULL),
-('2026-25', 'FING-02008', 1, 'Miercoles', '10', NULL),
-('2026-25', 'FING-02008', 1, 'Miercoles', '11', NULL),
+('2026-25', 'FING-02008', 1, 'V-20000002', 'Miercoles', '9', NULL),
+('2026-25', 'FING-02008', 1, 'V-20000002', 'Miercoles', '10', NULL),
+('2026-25', 'FING-02008', 1, 'V-20000002', 'Miercoles', '11', NULL),
 
 -- Lógica (FING-02009), Viernes 14 a 17 (2 a 5)
-('2026-25', 'FING-02009', 1, 'Viernes', '14', NULL),
-('2026-25', 'FING-02009', 1, 'Viernes', '15', NULL),
-('2026-25', 'FING-02009', 1, 'Viernes', '16', NULL),
+('2026-25', 'FING-02009', 1, 'V-20000004', 'Viernes', '14', NULL),
+('2026-25', 'FING-02009', 1, 'V-20000004', 'Viernes', '15', NULL),
+('2026-25', 'FING-02009', 1, 'V-20000004', 'Viernes', '16', NULL),
 
 -- Principios de Marketing (ADCO-00350), Viernes 10 a 13 (10 a 1)
-('2026-25', 'ADCO-00350', 1, 'Viernes', '10', NULL),
-('2026-25', 'ADCO-00350', 1, 'Viernes', '11', NULL),
-('2026-25', 'ADCO-00350', 1, 'Viernes', '12', NULL),
+('2026-25', 'ADCO-00350', 1, 'V-20000005', 'Viernes', '10', NULL),
+('2026-25', 'ADCO-00350', 1, 'V-20000005', 'Viernes', '11', NULL),
+('2026-25', 'ADCO-00350', 1, 'V-20000005', 'Viernes', '12', NULL),
 
 -- Álgebra y Trigonometría (FING-02002), Lunes 11 a 13 y Miercoles 7 a 9
-('2026-25', 'FING-02002', 1, 'Lunes', '11', NULL),
-('2026-25', 'FING-02002', 1, 'Lunes', '12', NULL),
-('2026-25', 'FING-02002', 1, 'Miercoles', '7', NULL),
-('2026-25', 'FING-02002', 1, 'Miercoles', '8', NULL),
+('2026-25', 'FING-02002', 1, 'V-20000001', 'Lunes', '11', NULL),
+('2026-25', 'FING-02002', 1, 'V-20000001', 'Lunes', '12', NULL),
+('2026-25', 'FING-02002', 1, 'V-20000001', 'Miercoles', '7', NULL),
+('2026-25', 'FING-02002', 1, 'V-20000001', 'Miercoles', '8', NULL),
 
 -- Competencia Textual (UCAB-00009), Lunes 9 a 11 y Jueves 10 a 12
-('2026-25', 'UCAB-00009', 1, 'Lunes', '9', NULL),
-('2026-25', 'UCAB-00009', 1, 'Lunes', '10', NULL),
-('2026-25', 'UCAB-00009', 1, 'Jueves', '10', NULL),
-('2026-25', 'UCAB-00009', 1, 'Jueves', '11', NULL),
+('2026-25', 'UCAB-00009', 1, 'V-20000006', 'Lunes', '9', NULL),
+('2026-25', 'UCAB-00009', 1, 'V-20000006', 'Lunes', '10', NULL),
+('2026-25', 'UCAB-00009', 1, 'V-20000006', 'Jueves', '10', NULL),
+('2026-25', 'UCAB-00009', 1, 'V-20000006', 'Jueves', '11', NULL),
 
 -- Identidad, Liderazgo y Compromiso 1 (UCAB-00001), Martes 8 a 10
-('2026-25', 'UCAB-00001', 1, 'Martes', '8', NULL),
-('2026-25', 'UCAB-00001', 1, 'Martes', '9', NULL),
+('2026-25', 'UCAB-00001', 1, 'V-20000007', 'Martes', '8', NULL),
+('2026-25', 'UCAB-00001', 1, 'V-20000007', 'Martes', '9', NULL),
 
 -- Identidad, Liderazgo y Compromiso II (UCAB-00002), Martes 10 a 12
-('2026-25', 'UCAB-00002', 1, 'Martes', '10', NULL),
-('2026-25', 'UCAB-00002', 1, 'Martes', '11', NULL),
+('2026-25', 'UCAB-00002', 1, 'V-20000011', 'Martes', '10', NULL),
+('2026-25', 'UCAB-00002', 1, 'V-20000011', 'Martes', '11', NULL),
 
 -- Cálculo Diferencial (FING-02003), Lunes 7 a 9 y Jueves 7 a 10
-('2026-25', 'FING-02003', 1, 'Lunes', '7', NULL),
-('2026-25', 'FING-02003', 1, 'Lunes', '8', NULL),
-('2026-25', 'FING-02003', 1, 'Jueves', '7', NULL),
-('2026-25', 'FING-02003', 1, 'Jueves', '8', NULL),
-('2026-25', 'FING-02003', 1, 'Jueves', '9', NULL),
+('2026-25', 'FING-02003', 1, 'V-20000001', 'Lunes', '7', NULL),
+('2026-25', 'FING-02003', 1, 'V-20000001', 'Lunes', '8', NULL),
+('2026-25', 'FING-02003', 1, 'V-20000001', 'Jueves', '7', NULL),
+('2026-25', 'FING-02003', 1, 'V-20000001', 'Jueves', '8', NULL),
+('2026-25', 'FING-02003', 1, 'V-20000001', 'Jueves', '9', NULL),
 
 -- Álgebra Lineal (FING-02001), Martes 7 a 10 y Viernes 9 a 11
-('2026-25', 'FING-02001', 1, 'Martes', '7', NULL),
-('2026-25', 'FING-02001', 1, 'Martes', '8', NULL),
-('2026-25', 'FING-02001', 1, 'Martes', '9', NULL),
-('2026-25', 'FING-02001', 1, 'Viernes', '9', NULL),
-('2026-25', 'FING-02001', 1, 'Viernes', '10', NULL),
+('2026-25', 'FING-02001', 1, 'V-20000010', 'Martes', '7', NULL),
+('2026-25', 'FING-02001', 1, 'V-20000010', 'Martes', '8', NULL),
+('2026-25', 'FING-02001', 1, 'V-20000010', 'Martes', '9', NULL),
+('2026-25', 'FING-02001', 1, 'V-20000010', 'Viernes', '9', NULL),
+('2026-25', 'FING-02001', 1, 'V-20000010', 'Viernes', '10', NULL),
 
 -- Cálculo Integral (FING-02004), Lunes 7 a 9 y Miercoles 7 a 9
-('2026-25', 'FING-02004', 1, 'Lunes', '7', NULL),
-('2026-25', 'FING-02004', 1, 'Lunes', '8', NULL),
-('2026-25', 'FING-02004', 1, 'Miercoles', '7', NULL),
-('2026-25', 'FING-02004', 1, 'Miercoles', '8', NULL),
+('2026-25', 'FING-02004', 1, 'V-20000047', 'Lunes', '7', NULL),
+('2026-25', 'FING-02004', 1, 'V-20000047', 'Lunes', '8', NULL),
+('2026-25', 'FING-02004', 1, 'V-20000047', 'Miercoles', '7', NULL),
+('2026-25', 'FING-02004', 1, 'V-20000047', 'Miercoles', '8', NULL),
 
 -- Física General (FING-00011), Miercoles 9 a 12 y Viernes 11 a 13
-('2026-25', 'FING-00011', 1, 'Miercoles', '9', NULL),
-('2026-25', 'FING-00011', 1, 'Miercoles', '10', NULL),
-('2026-25', 'FING-00011', 1, 'Miercoles', '11', NULL),
-('2026-25', 'FING-00011', 1, 'Viernes', '11', NULL),
-('2026-25', 'FING-00011', 1, 'Viernes', '12', NULL),
+('2026-25', 'FING-00011', 1, 'V-20000046', 'Miercoles', '9', NULL),
+('2026-25', 'FING-00011', 1, 'V-20000046', 'Miercoles', '10', NULL),
+('2026-25', 'FING-00011', 1, 'V-20000046', 'Miercoles', '11', NULL),
+('2026-25', 'FING-00011', 1, 'V-20000046', 'Viernes', '11', NULL),
+('2026-25', 'FING-00011', 1, 'V-20000046', 'Viernes', '12', NULL),
 
 -- Ecología (UCAB-00003), Jueves 14 a 16 (2 a 4)
-('2026-25', 'UCAB-00003', 1, 'Jueves', '14', NULL),
-('2026-25', 'UCAB-00003', 1, 'Jueves', '15', NULL),
+('2026-25', 'UCAB-00003', 1, 'V-20000015', 'Jueves', '14', NULL),
+('2026-25', 'UCAB-00003', 1, 'V-20000015', 'Jueves', '15', NULL),
 
 -- Contabilidad (FACE-00024), Lunes 10 a 12 y Viernes 15 a 17 (3 a 5)
-('2026-25', 'FACE-00024', 1, 'Lunes', '10', NULL),
-('2026-25', 'FACE-00024', 1, 'Lunes', '11', NULL),
-('2026-25', 'FACE-00024', 1, 'Viernes', '15', NULL),
-('2026-25', 'FACE-00024', 1, 'Viernes', '16', NULL),
+('2026-25', 'FACE-00024', 1, 'V-20000016', 'Lunes', '10', NULL),
+('2026-25', 'FACE-00024', 1, 'V-20000016', 'Lunes', '11', NULL),
+('2026-25', 'FACE-00024', 1, 'V-20000016', 'Viernes', '15', NULL),
+('2026-25', 'FACE-00024', 1, 'V-20000016', 'Viernes', '16', NULL),
 
 -- Innovación y Emprendimiento (UCAB-00008), Sec 1 Sábado 7 a 9
-('2026-25', 'UCAB-00008', 1, 'Sabado', '7', NULL),
-('2026-25', 'UCAB-00008', 1, 'Sabado', '8', NULL),
+('2026-25', 'UCAB-00008', 1, 'V-20000017', 'Sabado', '7', NULL),
+('2026-25', 'UCAB-00008', 1, 'V-20000017', 'Sabado', '8', NULL),
 
 -- Innovación y Emprendimiento (UCAB-00008), Sec 2 Sábado 7 a 9
-('2026-25', 'UCAB-00008', 2, 'Sabado', '7', NULL),
-('2026-25', 'UCAB-00008', 2, 'Sabado', '8', NULL),
+('2026-25', 'UCAB-00008', 2, 'V-20000018', 'Sabado', '7', NULL),
+('2026-25', 'UCAB-00008', 2, 'V-20000018', 'Sabado', '8', NULL),
 
 -- Innovación y Emprendimiento (UCAB-00008), Sec 3 Domingo 7 a 9
-('2026-25', 'UCAB-00008', 3, 'Domingo', '7', NULL),
-('2026-25', 'UCAB-00008', 3, 'Domingo', '8', NULL),
+('2026-25', 'UCAB-00008', 3, 'V-20000019', 'Domingo', '7', NULL),
+('2026-25', 'UCAB-00008', 3, 'V-20000019', 'Domingo', '8', NULL),
 
 -- Ingeniería Económica (FING-00014), Lunes 10 a 13 (10 a 1)
-('2026-25', 'FING-00014', 1, 'Lunes', '10', NULL),
-('2026-25', 'FING-00014', 1, 'Lunes', '11', NULL),
-('2026-25', 'FING-00014', 1, 'Lunes', '12', NULL),
+('2026-25', 'FING-00014', 1, 'V-20000027', 'Lunes', '10', NULL),
+('2026-25', 'FING-00014', 1, 'V-20000027', 'Lunes', '11', NULL),
+('2026-25', 'FING-00014', 1, 'V-20000027', 'Lunes', '12', NULL),
 
 -- Ecuaciones Diferenciales Ordinarias (FING-02006), Jueves 9 a 12
-('2026-25', 'FING-02006', 1, 'Jueves', '9', NULL),
-('2026-25', 'FING-02006', 1, 'Jueves', '10', NULL),
-('2026-25', 'FING-02006', 1, 'Jueves', '11', NULL),
+('2026-25', 'FING-02006', 1, 'V-20000028', 'Jueves', '9', NULL),
+('2026-25', 'FING-02006', 1, 'V-20000028', 'Jueves', '10', NULL),
+('2026-25', 'FING-02006', 1, 'V-20000028', 'Jueves', '11', NULL),
 
 -- Cálculo Vectorial (FING-02005), Martes 11 a 13 y Jueves 7 a 9
-('2026-25', 'FING-02005', 1, 'Martes', '11', NULL),
-('2026-25', 'FING-02005', 1, 'Martes', '12', NULL),
-('2026-25', 'FING-02005', 1, 'Jueves', '7', NULL),
-('2026-25', 'FING-02005', 1, 'Jueves', '8', NULL),
+('2026-25', 'FING-02005', 1, 'V-20000010', 'Martes', '11', NULL),
+('2026-25', 'FING-02005', 1, 'V-20000010', 'Martes', '12', NULL),
+('2026-25', 'FING-02005', 1, 'V-20000010', 'Jueves', '7', NULL),
+('2026-25', 'FING-02005', 1, 'V-20000010', 'Jueves', '8', NULL),
 
 -- Electricidad y Magnetismo (FING-02007), Miercoles 11 a 14 (11 a 2) y Viernes 11 a 13 (11 a 1)
-('2026-25', 'FING-02007', 1, 'Miercoles', '11', NULL),
-('2026-25', 'FING-02007', 1, 'Miercoles', '12', NULL),
-('2026-25', 'FING-02007', 1, 'Miercoles', '13', NULL),
-('2026-25', 'FING-02007', 1, 'Viernes', '11', NULL),
-('2026-25', 'FING-02007', 1, 'Viernes', '12', NULL),
+('2026-25', 'FING-02007', 1, 'V-20000033', 'Miercoles', '11', NULL),
+('2026-25', 'FING-02007', 1, 'V-20000033', 'Miercoles', '12', NULL),
+('2026-25', 'FING-02007', 1, 'V-20000033', 'Miercoles', '13', NULL),
+('2026-25', 'FING-02007', 1, 'V-20000033', 'Viernes', '11', NULL),
+('2026-25', 'FING-02007', 1, 'V-20000033', 'Viernes', '12', NULL),
 
 -- Laboratorio de Física (FING-02013), Viernes 7 a 9
-('2026-25', 'FING-02013', 1, 'Viernes', '7', NULL),
-('2026-25', 'FING-02013', 1, 'Viernes', '8', NULL),
+('2026-25', 'FING-02013', 1, 'V-20000033', 'Viernes', '7', NULL),
+('2026-25', 'FING-02013', 1, 'V-20000033', 'Viernes', '8', NULL),
 
 -- Probabilidad y Estadística (FING-02011), Miercoles 9 a 11 y Viernes 9 a 11
-('2026-25', 'FING-02011', 1, 'Miercoles', '9', NULL),
-('2026-25', 'FING-02011', 1, 'Miercoles', '10', NULL),
-('2026-25', 'FING-02011', 1, 'Viernes', '9', NULL),
-('2026-25', 'FING-02011', 1, 'Viernes', '10', NULL),
+('2026-25', 'FING-02011', 1, 'V-20000034', 'Miercoles', '9', NULL),
+('2026-25', 'FING-02011', 1, 'V-20000034', 'Miercoles', '10', NULL),
+('2026-25', 'FING-02011', 1, 'V-20000034', 'Viernes', '9', NULL),
+('2026-25', 'FING-02011', 1, 'V-20000034', 'Viernes', '10', NULL),
 
 -- Métodos Numéricos (FING-02010), Jueves 14 a 16 (2 a 4)
-('2026-25', 'FING-02010', 1, 'Jueves', '14', NULL),
-('2026-25', 'FING-02010', 1, 'Jueves', '15', NULL),
+('2026-25', 'FING-02010', 1, 'V-20000039', 'Jueves', '14', NULL),
+('2026-25', 'FING-02010', 1, 'V-20000039', 'Jueves', '15', NULL),
 
 -- Ética Profesional (FING-00009), Sec 1 Jueves 7 a 9
-('2026-25', 'FING-00009', 1, 'Jueves', '7', NULL),
-('2026-25', 'FING-00009', 1, 'Jueves', '8', NULL),
+('2026-25', 'FING-00009', 1, 'V-20000039', 'Jueves', '7', NULL),
+('2026-25', 'FING-00009', 1, 'V-20000039', 'Jueves', '8', NULL),
 
 -- Ética Profesional (FING-00009), Sec 2 Jueves 7 a 9
-('2026-25', 'FING-00009', 2, 'Jueves', '7', NULL),
-('2026-25', 'FING-00009', 2, 'Jueves', '8', NULL),
+('2026-25', 'FING-00009', 2, 'V-20000043', 'Jueves', '7', NULL),
+('2026-25', 'FING-00009', 2, 'V-20000043', 'Jueves', '8', NULL),
 
 -- Ética Profesional (FING-00009), Sec 3 Jueves 7 a 9
-('2026-25', 'FING-00009', 3, 'Jueves', '7', NULL),
-('2026-25', 'FING-00009', 3, 'Jueves', '8', NULL)
-ON CONFLICT (CodAsig, CodTerm, DiaH, HoraH, NroSeccion) DO NOTHING;
+('2026-25', 'FING-00009', 3, 'V-20000044', 'Jueves', '7', NULL),
+('2026-25', 'FING-00009', 3, 'V-20000044', 'Jueves', '8', NULL)
+ON CONFLICT (CodTerm, CodAsig, NroSeccion, CedulaP, DiaH, HoraH) DO NOTHING;
 
 -- Disponibilidad_Horaria_Profesor
 
