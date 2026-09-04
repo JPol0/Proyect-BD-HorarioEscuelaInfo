@@ -108,9 +108,13 @@ export async function asignarSeccionesDeMateria (params: AsignarSeccionesParams)
         exito = intentarAsignar(horasNecesarias, tipo, false)
       }
 
-      // EXCEPCIÓN: Si es laboratorio, de exactamente 3 horas, y falló, intentar dividiendo en 2 + 1
-      if (!exito && tipo === 'Laboratorio' && materia.horasLab === 3 && horasNecesarias === 3) {
-        exito = intentarAsignar(horasNecesarias, tipo, false, true)
+      // EXCEPCIÓN: Si son 3 horas (relax a 2 + 1) o 5 horas (relax a 2 + 2 + 1) y falló en bloque de 3 horas continuas,
+      // relajar la regla permitiendo la división en bloques continuos de 2 horas y de 1 hora en días separados
+      if (!exito && (horasNecesarias === 3 || horasNecesarias === 5)) {
+        exito = intentarAsignar(horasNecesarias, tipo, true, true)
+        if (!exito) {
+          exito = intentarAsignar(horasNecesarias, tipo, false, true)
+        }
       }
 
       if (!exito) {

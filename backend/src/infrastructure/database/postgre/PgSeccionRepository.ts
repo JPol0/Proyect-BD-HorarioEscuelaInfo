@@ -71,16 +71,11 @@ export class PgSeccionRepository implements SeccionRepository {
         UPDATE Disponibilidad_Horaria dh
         SET ocupadoDH = FALSE
         FROM Horarios h
-        JOIN Imparten i ON h.CodTerm = i.CodTerm AND h.CodAsig = i.CodAsig AND h.NroSeccion = i.NroSeccion
         WHERE h.CodTerm = $1 AND h.CodAsig = $2 AND h.NroSeccion = $3
           AND dh.CodTerm = h.CodTerm
-          AND dh.CedulaP = i.cedulaP
+          AND dh.CedulaP = h.CedulaP
           AND dh.Dia = h.DiaH
           AND dh.Hora = h.HoraH
-          AND (
-            (h.CodLab IS NULL AND i.HorasTeo > 0) OR
-            (h.CodLab IS NOT NULL AND i.HorasLab > 0)
-          )
       `
       await client.query(releaseProfAvailabilityQuery, [codTerm, codMateria, nroSeccion])
 

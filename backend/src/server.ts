@@ -6,14 +6,17 @@ app.disable('x-powered-by') // Por seguridad, no revelamos que usamos Express
 app.use(express.json())
 
 // Middleware de CORS manual (cumpliendo la guía Standard de estilo)
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173'] // Fallback seguro para desarrollo
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS !== undefined && process.env.ALLOWED_ORIGINS !== ''
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
+  : ['http://localhost:5173', 'http://localhost:5174']
 
 app.use((req, res, next) => {
   const origin = req.headers.origin
-  if (origin !== undefined && origin !== '' && ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
+  if (origin !== undefined && origin !== '') {
+    const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(origin)
+    if (ALLOWED_ORIGINS.includes(origin) || isLocalhost) {
+      res.setHeader('Access-Control-Allow-Origin', origin)
+    }
   }
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')

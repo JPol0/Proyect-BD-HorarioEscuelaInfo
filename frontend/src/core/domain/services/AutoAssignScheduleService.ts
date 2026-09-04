@@ -111,7 +111,8 @@ export const autoAsignarMateria = (
             dia,
             hora,
             semestre: materia.semestre,
-            laboratorio: tipo === 'Laboratorio' && laboratorioId ? { id: laboratorioId, name: '' } : undefined
+            laboratorio: tipo === 'Laboratorio' && laboratorioId ? { id: laboratorioId, name: '' } : undefined,
+            cedulaP: cedulaProfesor ?? ''
           })
           faltantes--
         }

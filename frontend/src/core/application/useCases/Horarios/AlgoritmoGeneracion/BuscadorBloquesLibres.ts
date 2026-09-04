@@ -93,7 +93,8 @@ export function intentarAsignarBloque (
             hora,
             semestre: ctxBase.materia.semestre,
             isManual: false,
-            laboratorio: tipo === 'Laboratorio' && labId ? { id: labId, name: '' } : undefined
+            laboratorio: tipo === 'Laboratorio' && labId ? { id: labId, name: '' } : undefined,
+            cedulaP: ctxBase.cedulaProfesor ?? ''
           })
           horasRestantes--
         }

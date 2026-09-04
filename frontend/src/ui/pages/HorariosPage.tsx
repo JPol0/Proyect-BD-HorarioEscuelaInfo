@@ -35,6 +35,7 @@ import { ExportarHorario } from '../../core/application/useCases/Horarios/Export
 import { HttpHorarioExporter } from '../../core/infrastructure/adapters/HttpHorarioExporter'
 import type { ScheduleExportConfig } from '../../core/domain/ScheduleExport'
 import { ValidarMovimientoHorario } from '../../core/application/useCases/Horarios/ValidarMovimientoHorario'
+import { AsignarCasillaModal } from '../components/MateriaScreen/AsignarCasillaModal'
 
 const repository = new ApiHorarioRepository()
 const materiaRepository = new HttpMateriaRepository()
@@ -122,6 +123,10 @@ export default function HorariosPage () {
       laboratorioId?: number
     }>
   } | null>(null)
+  const [emptyCellModal, setEmptyCellModal] = useState<{
+    dia: DaysOfWeek
+    hora: string
+  } | null>(null)
 
   const semestreMaximo = materias.length > 0 ? calcularSemestreMaximo(materias) : 8
   const opcionesSemestres = Array.from({ length: Math.max(1, semestreMaximo) }, (_, i) => i + 1)
@@ -163,7 +168,19 @@ export default function HorariosPage () {
     const term = selectedTerm
 
     try {
-      await saveWeeklyScheduleUseCase.execute(term, tuplas)
+      const tuplasToSave = tuplas.map(t => {
+        if (t.cedulaP && t.cedulaP.trim() !== '') return t
+        const hasLab = !!t.laboratorio || !!(t as any).codLaboratorio
+        const profLab = profesorLabAssignments?.[term]?.[t.codAsig]?.[t.nroSeccion]
+        const profTeo = profesorAssignments[term]?.[t.codAsig]?.[t.nroSeccion]
+        const cedulaP = (hasLab && profLab) ? profLab : (profTeo || profLab || '')
+        return {
+          ...t,
+          cedulaP
+        }
+      })
+
+      await saveWeeklyScheduleUseCase.execute(term, tuplasToSave)
       sessionStorage.removeItem(`draft_horario_${term}`)
       alert('Horario de todos los semestres guardado correctamente en la base de datos.')
     } catch (e) {
@@ -380,6 +397,10 @@ export default function HorariosPage () {
                   }
                 }
 
+                const profLab = profesorLabAssignments?.[term]?.[materiaFromState.codMateria]?.[block.nroSeccion]
+                const profTeo = profesorAssignments[term]?.[materiaFromState.codMateria]?.[block.nroSeccion]
+                const cedulaProf = (labIdAsignar !== undefined && profLab) ? profLab : (profTeo || profLab || '')
+
                 nuevasTuplas.push({
                   codAsig: materiaFromState.codMateria,
                   nroSeccion: block.nroSeccion,
@@ -387,7 +408,8 @@ export default function HorariosPage () {
                   hora: horaAsignar,
                   semestre: materiaFromState.semestre,
                   laboratorio: labIdAsignar !== undefined ? { id: labIdAsignar, name: 'Laboratorio' } : null,
-                  isManual: true
+                  isManual: true,
+                  cedulaP: cedulaProf
                 })
               }
             }
@@ -467,7 +489,7 @@ export default function HorariosPage () {
       if (!materia) return null
 
       const hasLab = !!asig.laboratorio || !!(asig as any).codLaboratorio
-      const cedulaProfesor = (hasLab
+      const cedulaProfesor = asig.cedulaP || (hasLab
         ? profesorLabAssignments?.[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion]
         : undefined) ||
         profesorAssignments[selectedTerm!]?.[asig.codAsig]?.[asig.nroSeccion] ||
@@ -748,9 +770,7 @@ export default function HorariosPage () {
                         const content = row[day]
                         const isEmpty = content === '-' || !content
 
-                        const asigsCell = tuplas.filter(t => t.dia === day && t.hora === row.hour && t.semestre === selectedSemester)
-                        const isComun = asigsCell.some(a => materias.find(m => m.codMateria === a.codAsig)?.esComun)
-                        const canDrag = !isEmpty && !isComun
+                        const canDrag = !isEmpty
 
                         return (
                           <td
@@ -766,10 +786,24 @@ export default function HorariosPage () {
                               e.preventDefault()
                               void handleDrop(day, row.hour)
                             }}
-                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200' : ''} ${canDrag ? 'cursor-grab active:cursor-grabbing' : (!isEmpty ? 'cursor-pointer' : '')}`}
-                            onClick={() => !isEmpty && handleCellClick(day, row.hour)}
+                            className={`px-4 py-4 text-center text-[12px] text-[#475569] font-medium border-l border-slate-100 ${!isEmpty ? 'hover:bg-slate-100 hover:scale-[1.03] hover:shadow-md hover:z-10 relative transition-all duration-200 cursor-grab active:cursor-grabbing' : 'hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer group'}`}
+                            onClick={() => {
+                              if (!isEmpty) {
+                                handleCellClick(day, row.hour)
+                              } else {
+                                setEmptyCellModal({ dia: day, hora: row.hour })
+                              }
+                            }}
                           >
-                            {isEmpty ? <span className="text-slate-300">—</span> : content}
+                            {isEmpty
+                              ? (
+                                <span className="text-slate-300 group-hover:text-slate-600 font-semibold transition-colors inline-block group-hover:scale-125">
+                                  +
+                                </span>
+                                )
+                              : (
+                                  content
+                                )}
                           </td>
                         )
                       })}
@@ -878,6 +912,25 @@ export default function HorariosPage () {
           dia={selectedBlockModal.dia}
           horaStr={selectedBlockModal.horaStr}
           asigs={selectedBlockModal.asigs}
+        />
+      )}
+      {emptyCellModal && (
+        <AsignarCasillaModal
+          isOpen={true}
+          onClose={() => setEmptyCellModal(null)}
+          dia={emptyCellModal.dia}
+          hora={emptyCellModal.hora}
+          selectedSemester={selectedSemester}
+          selectedTerm={selectedTerm || ''}
+          materias={materias}
+          tuplas={tuplas}
+          prerequitos={prerequitos}
+          profesorAssignments={profesorAssignments[selectedTerm!] || {}}
+          profesorLabAssignments={profesorLabAssignments?.[selectedTerm!]}
+          laboratorioAssignments={laboratorioAssignments}
+          onAsignar={(nuevaTupla) => {
+            setTuplas([...tuplas, nuevaTupla])
+          }}
         />
       )}
       <ExportarHorarioModal
