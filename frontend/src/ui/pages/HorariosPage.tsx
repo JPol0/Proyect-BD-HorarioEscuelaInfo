@@ -795,11 +795,15 @@ export default function HorariosPage () {
                               }
                             }}
                           >
-                            {isEmpty ? (
-                              <span className="text-slate-300 group-hover:text-slate-600 font-semibold transition-colors inline-block group-hover:scale-125">
-                                +
-                              </span>
-                            ) : content}
+                            {isEmpty
+                              ? (
+                                <span className="text-slate-300 group-hover:text-slate-600 font-semibold transition-colors inline-block group-hover:scale-125">
+                                  +
+                                </span>
+                                )
+                              : (
+                                  content
+                                )}
                           </td>
                         )
                       })}

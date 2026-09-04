@@ -16,6 +16,7 @@ import {
   Xmark
 } from '@gravity-ui/icons'
 import OdsCarousel from '../components/common/OdsCarousel'
+import DevelopersModal from '../components/common/DevelopersModal'
 
 type Pantalla = 'peligros' | 'terms' | 'materias' | 'profesores' | 'laboratorios' | 'horarios' | 'usuarios'
 
@@ -178,8 +179,10 @@ export default function Layout () {
           })}
         </nav>
 
-        {/* Carrusel ODS 9 */}
-        <div className="mt-auto px-3 py-3 border-t border-slate-800/40 shrink-0">
+        {/* Créditos Desarrolladores y Carrusel ODS 9 */}
+        <div className="mt-auto px-3 py-3 border-t border-slate-800/40 shrink-0 flex flex-col gap-2">
+          <DevelopersModal />
+          <div className="border-t border-slate-700/60 my-1" />
           <OdsCarousel />
         </div>
 
